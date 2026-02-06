@@ -26,7 +26,7 @@ const Footer = () => {
         <>
             <footer className='py-6 bg-[#fafafa]'>
                 <div className="my-container">
-                    <div className="flex items-center justify-start lg:justify-center gap-4 lg:gap-2 py-3 lg:py-8 pb-3 lg:pb-8 px-3 lg:px-5 overflow-x-auto scrollableBox footerBoxWrap">
+                    <div className="flex items-center justify-center gap-2 py-3 lg:py-8 pb-0 lg:pb-8 px-0 lg:px-5 flex-row overflow-x-scroll overflow-y-hidden">
                         <div className="col flex items-center justify-center flex-col group min-w-[150px] shrink-0 lg:min-w-0 lg:w-[15%]">
                             <FaShippingFast className='text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
                             <h3 className="text-[16px] font-semibold mt-3">

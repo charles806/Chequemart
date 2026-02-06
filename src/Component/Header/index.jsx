@@ -167,11 +167,11 @@ const Header = () => {
         <Navigation />
       </div>
 
-      <div className="mobileNav lg:hidden bg-white p-1 px-3 w-full flex items-center justify-between fixed bottom-0 left-0 gap-0 z-[51]">
+      <div className="mobileNav lg:hidden bg-white p-1 px-3 w-full flex items-center justify-between fixed bottom-0 left-0 gap-0 z-51">
         <Link to="/">
-          <Button className="flex flex-col !w-[60px] !min-w-[60px] !capitalize !text-black">
-            <IoIosHome className="!text-black text-[22px] font-bold" />
-            <span className="text-[14px] font-medium !text-black">Home</span>
+          <Button className="flex flex-col w-15! min-w-15! capitalize! text-black!">
+            <IoIosHome className="text-black! text-[22px] font-bold" />
+            <span className="text-[14px] font-medium text-black!">Home</span>
           </Button>
         </Link>
 

@@ -43,7 +43,7 @@ const Navigation = () => {
                 </li>
 
                 <li className="list-none shrink-0">
-                  <Link to="/product">
+                  <Link to="/products">
                     <Button className="link transition font-medium! text-[rgba(0,0,0,0.8)]! hover:text-black! hover:bg-gray-100! py-3! px-3! lg:px-4! normal-case! text-[13px]! lg:text-[14px]! rounded-md! whitespace-nowrap!">
                       Fashion
                     </Button>
@@ -51,7 +51,7 @@ const Navigation = () => {
                 </li>
 
                 <li className="list-none shrink-0">
-                  <Link to="/product">
+                  <Link to="/products">
                     <Button className="link transition font-medium! text-[rgba(0,0,0,0.8)]! hover:text-black! hover:bg-gray-100! py-3! px-3! lg:px-4! normal-case! text-[13px]! lg:text-[14px]! rounded-md! whitespace-nowrap!">
                       Electronics
                     </Button>
@@ -59,7 +59,7 @@ const Navigation = () => {
                 </li>
 
                 <li className="list-none shrink-0">
-                  <Link to="/product">
+                  <Link to="/products">
                     <Button className="link transition font-medium! text-[rgba(0,0,0,0.8)]! hover:text-black! hover:bg-gray-100! py-3! px-3! lg:px-4! normal-case! text-[13px]! lg:text-[14px]! rounded-md! whitespace-nowrap!">
                       Bags
                     </Button>
@@ -67,7 +67,7 @@ const Navigation = () => {
                 </li>
 
                 <li className="list-none shrink-0">
-                  <Link to="/product">
+                  <Link to="/products">
                     <Button className="link transition font-medium! text-[rgba(0,0,0,0.8)]! hover:text-black! hover:bg-gray-100! py-3! px-3! lg:px-4! normal-case! text-[13px]! lg:text-[14px]! rounded-md! whitespace-nowrap!">
                       Footwear
                     </Button>
@@ -75,7 +75,7 @@ const Navigation = () => {
                 </li>
 
                 <li className="list-none shrink-0">
-                  <Link to="/product">
+                  <Link to="/products">
                     <Button className="link transition font-medium! text-[rgba(0,0,0,0.8)]! hover:text-black! hover:bg-gray-100! py-3! px-3! lg:px-4! normal-case! text-[13px]! lg:text-[14px]! rounded-md! whitespace-nowrap!">
                       Jewellery
                     </Button>
@@ -83,7 +83,7 @@ const Navigation = () => {
                 </li>
 
                 <li className="list-none shrink-0">
-                  <Link to="/product">
+                  <Link to="/products">
                     <Button className="link transition font-medium! text-[rgba(0,0,0,0.8)]! hover:text-black! hover:bg-gray-100! py-3! px-3! lg:px-4! normal-case! text-[13px]! lg:text-[14px]! rounded-md! whitespace-nowrap!">
                       Wellness
                     </Button>
@@ -91,7 +91,7 @@ const Navigation = () => {
                 </li>
 
                 <li className="list-none shrink-0">
-                  <Link to="/product">
+                  <Link to="/products">
                     <Button className="link transition font-medium! text-[rgba(0,0,0,0.8)]! hover:text-black! hover:bg-gray-100! py-3! px-3! lg:px-4! normal-case! text-[13px]! lg:text-[14px]! rounded-md! whitespace-nowrap!">
                       Beauty
                     </Button>
@@ -99,7 +99,7 @@ const Navigation = () => {
                 </li>
 
                 <li className="list-none shrink-0">
-                  <Link to="/product">
+                  <Link to="/products">
                     <Button className="link transition font-medium! text-[rgba(0,0,0,0.8)]! hover:text-black! hover:bg-gray-100! py-3! px-3! lg:px-4! normal-case! text-[13px]! lg:text-[14px]! rounded-md! whitespace-nowrap!">
                       Games
                     </Button>
