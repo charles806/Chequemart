@@ -37,7 +37,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white fixed lg:sticky left-0 w-full top-0 lg:-top-11.75 z-101">
+    <header className="bg-white fixed lg:sticky left-0 w-full top-0 lg:-top-11.75 z-101 ">
       <div className="top-strip hidden lg:block py-2 border-t border-b">
         <div className="my-container">
           <div className="flex items-center justify-between">
@@ -176,30 +176,30 @@ const Header = () => {
         </Link>
 
         <Button
-          className="flex-col !w-[60px] !min-w-[60px] !capitalize !text-black"
+          className="flex-col w-15! min-w-15! capitalize! text-black!"
           onClick={toggleSearch}
         >
-          <CiSearch className="!text-black text-[22px] font-bold" />
-          <span className="text-[14px] font-medium !text-black">Search</span>
+          <CiSearch className="text-black! text-[22px] font-bold" />
+          <span className="text-[14px] font-medium text-black!">Search</span>
         </Button>
 
         <Link to="/my-list">
-          <Button className="flex flex-col !w-[60px] !min-w-[60px] !capitalize !text-black">
-            <FaRegHeart className="!text-black text-[22px] font-bold" />
+          <Button className="flex flex-col w-15! min-w-15! capitalize! text-black!">
+            <FaRegHeart className="text-black text-[22px] font-bold" />
             <span className="text-[12px]">My List</span>
           </Button>
         </Link>
 
         <Link to="/cart">
-          <Button className="flex flex-col !w-[60px] !min-w-[60px] !capitalize !text-black">
-            <MdOutlineShoppingCart className="!text-black text-[22px] font-bold" />
-            <span className="text-[14px] font-medium !text-black">Cart</span>
+          <Button className="flex flex-col w-15! min-w-15! capitalize! text-black!">
+            <MdOutlineShoppingCart className="text-black text-[22px] font-bold" />
+            <span className="text-[14px] font-medium text-black">Cart</span>
           </Button>
         </Link>
 
         <Link to="/account">
-          <Button className="flex flex-col !w-[60px] !min-w-[60px] !capitalize !text-black">
-            <FaRegUser className="!text-black text-[22px] font-bold" />
+          <Button className="flex flex-col w-15! min-w-15! capitalize! text-black!">
+            <FaRegUser className="text-black text-[22px] font-bold" />
             <span className="text-[12px]">Account</span>
           </Button>
         </Link>

@@ -67,3 +67,9 @@ header .top-strip {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.sidebar .scroll {
+  max-height: 200px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
