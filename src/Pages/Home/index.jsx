@@ -75,7 +75,7 @@ const Home = () => {
                 onSwiper={(swiper) => console.log(swiper)}
                 slidesPerView={4}
                 spaceBetween={10}
-                navigation={false}
+                navigation={true}
                 modules={[Navigation]}
                 className="mySwiper"
                 centerInsufficientSlides={true}

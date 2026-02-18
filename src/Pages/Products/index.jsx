@@ -5,8 +5,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ProductItem from "../../Component/ProductItem/index";
 import productImg1 from '../../assets/image/product1.jpg';
-
-// Mock product data - can be replaced with API data later
 const MOCK_PRODUCTS = [
     { id: 1, name: "Barcelona Home Jersey", brand: "BARCA", price: 10000, oldPrice: 20000, rating: 4, image: productImg1, discount: 50 },
     { id: 2, name: "Wireless Headphones", brand: "SONY", price: 15000, oldPrice: 25000, rating: 5, image: productImg1, discount: 40 },
@@ -73,7 +71,7 @@ const Products = () => {
                     </div>
                     <div className="rightContent w-full lg:w-[80%] py-3">
                         {/* Sort By Header - Sticky with backdrop blur */}
-                        <div className="bg-white/90 backdrop-blur-md p-3 px-4 w-full mb-6 rounded-lg flex items-center justify-between sticky top-[135px] z-50 shadow-md border border-gray-200">
+                        <div className="bg-white/90 backdrop-blur-md p-3 px-4 w-full mb-6 rounded-lg flex items-center justify-between sticky top-33.75 z-50 shadow-md border border-gray-200">
                             <div className="text-sm text-gray-600">
                                 Showing <span className="font-semibold text-gray-900">{sortedProducts.length}</span> products
                             </div>

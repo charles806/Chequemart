@@ -39,6 +39,53 @@ header .top-strip {
   color: #ff5252;
 }
 
+.swiper-button-prev,
+.swiper-button-next {
+  background-color: #fff;
+  border-radius: 50%;
+  color: #000000 !important;
+  fill: currentColor;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 15px;
+}
+
+.swiper-button-prev,
+.swiper-button-next .swiper-navigation-icon{
+  color: #000000 !important;
+  fill: currentColor;
+}
+
+@media (min-width: 768px) {
+
+  .swiper-button-prev,
+  .swiper-button-next {
+    display: flex;
+  }
+}
+
+.swiper-button-prev::after,
+.swiper-button-next::after {
+  font-size: 20px !important;
+  color: inherit !important;
+}
+
+.swiper-button-prev:hover {
+  background-color: #ff5252;
+  color: #fff !important;
+}
+
+.swiper-button-next:hover {
+  background-color: #ff5252;
+  color: #fff !important;
+}
+
+.swiper-pagination-bullet-active {
+  background-color: #ff5252 !important;
+}
+
 .MuiBadge-badge {
   background-color: #ff5252 !important;
   color: #fff !important;
@@ -74,12 +121,15 @@ header .top-strip {
   overflow-x: hidden;
 }
 
+
+
 /* Fade-in animation for product grid */
 @keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -96,4 +146,12 @@ header .top-strip {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* .zoomProductSliderThumbs{
+  overflow: hidden;
+} */
+
+.zoomProductSliderThumbs .swiper-slide {
+  height: auto !important;
 }
