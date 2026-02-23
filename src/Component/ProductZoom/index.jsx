@@ -25,7 +25,7 @@ const ProductZoom = () => {
         <div className="flex flex-col-reverse md:flex-row gap-3 w-full">
 
             {/* Thumbnails */}
-            <div className="md:w-[80px] w-full shrink-0">
+            <div className="md:w-20 w-full shrink-0">
                 <Swiper
                     onSwiper={setThumbsSwiper}
                     spaceBetween={8}
@@ -40,11 +40,11 @@ const ProductZoom = () => {
                             spaceBetween: 8,
                         }
                     }}
-                    className="w-full md:h-[450px]"
+                    className="w-full md:h-112.5"
                 >
                     {images.map((img, i) => (
                         <SwiperSlide key={i}>
-                            <div className="border-2 border-transparent [.swiper-slide-thumb-active_&]:border-red-400 rounded-md overflow-hidden cursor-pointer transition-all duration-200 w-full aspect-square">
+                            <div className="border-2 border-transparent in-[.swiper-slide-thumb-active]:border-red-400 rounded-md overflow-hidden cursor-pointer transition-all duration-200 w-full aspect-square">
                                 <img
                                     src={img}
                                     alt={`Thumbnail ${i + 1}`}
@@ -65,7 +65,7 @@ const ProductZoom = () => {
                     className="w-full h-full"
                 >
                     {images.map((img, i) => (
-                        <SwiperSlide key={i} className="!h-auto">
+                        <SwiperSlide key={i} className="h-auto!">
                             <div
                                 className="w-full aspect-square overflow-hidden rounded-lg border border-gray-200"
                                 style={{ cursor: zoomed ? 'zoom-out' : 'zoom-in' }}

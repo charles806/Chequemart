@@ -13,6 +13,23 @@ hr {
   border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
+p {
+  font-size: 14px;
+  color: #000000;
+  line-height: 28px;
+  margin-bottom: 10px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
 .my-container {
   width: 90%;
   margin: auto;
@@ -27,13 +44,19 @@ header .top-strip {
 }
 
 .btn-org {
-  background: none !important;
-  color: #ff5252 !important;
+  background: #ff5252 !important;
+  color: #fff !important;
   border: 1px solid #ff5252 !important;
   font-weight: 500;
   font-size: 16px;
   padding: 7px 20px !important;
+  outline: none !important;
 }
+
+/* .btn-org:hover {
+  background: #000000 !important;
+  color: #f5f0f0 !important;
+} */
 
 .link:hover {
   color: #ff5252;
@@ -53,13 +76,12 @@ header .top-strip {
 }
 
 .swiper-button-prev,
-.swiper-button-next .swiper-navigation-icon{
+.swiper-button-next .swiper-navigation-icon {
   color: #000000 !important;
   fill: currentColor;
 }
 
 @media (min-width: 768px) {
-
   .swiper-button-prev,
   .swiper-button-next {
     display: flex;
@@ -121,8 +143,6 @@ header .top-strip {
   overflow-x: hidden;
 }
 
-
-
 /* Fade-in animation for product grid */
 @keyframes fadeIn {
   from {
@@ -148,10 +168,28 @@ header .top-strip {
   overflow: hidden;
 }
 
-/* .zoomProductSliderThumbs{
-  overflow: hidden;
-} */
-
 .zoomProductSliderThumbs .swiper-slide {
   height: auto !important;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.otp-input {
+  width: 45px;
+  height: 45px;
+  text-align: center;
+  font-size: 17px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.otp-input:focus {
+  border-color: var(--accent-color);
 }

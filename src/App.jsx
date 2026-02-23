@@ -5,7 +5,11 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 //Pages
 import Home from "./Pages/Home";
 import Products from "./Pages/Products";
+import Login from "./Pages/Login";
+import Register from "./Pages/Register";
+import ForgotPassword from "./Pages/ForgotPassword";
 import ProductDetail from "./Pages/ProductDetail";
+import Verify from "./Pages/Verify";
 import { MyContext } from "./MyContext";
 
 const App = () => {
@@ -24,13 +28,15 @@ const App = () => {
       <BrowserRouter>
         <MyContext.Provider value={values}>
           <Header />
-          <main className="pt-[90px] pb-[70px] lg:pt-0 lg:pb-0">
+          <main className="pt-22.5 pb-17.5 lg:pt-0 lg:pb-0">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/products" element={<Products />} />
               <Route path="/products/:id" element={<ProductDetail />} />
-              <Route path="/my-list" element={<Home />} />
-              <Route path="/cart" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/verify" element={<Verify />} />
               <Route path="/account" element={<Home />} />
             </Routes>
           </main>
