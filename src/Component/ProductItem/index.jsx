@@ -7,6 +7,7 @@ import Rating from '@mui/material/Rating';
 import { DiGitCompare } from "react-icons/di";
 import { FaRegHeart } from "react-icons/fa";
 import { MdOutlineShoppingCart } from "react-icons/md";
+import productImg1 from '../../assets/image/product1.jpg';
 
 const ProductItem = ({ product }) => {
     // Destructure product data with fallback values
@@ -17,7 +18,7 @@ const ProductItem = ({ product }) => {
         price = 10000,
         oldPrice = 20000,
         rating = 4,
-        image = null,
+        image = productImg1,
         discount = 50
     } = product || {};
 

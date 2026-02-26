@@ -32,7 +32,7 @@ const Home = () => {
   const swiperRef = useRef(null);
 
   return (
-    <main className='mt-37.5 lg:mt-15 mb-5'>
+    <main className='lg:mt-15 mb-5'>
       <Slider />
       <CatSlider />
 

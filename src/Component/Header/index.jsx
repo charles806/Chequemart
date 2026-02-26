@@ -121,7 +121,7 @@ const Header = () => {
               </li>
 
               <li className="list-none">
-                <IconButton aria-label="cart">
+                <IconButton aria-label="cart" onClick={() => context.setOpenCartPanel(true)}>
                   <StyledBadge badgeContent={4} color="secondary">
                     <MdOutlineShoppingCart className="text-[22px] lg:text-[26px] text-black" />
                   </StyledBadge>
