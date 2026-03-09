@@ -10,6 +10,7 @@ import Register from "./Pages/Register";
 import ForgotPassword from "./Pages/ForgotPassword";
 import Verify from "./Pages/Verify";
 import Cart from "./Pages/Cart/index"
+import Checkout from "./Pages/Checkout";
 
 // Components
 import Header from "./Component/Header";
@@ -51,6 +52,7 @@ const App = () => {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/verify" element={<Verify />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
           </Routes>
         </main>
         <Footer />
@@ -92,11 +94,11 @@ const App = () => {
 
                 <div className="flex-1 flex flex-col gap-2">
                   <h4 className="text-sm font-medium text-gray-800">
-                    Green Satin Dress
+                    Barca Home Kit 2024/2025
                   </h4>
 
                   <p className="text-base font-semibold text-[#ff5252]">
-                    ₦9000
+                    ₦10,000
                   </p>
 
                   <div className="flex items-center gap-2 mt-1">
