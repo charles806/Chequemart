@@ -19,7 +19,7 @@ import { FaTiktok } from "react-icons/fa";
 import masterCard from "../../assets/image/master_card.png";
 import visa from "../../assets/image/visa.png";
 import americanExpress from "../../assets/image/american_express.png";
-
+import verifyZoho from "../../../zohoverify/verifyforzoho.html"
 
 const Footer = () => {
     return (
@@ -209,6 +209,9 @@ const Footer = () => {
                         <img src={masterCard} alt="Master Card" />
                         <img src={visa} alt="Visa" />
                         <img src={americanExpress} alt="American Express" />
+                        <Link to={verifyZoho} target="_blank" className="text-[13px] text-center mb-0">
+                            Verify for Zoho
+                        </Link>
                     </div>
                 </div>
             </div>
