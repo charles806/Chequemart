@@ -11,6 +11,7 @@ import ForgotPassword from "./Pages/ForgotPassword";
 import Verify from "./Pages/Verify";
 import Cart from "./Pages/Cart/index"
 import Checkout from "./Pages/Checkout";
+import Account from "./Pages/Account/index";
 
 // Components
 import Header from "./Component/Header";
@@ -27,10 +28,13 @@ import cartImg from "../src/assets/image/product1.jpg";
 const App = () => {
   const [openCartPanel, setOpenCartPanel] = useState(false);
   const [count, setCount] = useState(1);
+  const [isLogin, setIsLogin] = useState(true);
 
   const values = {
     openCartPanel,
     setOpenCartPanel,
+    isLogin,
+    setIsLogin,
   };
 
   // Correct toggle function for cart
@@ -53,6 +57,7 @@ const App = () => {
             <Route path="/verify" element={<Verify />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/account" element={<Account />} />
           </Routes>
         </main>
         <Footer />

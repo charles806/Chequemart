@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 //Images
 import logo from "../../assets/image/logo1.png";
 //Ui Material
@@ -7,12 +8,17 @@ import { Button } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import Badge from "@mui/material/Badge";
 import { styled } from "@mui/material/styles";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Divider from "@mui/material/Divider";
 //Icons
-import { CiMenuBurger, CiSearch } from "react-icons/ci";
+import { CiLogout, CiMenuBurger, CiSearch } from "react-icons/ci";
+import { CiHeart } from "react-icons/ci";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import { DiGitCompare } from "react-icons/di";
 import { FaRegHeart, FaRegUser } from "react-icons/fa";
 import { IoIosHome } from "react-icons/io";
+import { RiShoppingBag2Fill } from "react-icons/ri";
 //Components
 import Navigation from "./Navigation";
 import { MyContext } from "../../MyContext";
@@ -29,8 +35,22 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 }));
 
 const Header = () => {
+
+  const navigate = useNavigate();
+
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
+  const handleClickMenu = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null);
+  };
+
   const context = useContext(MyContext);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
@@ -74,7 +94,7 @@ const Header = () => {
       <div className="header py-2 lg:py-4 border-b border-black/10">
         <div className="my-container h-22.5 flex items-center justify-between gap-4 lg:gap-0">
           <Button className="w-8.75! min-w-8.75! h-8.75! rounded-full! font-bold text-gray-800! lg:hidden! shrink-0!"
-            onClick={() => context.setIsOpenCatPanel(true)}>
+            onClick={() => context.setOpenCartPanel(true)}>
             <CiMenuBurger className="w-6 h-6" />
           </Button>
 
@@ -103,22 +123,97 @@ const Header = () => {
           </div>
 
           <div className="col3 w-auto lg:w-[30%] flex items-center shrink-0!">
+
+
             <ul className="flex items-center justify-end gap-3 w-full">
-              <li className="list-none whitespace-nowrap hidden lg:block">
-                <Link
-                  to="/login"
-                  className="text-[13px] lg:text-[15px] link font-medium transition"
-                >
-                  Login
-                </Link>{" "}
-                |{" "}
-                <Link
-                  to="/register"
-                  className="text-[13px] lg:text-[15px] link font-medium transition"
-                >
-                  Register
-                </Link>
-              </li>
+              {context.isLogin === false ? (
+                <li className="list-none whitespace-nowrap hidden lg:block">
+                  <Link
+                    to="/login"
+                    className="text-[13px] lg:text-[15px] link font-medium transition"
+                  >
+                    Login
+                  </Link>{" "}
+                  |{" "}
+                  <Link
+                    to="/register"
+                    className="text-[13px] lg:text-[15px] link font-medium transition"
+                  >
+                    Register
+                  </Link>
+                </li>
+              )
+
+                :
+                (
+                  <>
+                    <Button className="myAccountWrap flex items-center gap-3 text-black! h-15!" onClick={handleClickMenu}>
+                      <Button className="w-10! h-10! min-w-10! rounded-full! bg-[#f1f1f1]! text-black!">
+                        <FaRegUser className="text-black text-[20px]" />
+                      </Button>
+
+                      <div className="info flex flex-col cursor-pointer">
+                        <h4 className="leading-3 text-[13px] mb-0 capitalize text-left justify-start">John Doe</h4>
+                        <span className="text-[14px] lowercase">johndoe@example.com</span>
+                      </div>
+                    </Button>
+
+                    <Menu
+                      anchorEl={anchorEl}
+                      id="account-menu"
+                      open={open}
+                      onClose={handleCloseMenu}
+                      slotProps={{
+                        paper: {
+                          elevation: 0,
+                          sx: {
+                            overflow: 'visible',
+                            filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                            mt: 1.5,
+                            '& .MuiAvatar-root': {
+                              width: 32,
+                              height: 32,
+                              ml: -0.5,
+                              mr: 1,
+                            },
+                            '&::before': {
+                              content: '""',
+                              display: 'block',
+                              position: 'absolute',
+                              top: 0,
+                              right: 14,
+                              width: 10,
+                              height: 10,
+                              bgcolor: 'background.paper',
+                              transform: 'translateY(-50%) rotate(45deg)',
+                              zIndex: 0,
+                            },
+                          },
+                        },
+                      }}
+                      transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                      anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                    >
+                      <MenuItem onClick={() => { handleCloseMenu(); navigate('/account'); }} className="flex gap-3">
+                        <FaRegUser className="text-[18px] mr-2" />
+                        My Account
+                      </MenuItem>
+                      <MenuItem onClick={() => { handleCloseMenu(); navigate('/orders'); }} className="flex gap-3">
+                        <RiShoppingBag2Fill className="text-[18px] mr-2" />
+                        Orders
+                      </MenuItem>
+                      <MenuItem onClick={() => { handleCloseMenu(); navigate('/wishlist'); }} className="flex gap-3">
+                        <CiHeart className="text-[18px] mr-2" />
+                        Wishlist
+                      </MenuItem>
+                      <MenuItem onClick={() => { handleCloseMenu(); navigate('/login'); }} className="flex gap-3">
+                        <CiLogout className="text-[18px] mr-2" />
+                        Logout
+                      </MenuItem>
+                    </Menu>
+                  </>
+                )
+              }
 
               <li className="list-none">
                 <IconButton aria-label="cart" onClick={() => context.setOpenCartPanel(true)}>
@@ -144,6 +239,7 @@ const Header = () => {
                 </IconButton>
               </li>
             </ul>
+
           </div>
         </div>
       </div>
