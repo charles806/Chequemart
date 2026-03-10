@@ -19,7 +19,7 @@ import { FaTiktok } from "react-icons/fa";
 import masterCard from "../../assets/image/master_card.png";
 import visa from "../../assets/image/visa.png";
 import americanExpress from "../../assets/image/american_express.png";
-import verifyZoho from "../../../zohoverify/verifyforzoho.html"
+import verifyZoho from "../../../zohoverify/verifyforzoho.html?url"
 
 const Footer = () => {
     return (
