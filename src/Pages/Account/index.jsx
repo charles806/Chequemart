@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { MyContext } from '../../MyContext'
 import { FaCloudUploadAlt } from 'react-icons/fa'
 import { FaRegUser } from 'react-icons/fa'
 import { FaHeart } from 'react-icons/fa'
@@ -11,13 +12,31 @@ import {
 } from "@mui/material";
 
 const Account = () => {
+    const context = useContext(MyContext);
+    const navigate = useNavigate();
+    
     const [nav, setNav] = useState("profile");
     const [formData, setFormData] = useState({
-        firstName: "John",
-        lastName: "Doe",
-        email: "johndoe@example.com",
-        phone: "+1234567890"
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: ""
     });
+
+    useEffect(() => {
+        if (context.isLogin === false) {
+            navigate("/login");
+        } else if (context.user) {
+            // Split name if it comes as a single string from context
+            const nameParts = context.user.name ? context.user.name.split(" ") : ["", ""];
+            setFormData({
+                firstName: nameParts[0] || "",
+                lastName: nameParts.slice(1).join(" ") || "",
+                email: context.user.email || "",
+                phone: context.user.phone || ""
+            });
+        }
+    }, [context.isLogin, context.user, navigate]);
 
     const handleFormChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,10 +45,13 @@ const Account = () => {
     const handleSave = (e) => {
         e.preventDefault();
         console.log("Saving data:", formData);
-        alert("Profile updated successfully!");
+        context.openAlertBox?.("success", "Profile updated successfully!");
     };
 
-    const navigate = useNavigate();
+    const handleLogout = () => {
+        context.logout();
+        navigate("/");
+    };
 
     return (
         <section className='py-6 md:py-10 w-full'>
@@ -83,7 +105,7 @@ const Account = () => {
                             <li className='w-full pt-2 mt-2 border-t border-gray-100'>
                                 <Button
                                     className='w-full! !text-left px-5! flex items-center text-red-600! gap-5 h-10! md:h-11! !justify-start rounded-md! text-sm! capitalize! hover:bg-red-50!'
-                                    onClick={() => alert("Logging out...")}
+                                    onClick={handleLogout}
                                 >
                                     <CiLogout className='text-lg shrink-0' />
                                     Logout
