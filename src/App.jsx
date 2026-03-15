@@ -18,7 +18,7 @@ import Header from "./Component/Header";
 import { Footer } from "./Component/Footer";
 
 // Context
-import { MyContext } from "./MyContext";
+import MyContextProvider, { MyContext } from "./MyContext";
 
 // UI & Icons
 import Drawer from "@mui/material/Drawer";
@@ -28,13 +28,37 @@ import cartImg from "../src/assets/image/product1.jpg";
 const App = () => {
   const [openCartPanel, setOpenCartPanel] = useState(false);
   const [count, setCount] = useState(1);
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(false);
+  const [user, setUser] = useState(null);
+  const [accessToken, setAccessToken] = useState(null);
+
+  const login = (userData, token) => {
+    setUser(userData);
+    setAccessToken(token);
+    setIsLogin(true);
+  };
+
+  const logout = () => {
+    setUser(null);
+    setAccessToken(null);
+    setIsLogin(false);
+  };
+
+  const openAlertBox = (type, message) => {
+    console.log(`[${type.toUpperCase()}] ${message}`);
+    alert(`${type.toUpperCase()}: ${message}`);
+  };
 
   const values = {
     openCartPanel,
     setOpenCartPanel,
     isLogin,
     setIsLogin,
+    user,
+    accessToken,
+    login,
+    logout,
+    openAlertBox,
   };
 
   // Correct toggle function for cart

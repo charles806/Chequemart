@@ -84,7 +84,7 @@ const Footer = () => {
                             <p className="text-[13px] font-normal pb-4">
                                 {"Chequemart - ecommerce salesive"}
                             </p>
-                            <Link to="mailto:c08445333@gmail.com" className='link text-[13px]'>chequemart@gmail.com</Link>
+                            <Link to="mailto:helpusers@chequemart.com" className='link text-[13px]'>helpusers@chequemart.com</Link>
                             <span className="text-[22px] font-semibold block w-full mt-3 mb-5 text-[#ff5252]">
                                 {"(+234) 7032-355-643"}
                             </span>
@@ -208,9 +208,9 @@ const Footer = () => {
                         <img src={masterCard} alt="Master Card" />
                         <img src={visa} alt="Visa" />
                         <img src={americanExpress} alt="American Express" />
-                        <Link to="/zohoverify/verifyforzoho.html" target="_blank" className="text-[13px] text-center mb-0">
+                        {/* <Link to="/zohoverify/verifyforzoho.html" target="_blank" className="text-[13px] text-center mb-0">
                             Verify for Zoho
-                        </Link>
+                        </Link> */}
                     </div>
                 </div>
             </div>

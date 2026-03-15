@@ -26,7 +26,7 @@ const Login = () => {
     e.preventDefault();
 
     if (!formFields.identifier || !formFields.password) {
-      context.openAlertBox("error", "Please fill in all fields.");
+      context.openAlertBox?.("error", "Please fill in all fields.");
       return;
     }
 
@@ -45,15 +45,19 @@ const Login = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        context.openAlertBox("error", data.message || "Login failed.");
+        context.openAlertBox?.("error", data.message || "Login failed.");
         return;
       }
 
-      context.login(data.user, data.accessToken);
-      context.openAlertBox("success", "Login successful!");
+      if (context.login) {
+        context.login(data.user, data.accessToken);
+      }
+      if (context.openAlertBox) {
+        context.openAlertBox("success", "Login successful!");
+      }
       navigate("/");
     } catch (err) {
-      context.openAlertBox("error", "Network error. Please try again.");
+      context.openAlertBox?.("error", "Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }

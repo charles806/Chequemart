@@ -45,32 +45,32 @@ const Register = () => {
 
         // ── Validation ───────────────────────────────────────
         if (!formFields.name || !formFields.password) {
-            context.openAlertBox("error", "Name and password are required.");
+            context.openAlertBox?.("error", "Name and password are required.");
             return;
         }
 
         if (!formFields.email && !formFields.phone) {
-            context.openAlertBox("error", "Please provide an email or phone number.");
+            context.openAlertBox?.("error", "Please provide an email or phone number.");
             return;
         }
 
         if (formFields.password.length < 8) {
-            context.openAlertBox("error", "Password must be at least 8 characters.");
+            context.openAlertBox?.("error", "Password must be at least 8 characters.");
             return;
         }
 
         if (formFields.password !== formFields.confirmPassword) {
-            context.openAlertBox("error", "Passwords do not match.");
+            context.openAlertBox?.("error", "Passwords do not match.");
             return;
         }
 
         if (!agreeToTerms) {
-            context.openAlertBox("error", "Please agree to the Terms & Conditions.");
+            context.openAlertBox?.("error", "Please agree to the Terms & Conditions.");
             return;
         }
 
         if (userType === "seller" && !formFields.storeName) {
-            context.openAlertBox("error", "Store name is required for sellers.");
+            context.openAlertBox?.("error", "Store name is required for sellers.");
             return;
         }
 
@@ -101,11 +101,13 @@ const Register = () => {
             const data = await res.json();
 
             if (!res.ok) {
-                context.openAlertBox("error", data.message || "Registration failed.");
+                context.openAlertBox?.("error", data.message || "Registration failed.");
                 return;
             }
 
-            context.openAlertBox("success", data.message || "Account created successfully!");
+            if (context.openAlertBox) {
+                context.openAlertBox("success", data.message || "Account created successfully!");
+            }
 
             // Redirect based on user type
             if (userType === "seller") {
@@ -116,7 +118,7 @@ const Register = () => {
                 navigate("/login");
             }
         } catch (err) {
-            context.openAlertBox("error", "Network error. Please try again.");
+            context.openAlertBox?.("error", "Network error. Please try again.");
         } finally {
             setIsLoading(false);
         }

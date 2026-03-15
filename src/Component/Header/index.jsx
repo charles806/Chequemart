@@ -10,7 +10,7 @@ import Badge from "@mui/material/Badge";
 import { styled } from "@mui/material/styles";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import Divider from "@mui/material/Divider";
+// import Divider from "@mui/material/Divider";
 //Icons
 import { CiLogout, CiMenuBurger, CiSearch } from "react-icons/ci";
 import { CiHeart } from "react-icons/ci";
@@ -126,7 +126,7 @@ const Header = () => {
 
 
             <ul className="flex items-center justify-end gap-3 w-full">
-              {context.isLogin === false ? (
+              {!context.isLogin ? (
                 <li className="list-none whitespace-nowrap hidden lg:block">
                   <Link
                     to="/login"
@@ -148,14 +148,14 @@ const Header = () => {
                 (
                   <>
                     <Button className="myAccountWrap flex items-center gap-3 text-black! h-15!" onClick={handleClickMenu}>
-                      <Button className="w-10! h-10! min-w-10! rounded-full! bg-[#f1f1f1]! text-black!">
+                      <span className="w-10! h-10! min-w-10! rounded-full! bg-[#f1f1f1]! text-black! flex items-center justify-center">
                         <FaRegUser className="text-black text-[20px]" />
-                      </Button>
+                      </span>
 
-                      <div className="info flex flex-col cursor-pointer">
-                        <h4 className="leading-3 text-[13px] mb-0 capitalize text-left justify-start">John Doe</h4>
-                        <span className="text-[14px] lowercase">johndoe@example.com</span>
-                      </div>
+                        <div className="info flex flex-col cursor-pointer">
+                          <h4 className="leading-3 text-[13px] mb-0 capitalize text-left justify-start">{context.user?.name || "User"}</h4>
+                          <span className="text-[14px] lowercase">{context.user?.email || "user@example.com"}</span>
+                        </div>
                     </Button>
 
                     <Menu
