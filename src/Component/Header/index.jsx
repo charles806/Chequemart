@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 //Images
@@ -38,6 +38,7 @@ const Header = () => {
 
   const navigate = useNavigate();
 
+  const context = useContext(MyContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const handleClickMenu = (event) => {
@@ -48,7 +49,49 @@ const Header = () => {
     setAnchorEl(null);
   };
 
-  const context = useContext(MyContext);
+  // Persist login state from localStorage on mount
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState({ name: '', email: '' });
+
+  useEffect(() => {
+    const storedIsLogin = localStorage.getItem("isLogin") === "true";
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("accessToken");
+    
+    setIsLoggedIn(storedIsLogin);
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        setUserData({ name: user.name || 'User', email: user.email || '' });
+      } catch (e) {
+        setUserData({ name: 'User', email: '' });
+      }
+    }
+    
+    // Update context if needed
+    if (storedIsLogin && storedToken && context.login && context.user === null) {
+      if (storedUser) {
+        context.login(JSON.parse(storedUser), storedToken);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleLogout = () => {
+    handleCloseMenu();
+    // Clear localStorage
+    localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("isLogin");
+    setIsLoggedIn(false);
+    setUserData({ name: '', email: '' });
+    // Call context logout
+    if (context.logout) {
+      context.logout();
+    }
+    navigate("/");
+  };
+
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
 
@@ -92,7 +135,7 @@ const Header = () => {
       </div>
 
       <div className="header py-2 lg:py-4 border-b border-black/10">
-        <div className="my-container h-22.5 flex items-center justify-between gap-4 lg:gap-0">
+        <div className="my-container h-16 lg:h-22.5 flex items-center justify-between gap-4 lg:gap-0">
           <Button className="w-8.75! min-w-8.75! h-8.75! rounded-full! font-bold text-gray-800! lg:hidden! shrink-0!"
             onClick={() => context.setOpenCartPanel(true)}>
             <CiMenuBurger className="w-6 h-6" />
@@ -103,7 +146,7 @@ const Header = () => {
               <img
                 src={logo}
                 alt="ChequeMart Logo"
-                className="max-w-55 lg:max-w-50 h-auto"
+                className="max-w-35 lg:max-w-50 h-auto"
               />
             </Link>
           </div>
@@ -126,7 +169,7 @@ const Header = () => {
 
 
             <ul className="flex items-center justify-end gap-3 w-full">
-              {!context.isLogin ? (
+              {!isLoggedIn ? (
                 <li className="list-none whitespace-nowrap hidden lg:block">
                   <Link
                     to="/login"
@@ -147,14 +190,14 @@ const Header = () => {
                 :
                 (
                   <>
-                    <Button className="myAccountWrap flex items-center gap-3 text-black! h-15!" onClick={handleClickMenu}>
+                    <Button className="myAccountWrap hidden! lg:flex! items-center gap-3 text-black! h-15!" onClick={handleClickMenu}>
                       <span className="w-10! h-10! min-w-10! rounded-full! bg-[#f1f1f1]! text-black! flex items-center justify-center">
                         <FaRegUser className="text-black text-[20px]" />
                       </span>
 
                         <div className="info flex flex-col cursor-pointer">
-                          <h4 className="leading-3 text-[13px] mb-0 capitalize text-left justify-start">{context.user?.name || "User"}</h4>
-                          <span className="text-[14px] lowercase">{context.user?.email || "user@example.com"}</span>
+                          <h4 className="leading-3 text-[13px] mb-0 capitalize text-left justify-start">{userData.name || context.user?.name || "User"}</h4>
+                          <span className="text-[14px] lowercase">{userData.email || context.user?.email || "user@example.com"}</span>
                         </div>
                     </Button>
 
@@ -202,11 +245,11 @@ const Header = () => {
                         <RiShoppingBag2Fill className="text-[18px] mr-2" />
                         Orders
                       </MenuItem>
-                      <MenuItem onClick={() => { handleCloseMenu(); navigate('/wishlist'); }} className="flex gap-3">
+                      <MenuItem onClick={() => { handleCloseMenu(); navigate('/my-list'); }} className="flex gap-3">
                         <CiHeart className="text-[18px] mr-2" />
-                        Wishlist
+                        My List
                       </MenuItem>
-                      <MenuItem onClick={() => { handleCloseMenu(); navigate('/login'); }} className="flex gap-3">
+                      <MenuItem onClick={handleLogout} className="flex gap-3">
                         <CiLogout className="text-[18px] mr-2" />
                         Logout
                       </MenuItem>

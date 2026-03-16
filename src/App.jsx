@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 
 // Pages
 import Home from "./Pages/Home";
@@ -8,10 +9,13 @@ import ProductDetail from "./Pages/ProductDetail";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
 import ForgotPassword from "./Pages/ForgotPassword";
+import ResetPassword from "./Pages/ResetPassword";
 import Verify from "./Pages/Verify";
 import Cart from "./Pages/Cart/index"
 import Checkout from "./Pages/Checkout";
 import Account from "./Pages/Account/index";
+import MyList from  "./Pages/MyList"
+import Orders from  "./Pages/Orders"
 
 // Components
 import Header from "./Component/Header";
@@ -25,28 +29,55 @@ import Drawer from "@mui/material/Drawer";
 import { IoCloseSharp } from "react-icons/io5";
 import cartImg from "../src/assets/image/product1.jpg";
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
 const App = () => {
   const [openCartPanel, setOpenCartPanel] = useState(false);
   const [count, setCount] = useState(1);
-  const [isLogin, setIsLogin] = useState(false);
-  const [user, setUser] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
+  const [isLogin, setIsLogin] = useState(() => {
+    return localStorage.getItem("isLogin") === "true";
+  });
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [accessToken, setAccessToken] = useState(() => {
+    return localStorage.getItem("accessToken");
+  });
 
   const login = (userData, token) => {
     setUser(userData);
     setAccessToken(token);
     setIsLogin(true);
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("accessToken", token);
+    localStorage.setItem("isLogin", "true");
   };
 
   const logout = () => {
     setUser(null);
     setAccessToken(null);
     setIsLogin(false);
+    localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("isLogin");
   };
 
   const openAlertBox = (type, message) => {
     console.log(`[${type.toUpperCase()}] ${message}`);
-    alert(`${type.toUpperCase()}: ${message}`);
+    if (type === "success") {
+      toast.success(message);
+    } else if (type === "error") {
+      toast.error(message);
+    } else {
+      toast(message);
+    }
   };
 
   const values = {
@@ -68,6 +99,7 @@ const App = () => {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <MyContext.Provider value={values}>
         <Header />
         <main className="pt-22.5 pb-17.5 lg:pt-0 lg:pb-0">
@@ -78,13 +110,17 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify" element={<Verify />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/account" element={<Account />} />
+            <Route path="my-list" element={<MyList />} />
+            <Route path="orders" element={<Orders />} />
           </Routes>
         </main>
         <Footer />
+        <Toaster position="top-center" />
 
         {/* Cart Drawer */}
         <Drawer

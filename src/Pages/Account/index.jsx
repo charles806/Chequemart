@@ -1,21 +1,33 @@
-import React, { useState, useContext, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useContext, useEffect, useRef } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import { MyContext } from '../../MyContext'
-import { FaCloudUploadAlt } from 'react-icons/fa'
-import { FaRegUser } from 'react-icons/fa'
-import { FaHeart } from 'react-icons/fa'
-import { MdShoppingBag } from 'react-icons/md'
+import { FaCloudUploadAlt, FaRegUser, FaHeart, FaShoppingBag, FaTrash, FaCheck, FaTimes, FaLock } from 'react-icons/fa'
+// import { FaMdNotifications } from 'react-icons/fa'
 import { CiLogout } from 'react-icons/ci'
 import {
     Button,
     TextField,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Alert,
+    CircularProgress,
+    IconButton,
+    InputAdornment,
 } from "@mui/material";
+import { FaEye, FaEyeSlash } from 'react-icons/fa'
 
 const Account = () => {
     const context = useContext(MyContext);
     const navigate = useNavigate();
+    const fileInputRef = useRef(null);
     
     const [nav, setNav] = useState("profile");
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState({ type: '', text: '' });
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
+    
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -23,11 +35,24 @@ const Account = () => {
         phone: ""
     });
 
+    // Password change state
+    const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [showPasswords, setShowPasswords] = useState({
+        current: false,
+        new: false,
+        confirm: false
+    });
+    const [passwordLoading, setPasswordLoading] = useState(false);
+
     useEffect(() => {
         if (context.isLogin === false) {
             navigate("/login");
         } else if (context.user) {
-            // Split name if it comes as a single string from context
             const nameParts = context.user.name ? context.user.name.split(" ") : ["", ""];
             setFormData({
                 firstName: nameParts[0] || "",
@@ -42,15 +67,204 @@ const Account = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSave = (e) => {
+    const handleSave = async (e) => {
         e.preventDefault();
-        console.log("Saving data:", formData);
-        context.openAlertBox?.("success", "Profile updated successfully!");
+        setLoading(true);
+        setMessage({ type: '', text: '' });
+
+        try {
+            const token = context.accessToken || localStorage.getItem('accessToken');
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    name: `${formData.firstName} ${formData.lastName}`.trim(),
+                    phone: formData.phone
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setMessage({ type: 'success', text: 'Profile updated successfully!' });
+                // Update context with new user data
+                if (context.user) {
+                    context.user.name = data.user.name;
+                    context.user.phone = data.user.phone;
+                }
+            } else {
+                setMessage({ type: 'error', text: data.message || 'Failed to update profile' });
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Network error. Please try again.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            setMessage({ type: 'error', text: 'Invalid file type. Use JPEG, PNG, GIF, or WebP.' });
+            return;
+        }
+
+        // Validate file size (2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            setMessage({ type: 'error', text: 'File too large. Maximum 2MB allowed.' });
+            return;
+        }
+
+        setUploadingAvatar(true);
+        setMessage({ type: '', text: '' });
+
+        try {
+            const token = context.accessToken || localStorage.getItem('accessToken');
+            const formDataUpload = new FormData();
+            formDataUpload.append('avatar', file);
+
+            console.log("Uploading avatar, token:", token ? "present" : "missing");
+
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/avatar`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                credentials: 'include',
+                body: formDataUpload
+            });
+
+            console.log("Upload response status:", response.status);
+
+            const data = await response.json();
+            console.log("Upload response data:", data);
+
+            if (data.success) {
+                setMessage({ type: 'success', text: 'Avatar updated successfully!' });
+                if (context.user) {
+                    context.user.avatar = data.user.avatar;
+                }
+            } else {
+                setMessage({ type: 'error', text: data.message || 'Failed to upload avatar' });
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Network error. Please try again.' });
+        } finally {
+            setUploadingAvatar(false);
+            // Reset file input
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
+    const handleDeleteAvatar = async () => {
+        if (!confirm('Are you sure you want to delete your profile picture?')) return;
+
+        setLoading(true);
+        setMessage({ type: '', text: '' });
+
+        try {
+            const token = context.accessToken || localStorage.getItem('accessToken');
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/avatar`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setMessage({ type: 'success', text: 'Avatar deleted successfully!' });
+                if (context.user) {
+                    context.user.avatar = null;
+                }
+            } else {
+                setMessage({ type: 'error', text: data.message || 'Failed to delete avatar' });
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Network error. Please try again.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handlePasswordChange = async () => {
+        // Validation
+        if (passwordData.newPassword.length < 8) {
+            setMessage({ type: 'error', text: 'Password must be at least 8 characters' });
+            return;
+        }
+
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            setMessage({ type: 'error', text: 'Passwords do not match' });
+            return;
+        }
+
+        setPasswordLoading(true);
+        setMessage({ type: '', text: '' });
+
+        try {
+            const token = context.accessToken || localStorage.getItem('accessToken');
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/password`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    currentPassword: passwordData.currentPassword,
+                    newPassword: passwordData.newPassword
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setMessage({ type: 'success', text: 'Password changed successfully! Please log in again.' });
+                setPasswordDialogOpen(false);
+                setPasswordData({
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmPassword: ''
+                });
+                // Logout user after password change
+                setTimeout(() => {
+                    context.logout();
+                    navigate('/login');
+                }, 2000);
+            } else {
+                setMessage({ type: 'error', text: data.message || 'Failed to change password' });
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Network error. Please try again.' });
+        } finally {
+            setPasswordLoading(false);
+        }
     };
 
     const handleLogout = () => {
         context.logout();
         navigate("/");
+    };
+
+    const getAvatarUrl = () => {
+        if (context.user?.avatar) {
+            return context.user.avatar;
+        }
+        return 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png';
     };
 
     return (
@@ -60,18 +274,50 @@ const Account = () => {
                     <div className="card bg-white shadow-md rounded-md p-4 md:p-5">
                         <div className="w-full p-3 flex items-center justify-center flex-col">
                             <div className="w-24 h-24 md:w-[110px] md:h-[110px] rounded-full overflow-hidden mb-4 relative group cursor-pointer shadow-sm border border-gray-100">
-                                <img
-                                    src='https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png'
-                                    alt="avatar"
-                                    className='w-full h-full rounded-full object-cover transition-transform duration-300 group-hover:scale-110'
+                                {uploadingAvatar ? (
+                                    <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                        <CircularProgress size={30} />
+                                    </div>
+                                ) : (
+                                    <>
+                                        <img
+                                            src={getAvatarUrl()}
+                                            alt="avatar"
+                                            className='w-full h-full rounded-full object-cover transition-transform duration-300 group-hover:scale-110'
+                                        />
+                                        <div 
+                                            className="overlay w-full h-full absolute top-0 left-0 z-10 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+                                            onClick={handleAvatarClick}
+                                        >
+                                            <FaCloudUploadAlt className='text-white text-2xl' />
+                                        </div>
+                                    </>
+                                )}
+                                <input 
+                                    type="file" 
+                                    ref={fileInputRef}
+                                    accept='image/jpeg,image/png,image/gif,image/webp'
+                                    className='absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer' 
+                                    onChange={handleAvatarChange}
                                 />
-                                <div className="overlay w-full h-full absolute top-0 left-0 z-10 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <FaCloudUploadAlt className='text-white text-2xl' />
-                                    <input type="file" accept='image/*' className='absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer' />
-                                </div>
                             </div>
-                            <h3 className='text-base md:text-lg font-semibold text-gray-800'>{formData.firstName} {formData.lastName}</h3>
+                            <h3 className='text-base md:text-lg font-semibold text-gray-800'>
+                                {formData.firstName} {formData.lastName}
+                            </h3>
                             <p className='text-xs md:text-sm text-gray-500'>{formData.email}</p>
+                            
+                            {/* Delete Avatar Button */}
+                            {context.user?.avatar && (
+                                <Button
+                                    size="small"
+                                    startIcon={<FaTrash />}
+                                    onClick={handleDeleteAvatar}
+                                    className="mt-2! text-red-500! text-xs!"
+                                    disabled={loading}
+                                >
+                                    Remove Photo
+                                </Button>
+                            )}
                         </div>
 
                         <ul className="list-none mt-2 flex flex-col gap-1">
@@ -96,9 +342,9 @@ const Account = () => {
                             <li className='w-full'>
                                 <Button
                                     className={`w-full! !text-left px-5! flex items-center gap-5 h-10! md:h-11! !justify-start rounded-md! text-sm! capitalize! transition-all! ${nav === 'orders' ? 'bg-primary! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
-                                    onClick={() => setNav('orders')}
+                                    onClick={() => navigate('/orders')}
                                 >
-                                    <MdShoppingBag className='text-lg shrink-0' />
+                                    <FaShoppingBag className='text-lg shrink-0' />
                                     Orders
                                 </Button>
                             </li>
@@ -116,10 +362,29 @@ const Account = () => {
                 </div>
 
                 <div className="col2 w-full md:w-[60%] lg:w-[75%] bg-white shadow-md rounded-md p-4 md:p-5">
+                    {message.text && (
+                        <Alert 
+                            severity={message.type} 
+                            className="mb-4"
+                            onClose={() => setMessage({ type: '', text: '' })}
+                        >
+                            {message.text}
+                        </Alert>
+                    )}
 
                     {nav === 'profile' && (
                         <div className="animate-in fade-in duration-500">
-                            <h2 className='text-xl md:text-2xl font-bold text-gray-800 mb-6'>Personal Information</h2>
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className='text-xl md:text-2xl font-bold text-gray-800'>Personal Information</h2>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<FaLock />}
+                                    onClick={() => setPasswordDialogOpen(true)}
+                                    className="border-gray-300! text-gray-600! hover:border-[#ff5252] hover:text-[#ff5252]! text-sm!"
+                                >
+                                    Change Password
+                                </Button>
+                            </div>
 
                             <form className="form w-full" onSubmit={handleSave}>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -158,6 +423,8 @@ const Account = () => {
                                             variant="outlined"
                                             fullWidth
                                             size="small"
+                                            disabled
+                                            helperText="Email cannot be changed"
                                             sx={{ "& .MuiInputBase-root": { height: "45px" } }}
                                         />
                                     </div>
@@ -170,6 +437,7 @@ const Account = () => {
                                             variant="outlined"
                                             fullWidth
                                             size="small"
+                                            placeholder="Enter phone number"
                                             sx={{ "& .MuiInputBase-root": { height: "45px" } }}
                                         />
                                     </div>
@@ -178,7 +446,9 @@ const Account = () => {
                                     <Button
                                         type="submit"
                                         variant="contained"
+                                        disabled={loading}
                                         className="bg-[#ff5252]! hover:bg-[#ff5252]! text-white! px-8! py-2.5! rounded-md! font-semibold! transition-all!"
+                                        startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                                     >
                                         Save Changes
                                     </Button>
@@ -201,23 +471,100 @@ const Account = () => {
                             </Button>
                         </div>
                     )}
-
-                    {nav === 'orders' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 text-center py-20">
-                            <div className="flex justify-center mb-4">
-                                <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center">
-                                    <MdShoppingBag className="text-4xl text-gray-300" />
-                                </div>
-                            </div>
-                            <h2 className='text-xl md:text-2xl font-bold text-gray-800 mb-2'>No Orders Yet</h2>
-                            <p className="text-gray-500 max-w-xs mx-auto">It looks like you haven't placed any orders yet. When you do, they'll appear here.</p>
-                            <Button variant="contained" className="mt-8 bg-[#ff5252]! hover:bg-[#ff5252]! text-white! rounded-md! px-8!" onClick={() => navigate('/products')}>
-                                Start Shopping
-                            </Button>
-                        </div>
-                    )}
                 </div>
             </div>
+
+            {/* Password Change Dialog */}
+            <Dialog 
+                open={passwordDialogOpen} 
+                onClose={() => setPasswordDialogOpen(false)}
+                maxWidth="xs"
+                fullWidth
+            >
+                <DialogTitle className="flex items-center gap-2">
+                    <FaLock className="text-[#ff5252]" />
+                    Change Password
+                </DialogTitle>
+                <DialogContent>
+                    <div className="pt-2 space-y-4">
+                        <TextField
+                            label="Current Password"
+                            type={showPasswords.current ? 'text' : 'password'}
+                            value={passwordData.currentPassword}
+                            onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                            fullWidth
+                            size="small"
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
+                                            edge="end"
+                                        >
+                                            {showPasswords.current ? <FaEyeSlash /> : <FaEye />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                        <TextField
+                            label="New Password"
+                            type={showPasswords.new ? 'text' : 'password'}
+                            value={passwordData.newPassword}
+                            onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                            fullWidth
+                            size="small"
+                            helperText="At least 8 characters"
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            onClick={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}
+                                            edge="end"
+                                        >
+                                            {showPasswords.new ? <FaEyeSlash /> : <FaEye />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                        <TextField
+                            label="Confirm New Password"
+                            type={showPasswords.confirm ? 'text' : 'password'}
+                            value={passwordData.confirmPassword}
+                            onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                            fullWidth
+                            size="small"
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            onClick={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}
+                                            edge="end"
+                                        >
+                                            {showPasswords.confirm ? <FaEyeSlash /> : <FaEye />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                        />
+                    </div>
+                </DialogContent>
+                <DialogActions className="p-4">
+                    <Button onClick={() => setPasswordDialogOpen(false)} className="text-gray-600!">
+                        Cancel
+                    </Button>
+                    <Button 
+                        onClick={handlePasswordChange}
+                        variant="contained"
+                        disabled={passwordLoading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+                        className="bg-[#ff5252]! hover:bg-[#ff5252]!"
+                        startIcon={passwordLoading ? <CircularProgress size={20} color="inherit" /> : null}
+                    >
+                        Update Password
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </section>
     )
 }

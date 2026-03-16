@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 //Image
 import verifyImg from "../../assets/image/verify3.png";
 //Component
@@ -15,7 +16,7 @@ const Verify = () => {
 
     const verifyOtp = (e) => {
         e.preventDefault();
-        alert(`Verifying OTP: ${otp}`);
+        toast(`Verifying OTP: ${otp}`);
     }
     return (
         <section className="py-5! lg:py-10!">

@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useMemo, useCallback } from "react";
 
 export const MyContext = createContext();
 
@@ -6,28 +6,27 @@ const MyContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
 
-  const login = (userData, token) => {
+  const login = useCallback((userData, token) => {
     setUser(userData);
     setAccessToken(token);
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     setAccessToken(null);
-  };
+  }, []);
 
-  const openAlertBox = (type, message) => {
-    // wire this up to your alert/snackbar UI
+  const openAlertBox = useCallback((type, message) => {
     console.log(`[${type.toUpperCase()}] ${message}`);
-  };
+  }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     accessToken,
     login,
     logout,
     openAlertBox,
-  };
+  }), [user, accessToken, login, logout, openAlertBox]);
 
   return <MyContext.Provider value={value}>{children}</MyContext.Provider>;
 };
