@@ -73,7 +73,7 @@ const RestockModal = ({ product, onSave, onClose }) => {
             </div>
             <div>
               <h3 className="font-black text-gray-900 text-sm leading-none">Update Stock</h3>
-              <p className="text-[10px] text-gray-400 mt-0.5 truncate max-w-[160px]">{product.name}</p>
+              <p className="text-[10px] text-gray-400 mt-0.5 truncate max-w-40">{product.name}</p>
             </div>
           </div>
           <button
@@ -141,7 +141,7 @@ const RestockModal = ({ product, onSave, onClose }) => {
             ${saved ? "bg-green-500 shadow-green-200" : "bg-primary hover:bg-primary-hover shadow-red-200"}`}
         >
           {saved
-            ? <><Icon d={ICONS.check} size={15} className="stroke-[3]" /> Saved!</>
+            ? <><Icon d={ICONS.check} size={15} className="stroke-3" /> Saved!</>
             : "Update Stock"}
         </button>
       </div>
@@ -214,7 +214,7 @@ export default function InventoryPage() {
       {/* Low stock alert */}
       {(lowCount + outCount) > 0 && (
         <div className="flex gap-2.5 bg-orange-50 border border-orange-200 rounded-2xl p-3.5">
-          <Icon d={ICONS.warning} size={16} className="text-orange-500 flex-shrink-0 mt-0.5" />
+          <Icon d={ICONS.warning} size={16} className="text-orange-500 shrink-0 mt-0.5" />
           <p className="text-xs text-gray-600 leading-relaxed">
             <strong>{lowCount + outCount} product{(lowCount + outCount) > 1 ? "s" : ""}</strong> need restocking.
             Update stock to keep listings active and visible to buyers.
@@ -240,7 +240,7 @@ export default function InventoryPage() {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0
+            className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0
               transition cursor-pointer
               ${filter === f
                 ? "bg-primary text-white shadow-md shadow-red-200"
@@ -262,7 +262,7 @@ export default function InventoryPage() {
           <div className="divide-y divide-gray-50">
             {filtered.map((p) => {
               const barPct   = Math.min((p.stock / 20) * 100, 100);
-              const barColor = p.stock === 0 ? "#ff5252" : p.stock <= p.lowStockThreshold ? "#f97316" : "#22c55e";
+              const barColor = p.stock === 0 ? "var(--primary-color)" : p.stock <= p.lowStockThreshold ? "var(--accent-color)" : "#22c55e";
 
               return (
                 <div key={p.id} className="px-5 py-4 flex items-center gap-3 hover:bg-gray-50/50 transition">
@@ -280,7 +280,7 @@ export default function InventoryPage() {
                           style={{ width: `${barPct}%`, backgroundColor: barColor }}
                         />
                       </div>
-                      <span className="text-xs font-bold text-gray-600 w-16 text-right flex-shrink-0">
+                      <span className="text-xs font-bold text-gray-600 w-16 text-right shrink-0">
                         {p.stock} units
                       </span>
                     </div>
@@ -288,7 +288,7 @@ export default function InventoryPage() {
 
                   <button
                     onClick={() => setRestocking(p)}
-                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl
+                    className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl
                       bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition cursor-pointer"
                   >
                     <Icon d={ICONS.refresh} size={12} />

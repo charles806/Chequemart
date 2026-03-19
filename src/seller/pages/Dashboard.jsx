@@ -65,8 +65,8 @@ const MiniBarChart = ({ data }) => {
               style={{
                 height:     `${h}%`,
                 background: isH
-                  ? "linear-gradient(to top, #ff5252, #ff8a80)"
-                  : "linear-gradient(to top, #ff525255, #ff5252aa)",
+                  ? "linear-gradient(to top, var(--primary-color), var(--accent-color))"
+                  : "linear-gradient(to top, color-mix(in srgb, var(--primary-color) 33%, transparent), color-mix(in srgb, var(--primary-color) 66%, transparent))",
               }}
             />
             <span className="text-[9px] text-gray-400 font-semibold">{d.label}</span>
@@ -90,7 +90,7 @@ const StatCard = ({ label, value, change, icon }) => {
         </div>
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5
           ${positive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
-          <Icon d={positive ? ICONS.trendUp : ICONS.trendDown} size={9} className="stroke-[3]" />
+          <Icon d={positive ? ICONS.trendUp : ICONS.trendDown} size={9} className="stroke-3" />
           {Math.abs(change)}%
         </span>
       </div>
@@ -114,18 +114,18 @@ export default function DashboardPage() {
     <div className="space-y-5">
 
       {/* Welcome banner */}
-      <div className="bg-gradient-to-br from-dark to-dark-2 rounded-3xl p-5 shadow-xl shadow-black/20">
-        <p className="text-white/60 text-sm mb-0.5">Welcome back 👋</p>
-        <h2 className="text-white text-2xl font-black">{seller.storeName}</h2>
-        <p className="text-white/40 text-xs mt-1">Here's what's happening in your store today.</p>
+      <div className="bg-linear-to-br from-dark to-dark-2 rounded-3xl p-5 shadow-xl shadow-black/20">
+        <p className="text-black/60 text-sm mb-0.5">Welcome back 👋</p>
+        <h2 className="text-black text-2xl font-black">{seller.storeName}</h2>
+        <p className="text-black/40 text-xs mt-1">Here's what's happening in your store today.</p>
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="bg-white/10 rounded-2xl p-3">
-            <p className="text-white text-lg font-black">{fmt(wallet.availableBalance)}</p>
-            <p className="text-white/50 text-[10px] font-semibold mt-0.5">Available Balance</p>
+          <div className="bg-black/10 rounded-2xl p-3">
+            <p className="text-black text-lg font-black">{fmt(wallet.availableBalance)}</p>
+            <p className="text-black/50 text-[10px] font-semibold mt-0.5">Available Balance</p>
           </div>
-          <div className="bg-white/10 rounded-2xl p-3">
+          <div className="bg-black/10 rounded-2xl p-3">
             <p className="text-yellow-300 text-lg font-black">{fmt(wallet.escrowBalance)}</p>
-            <p className="text-white/50 text-[10px] font-semibold mt-0.5">In Escrow</p>
+            <p className="text-black/50 text-[10px] font-semibold mt-0.5">In Escrow</p>
           </div>
         </div>
       </div>

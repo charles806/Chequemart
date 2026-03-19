@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, useLocation, Outlet } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 
 // Pages
@@ -16,6 +16,10 @@ import Checkout from "./Pages/Checkout";
 import Account from "./Pages/Account/index";
 import MyList from  "./Pages/MyList"
 import Orders from  "./Pages/Orders"
+
+// Seller Dashboard
+import SellerApp from "./seller/SellerApp";
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Components
 import Header from "./Component/Header";
@@ -35,6 +39,18 @@ const ScrollToTop = () => {
     window.scrollTo(0, 0);
   }, [pathname]);
   return null;
+};
+
+const MarketplaceLayout = () => {
+  return (
+    <>
+      <Header />
+      <main className="pt-22.5 pb-17.5 lg:pt-0 lg:pb-0">
+        <Outlet />
+      </main>
+      <Footer />
+    </>
+  );
 };
 
 const App = () => {
@@ -101,9 +117,12 @@ const App = () => {
     <BrowserRouter>
       <ScrollToTop />
       <MyContext.Provider value={values}>
-        <Header />
-        <main className="pt-22.5 pb-17.5 lg:pt-0 lg:pb-0">
-          <Routes>
+        <Routes>
+          {/* Seller app — isolated, no marketplace layout */}
+          <Route path="/seller/*" element={<ProtectedRoute><SellerApp /></ProtectedRoute>} />
+
+          {/* Marketplace routes — wrapped in marketplace layout */}
+          <Route element={<MarketplaceLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductDetail />} />
@@ -115,11 +134,10 @@ const App = () => {
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/account" element={<Account />} />
-            <Route path="my-list" element={<MyList />} />
-            <Route path="orders" element={<Orders />} />
-          </Routes>
-        </main>
-        <Footer />
+            <Route path="/my-list" element={<MyList />} />
+            <Route path="/orders" element={<Orders />} />
+          </Route>
+        </Routes>
         <Toaster position="top-center" />
 
         {/* Cart Drawer */}
@@ -137,7 +155,7 @@ const App = () => {
               Shopping Cart (3)
             </h4>
             <IoCloseSharp
-              className="text-2xl cursor-pointer text-gray-500 hover:text-[#ff5252] transition"
+              className="text-2xl cursor-pointer text-gray-500 hover:text-primary transition"
               onClick={() => toggleCartPanel(false)}
             />
           </div>
@@ -162,13 +180,13 @@ const App = () => {
                     Barca Home Kit 2024/2025
                   </h4>
 
-                  <p className="text-base font-semibold text-[#ff5252]">
+                  <p className="text-base font-semibold text-primary">
                     ₦10,000
                   </p>
 
                   <div className="flex items-center gap-2 mt-1">
                     <button
-                      className="w-6 h-6 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-[#ff5252] hover:text-[#ff6b26] hover:bg-[#fff5f2] transition"
+                      className="w-6 h-6 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-primary hover:text-accent hover:bg-[#fff5f2] transition"
                       onClick={() => setCount((prev) => Math.max(0, prev - 1))}
                     >
                       -
@@ -179,7 +197,7 @@ const App = () => {
                     </span>
 
                     <button
-                      className="w-6 h-6 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-[#ff6b26] hover:text-[#ff6b26] hover:bg-[#fff5f2] transition"
+                      className="w-6 h-6 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-accent hover:text-accent hover:bg-[#fff5f2] transition"
                       onClick={() => setCount((prev) => prev + 1)}
                     >
                       +
@@ -198,18 +216,18 @@ const App = () => {
               <span className="text-base text-gray-500 font-medium">
                 Subtotal:
               </span>
-              <span className="text-xl text-[#ff5252] font-bold">₦9000</span>
+              <span className="text-xl text-primary font-bold">₦9000</span>
             </div>
 
             <div className="flex flex-col gap-3">
               <Link to="/checkout">
-                <button className="w-full py-3 rounded-md font-semibold text-white bg-[#ff5252] hover:bg-[#e55a1a] hover:-translate-y-px hover:shadow-lg hover:shadow-orange-400/30 transition cursor-pointer">
+                <button className="w-full py-3 rounded-md font-semibold text-white bg-[#ff5252] hover:bg-accent hover:-translate-y-px hover:shadow-lg hover:shadow-orange-400/30 transition cursor-pointer">
                   Checkout
                 </button>
               </Link>
 
               <Link to="/cart">
-                <button className="w-full py-3 rounded-md font-semibold text-[#ff5252] border-2 border-[#ff5252] hover:bg-[#fff5f2] transition cursor-pointer">
+                <button className="w-full py-3 rounded-md font-semibold text-primary border-2 border-[#ff5252] hover:bg-[#fff5f2] transition cursor-pointer">
                   View Cart
                 </button>
               </Link>

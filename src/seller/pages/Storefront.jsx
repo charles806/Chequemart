@@ -94,7 +94,7 @@ const ImageUploadBtn = ({ label, preview, aspect, onUpload }) => {
       <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">{label}</p>
       <div
         onClick={() => ref.current.click()}
-        className={`relative overflow-hidden rounded-2xl border-2 border-dashed border-primary/30
+        className={`relative overflow-hidden rounded-md border-2 border-dashed border-primary/30
           bg-red-50/40 hover:border-primary/60 hover:bg-red-50 transition cursor-pointer
           flex items-center justify-center group
           ${aspect === "banner" ? "h-28 w-full" : "h-24 w-24"}`}
@@ -124,7 +124,7 @@ const ImageUploadBtn = ({ label, preview, aspect, onUpload }) => {
 // LIVE STORE PREVIEW (buyer-facing card preview)
 // ─────────────────────────────────────────────────────────────
 const StorePreview = ({ form, stats }) => (
-  <div className="bg-gray-100 rounded-2xl overflow-hidden border border-gray-200">
+  <div className="bg-gray-100 rounded-md overflow-hidden border border-gray-200">
     {/* Banner */}
     <div className="h-20 bg-gradient-to-r from-dark to-primary/60 relative overflow-hidden">
       {form.bannerPreview && (
@@ -137,7 +137,7 @@ const StorePreview = ({ form, stats }) => (
     {/* Logo + info */}
     <div className="px-4 pb-4">
       <div className="flex items-end gap-3 -mt-6 mb-3">
-        <div className="w-14 h-14 rounded-2xl border-2 border-white bg-gradient-to-br from-primary to-red-300 flex items-center justify-center text-white font-black text-lg shadow-md overflow-hidden flex-shrink-0">
+        <div className="w-14 h-14 rounded-md border-2 border-white bg-gradient-to-br from-primary to-red-300 flex items-center justify-center text-white font-black text-lg shadow-md overflow-hidden flex-shrink-0">
           {form.logoPreview
             ? <img src={form.logoPreview} alt="" className="w-full h-full object-cover" />
             : form.storeName.charAt(0).toUpperCase()}
@@ -223,10 +223,10 @@ export default function StorefrontPage() {
           disabled={saving}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold
             transition cursor-pointer shadow-md disabled:opacity-60
-            ${saved ? "bg-green-500 text-white shadow-green-200" : "bg-primary text-white hover:bg-primary-hover shadow-red-200"}`}
+            ${saved ? "bg-green-500 text-white shadow-green-200" : "bg-[#ff5252] text-white hover:bg-[#ff5252]-hover shadow-red-200"}`}
         >
           {saved
-            ? <><Icon d={ICONS.check} size={14} className="stroke-[3]" /> Saved</>
+            ? <><Icon d={ICONS.check} size={14} className="stroke-3" /> Saved</>
             : saving ? "Saving…" : "Save Changes"}
         </button>
       </div>
@@ -238,7 +238,7 @@ export default function StorefrontPage() {
           [ICONS.orders,  MOCK_PROFILE.totalOrders, "Orders",   "text-primary"   ],
           [ICONS.package, MOCK_PROFILE.totalProducts,"Products","text-blue-500"  ],
         ].map(([icon, val, lbl, c]) => (
-          <div key={lbl} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3.5 text-center">
+          <div key={lbl} className="bg-white rounded-md border border-gray-100 shadow-sm p-3.5 text-center">
             <Icon d={icon} size={16} className={`${c} mx-auto mb-1`} />
             <p className={`text-lg font-black ${c}`}>{val}</p>
             <p className="text-[10px] text-gray-400 font-semibold">{lbl}</p>
@@ -248,7 +248,7 @@ export default function StorefrontPage() {
 
       {/* Verified badge */}
       {stats.isVerified && (
-        <div className="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-2xl p-3.5">
+        <div className="flex items-center gap-2.5 bg-green-50 border border-green-200 rounded-md p-3.5">
           <div className="w-8 h-8 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
             <Icon d={ICONS.shieldCheck} size={16} className="text-green-600" />
           </div>
@@ -331,12 +331,12 @@ export default function StorefrontPage() {
       <button
         onClick={handleSave}
         disabled={saving}
-        className={`w-full py-3 rounded-2xl text-white font-bold text-sm transition cursor-pointer
+        className={`w-full py-3 rounded-md text-white font-bold text-sm transition cursor-pointer
           flex items-center justify-center gap-2 shadow-md disabled:opacity-60
-          ${saved ? "bg-green-500 shadow-green-200" : "bg-primary hover:bg-primary-hover shadow-red-200"}`}
+          ${saved ? "bg-green-500 shadow-green-200" : "bg-[#ff5252] hover:bg-[#ff5252]-hover shadow-red-200"}`}
       >
         {saved
-          ? <><Icon d={ICONS.check} size={16} className="stroke-[3]" /> Changes Saved!</>
+          ? <><Icon d={ICONS.check} size={16} className="stroke-3" /> Changes Saved!</>
           : saving ? "Saving…" : "Save Store Profile"}
       </button>
 

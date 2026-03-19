@@ -55,7 +55,16 @@ const Login = () => {
       if (context.openAlertBox) {
         context.openAlertBox("success", "Login successful!");
       }
-      navigate("/");
+      // Redirect based on role and onboarding status
+      if (data.user.role === 'buyer') {
+        navigate('/');
+      } else if (data.user.role === 'seller') {
+        if (data.user.sellerInfo?.onboardingComplete) {
+          navigate('/seller/dashboard');
+        } else {
+          navigate('/seller/onboarding');
+        }
+      }
     } catch (err) {
       context.openAlertBox?.("error", "Network error. Please try again.");
     } finally {

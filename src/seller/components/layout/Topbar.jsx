@@ -15,16 +15,16 @@
  *   setOpen — fn(bool) to open the mobile sidebar drawer
  */
 
-import Icon          from "../ui/Icon";
-import { ICONS }     from "../ui/icons";
-import { NAV_ITEMS } from "./Sidebar";
+import Icon from "../ui/Icon";
+import { ICONS } from "../ui/icons";
+import { NAV_ITEMS } from "../../constants/navItems";
 import { useSeller } from "../../context/SellerContext";
 
 const Topbar = ({ active, setOpen }) => {
   const { seller, notifCount } = useSeller();
 
   const pageLabel = NAV_ITEMS.find((n) => n.key === active)?.label ?? "Dashboard";
-  const initials  = `${seller.firstName[0]}${seller.lastName[0]}`.toUpperCase();
+  const initials = `${seller.firstName[0]}${seller.lastName[0]}`.toUpperCase();
 
   return (
     <header className="sticky top-0 z-20 bg-surface/80 backdrop-blur-md border-b border-black/5 px-4 md:px-6 py-3 flex items-center justify-between flex-shrink-0">
@@ -51,8 +51,8 @@ const Topbar = ({ active, setOpen }) => {
         >
           <Icon d={ICONS.bell} size={20} className="text-gray-600" />
           {notifCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 rounded-full bg-primary
-              text-white text-[9px] font-bold flex items-center justify-center px-0.5">
+            <span className="absolute top-1.5 right-1.5 min-w-4 h-4 rounded-full bg-primary
+              text-black text-[9px] font-bold flex items-center justify-center px-0.5">
               {notifCount > 9 ? "9+" : notifCount}
             </span>
           )}
@@ -60,10 +60,10 @@ const Topbar = ({ active, setOpen }) => {
 
         {/* Seller avatar — TODO (backend dev): replace with real user data */}
         <div className="flex items-center gap-2 pl-2 border-l border-black/10">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-red-300 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-red-300 flex items-center justify-center  font-bold text-xs shrink-0">
             {initials}
           </div>
-          <span className="hidden md:block text-sm font-medium text-gray-700 max-w-[120px] truncate">
+          <span className="hidden md:block text-sm font-medium text-gray-700 max-w-30 truncate">
             {seller.firstName} {seller.lastName}
           </span>
         </div>

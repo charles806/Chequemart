@@ -70,7 +70,7 @@ export const mockOrderBreakdown = [
   { status: "Delivered", count: 248, pct: 71, color: "#22c55e" },
   { status: "Shipped",   count: 62,  pct: 18, color: "#3b82f6" },
   { status: "Pending",   count: 28,  pct: 8,  color: "#f59e0b" },
-  { status: "Cancelled", count: 10,  pct: 3,  color: "#ff5252" },
+  { status: "Cancelled", count: 10,  pct: 3,  color: "var(--primary-color)" },
 ];
 
 export const mockActivity = [

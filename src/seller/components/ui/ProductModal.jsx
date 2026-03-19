@@ -337,7 +337,7 @@ const ProductModal = ({ product, onSave, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-gray-100 flex gap-3 flex-shrink-0">
+        <div className="px-5 py-4 border-t border-gray-100 flex gap-3 shrink-0">
           <button
             type="button"
             onClick={onClose}

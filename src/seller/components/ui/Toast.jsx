@@ -21,6 +21,7 @@
  */
 
 import { useState, useCallback } from "react";
+import { TOAST_STYLES } from "../../constants/toastStyles";
 
 // ── Hook ────────────────────────────────────────────────────
 export const useToast = (duration = 3000) => {
@@ -32,14 +33,6 @@ export const useToast = (duration = 3000) => {
   }, [duration]);
 
   return { toast, showToast };
-};
-
-// ── Component ───────────────────────────────────────────────
-const TOAST_STYLES = {
-  default: "bg-gray-900 text-white",
-  success: "bg-green-600 text-white",
-  error:   "bg-red-500   text-white",
-  info:    "bg-blue-600  text-white",
 };
 
 const Toast = ({ toast }) => {

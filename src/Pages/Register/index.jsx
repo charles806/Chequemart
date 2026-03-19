@@ -21,6 +21,7 @@ const Register = () => {
     const [userType, setUserType] = useState("buyer");
     const [isLoading, setIsLoading] = useState(false);
     const [agreeToTerms, setAgreeToTerms] = useState(false);
+    const [errors, setErrors] = useState({});
 
     const [formFields, setFormFields] = useState({
         name: "",
@@ -38,60 +39,57 @@ const Register = () => {
 
     const handleChange = (e) => {
         setFormFields((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+        setErrors(prev => ({ ...prev, [e.target.name]: '' }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const newErrors = {};
 
         // ── Validation ───────────────────────────────────────
-        if (!formFields.name || !formFields.password) {
-            context.openAlertBox?.("error", "Name and password are required.");
-            return;
-        }
-
+        if (!formFields.name) newErrors.name = "Name is required.";
         if (!formFields.email && !formFields.phone) {
-            context.openAlertBox?.("error", "Please provide an email or phone number.");
-            return;
+            newErrors.email = "Please provide an email or phone number.";
+            newErrors.phone = "Please provide an email or phone number.";
         }
-
         if (formFields.password.length < 8) {
-            context.openAlertBox?.("error", "Password must be at least 8 characters.");
-            return;
+            newErrors.password = "Password must be at least 8 characters.";
         }
-
         if (formFields.password !== formFields.confirmPassword) {
-            context.openAlertBox?.("error", "Passwords do not match.");
-            return;
+            newErrors.confirmPassword = "Passwords do not match.";
         }
-
         if (!agreeToTerms) {
-            context.openAlertBox?.("error", "Please agree to the Terms & Conditions.");
-            return;
+            newErrors.terms = "Please agree to the Terms & Conditions.";
+        }
+        if (userType === "seller") {
+            if (!formFields.storeName) newErrors.storeName = "Store name is required.";
+            if (!formFields.businessCategory) newErrors.businessCategory = "Business category is required.";
+            if (!formFields.businessAddress) newErrors.businessAddress = "Business address is required.";
         }
 
-        if (userType === "seller" && !formFields.storeName) {
-            context.openAlertBox?.("error", "Store name is required for sellers.");
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            context.openAlertBox?.("error", "Please fix the errors below.");
             return;
         }
 
         // ── Build payload ────────────────────────────────────
-        const endpoint = userType === "seller"
-            ? `${import.meta.env.VITE_API_URL}/api/auth/register/vendor`
-            : `${import.meta.env.VITE_API_URL}/api/auth/register`;
-
         const payload = {
             name: formFields.name,
             email: formFields.email || undefined,
             phone: formFields.phone || undefined,
             password: formFields.password,
+            role: userType,
             ...(userType === "seller" && {
                 storeName: formFields.storeName,
+                businessCategory: formFields.businessCategory,
+                businessAddress: formFields.businessAddress,
             }),
         };
 
         setIsLoading(true);
         try {
-            const res = await fetch(endpoint, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include",
@@ -101,21 +99,31 @@ const Register = () => {
             const data = await res.json();
 
             if (!res.ok) {
+                // Handle backend validation errors
+                if (data.errors) {
+                    const backendErrors = {};
+                    data.errors.forEach(err => {
+                        backendErrors[err.field] = err.message;
+                    });
+                    setErrors(backendErrors);
+                }
                 context.openAlertBox?.("error", data.message || "Registration failed.");
                 return;
             }
 
+            // Store token and user in localStorage (via context.login)
+            if (context.login) {
+                context.login(data.user, data.accessToken);
+            }
             if (context.openAlertBox) {
                 context.openAlertBox("success", data.message || "Account created successfully!");
             }
 
-            // Redirect based on user type
-            if (userType === "seller") {
-                navigate("/login");
-            } else if (formFields.email) {
-                navigate("/login"); // Ask them to verify email first
+            // Redirect based on role
+            if (userType === 'buyer') {
+                navigate('/');
             } else {
-                navigate("/login");
+                navigate('/seller/onboarding');
             }
         } catch (err) {
             context.openAlertBox?.("error", "Network error. Please try again.");
@@ -158,17 +166,20 @@ const Register = () => {
                 <form onSubmit={handleSubmit}>
                     <div className="mb-6">
                         <TextField fullWidth label="Full Name" variant="standard"
-                            name="name" value={formFields.name} onChange={handleChange} />
+                            name="name" value={formFields.name} onChange={handleChange}
+                            error={!!errors.name} helperText={errors.name} />
                     </div>
 
                     <div className="mb-6">
                         <TextField fullWidth label="Email Address" variant="standard"
-                            name="email" value={formFields.email} onChange={handleChange} />
+                            name="email" value={formFields.email} onChange={handleChange}
+                            error={!!errors.email} helperText={errors.email} />
                     </div>
 
                     <div className="mb-6">
                         <TextField fullWidth label="Phone Number" variant="standard"
-                            name="phone" value={formFields.phone} onChange={handleChange} />
+                            name="phone" value={formFields.phone} onChange={handleChange}
+                            error={!!errors.phone} helperText={errors.phone} />
                     </div>
 
                     {/* SELLER FIELDS */}
@@ -184,12 +195,14 @@ const Register = () => {
 
                             <div className="mb-6">
                                 <TextField fullWidth label="Store/Business Name" variant="standard"
-                                    name="storeName" value={formFields.storeName} onChange={handleChange} />
+                                    name="storeName" value={formFields.storeName} onChange={handleChange}
+                                    error={!!errors.storeName} helperText={errors.storeName} />
                             </div>
 
                             <div className="mb-6">
                                 <TextField select fullWidth label="Business Category" variant="standard"
-                                    name="businessCategory" value={formFields.businessCategory} onChange={handleChange}>
+                                    name="businessCategory" value={formFields.businessCategory} onChange={handleChange}
+                                    error={!!errors.businessCategory} helperText={errors.businessCategory}>
                                     {businessCategories.map((cat) => (
                                         <MenuItem key={cat} value={cat}>{cat}</MenuItem>
                                     ))}
@@ -198,7 +211,8 @@ const Register = () => {
 
                             <div className="mb-6">
                                 <TextField fullWidth label="Business Address" variant="standard"
-                                    name="businessAddress" value={formFields.businessAddress} onChange={handleChange} />
+                                    name="businessAddress" value={formFields.businessAddress} onChange={handleChange}
+                                    error={!!errors.businessAddress} helperText={errors.businessAddress} />
                             </div>
                         </>
                     )}
@@ -207,7 +221,8 @@ const Register = () => {
                     <div className="relative mb-6">
                         <TextField fullWidth type={isShowPassword ? "text" : "password"}
                             label="Password" variant="standard"
-                            name="password" value={formFields.password} onChange={handleChange} />
+                            name="password" value={formFields.password} onChange={handleChange}
+                            error={!!errors.password} helperText={errors.password} />
                         <Button type="button" disableRipple
                             onClick={() => setIsShowPassword(!isShowPassword)}
                             className="!absolute !top-2 !right-0 !w-10 !h-10 !min-w-[40px] !rounded-full !text-black/60 hover:bg-black/5!">
@@ -219,7 +234,8 @@ const Register = () => {
                     <div className="relative mb-6">
                         <TextField fullWidth type={isShowConfirmPassword ? "text" : "password"}
                             label="Confirm Password" variant="standard"
-                            name="confirmPassword" value={formFields.confirmPassword} onChange={handleChange} />
+                            name="confirmPassword" value={formFields.confirmPassword} onChange={handleChange}
+                            error={!!errors.confirmPassword} helperText={errors.confirmPassword} />
                         <Button type="button" disableRipple
                             onClick={() => setIsShowConfirmPassword(!isShowConfirmPassword)}
                             className="!absolute !top-2 !right-0 !w-10 !h-10 !min-w-[40px] !rounded-full !text-black/60 hover:!bg-black/5">
@@ -244,6 +260,9 @@ const Register = () => {
                                 </span>
                             }
                         />
+                        {errors.terms && (
+                            <p className="text-[#d32f2f] text-xs mt-1">{errors.terms}</p>
+                        )}
                     </div>
 
                     {/* SUBMIT */}

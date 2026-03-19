@@ -22,18 +22,27 @@ const Account = () => {
     const context = useContext(MyContext);
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
-    
+
     const [nav, setNav] = useState("profile");
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
-    
+
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
         email: "",
         phone: ""
     });
+
+    const [sellerForm, setSellerForm] = useState({
+        storeName: "",
+        businessCategory: "",
+        businessAddress: "",
+        bankCode: "",
+        accountNumber: ""
+    });
+    const [sellerLoading, setSellerLoading] = useState(false);
 
     // Password change state
     const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
@@ -201,6 +210,50 @@ const Account = () => {
         }
     };
 
+    const handleBecomeSeller = async (e) => {
+        e.preventDefault();
+        setSellerLoading(true);
+        setMessage({ type: '', text: '' });
+
+        try {
+            const token = context.accessToken || localStorage.getItem('accessToken');
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/become-seller`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    storeName: sellerForm.storeName,
+                    businessCategory: sellerForm.businessCategory,
+                    businessAddress: sellerForm.businessAddress,
+                    bankCode: sellerForm.bankCode || undefined,
+                    accountNumber: sellerForm.accountNumber || undefined
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setMessage({ type: 'success', text: 'Congratulations! You are now a seller. Redirecting to onboarding...' });
+                // Update user in context
+                if (context.login) {
+                    context.login(data.user, data.accessToken);
+                }
+                // Redirect to seller onboarding after short delay
+                setTimeout(() => {
+                    navigate('/seller/onboarding');
+                }, 2000);
+            } else {
+                setMessage({ type: 'error', text: data.message || 'Failed to become seller' });
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Network error. Please try again.' });
+        } finally {
+            setSellerLoading(false);
+        }
+    };
+
     const handlePasswordChange = async () => {
         // Validation
         if (passwordData.newPassword.length < 8) {
@@ -273,7 +326,7 @@ const Account = () => {
                 <div className="col1 w-full md:w-[40%] lg:w-[25%]">
                     <div className="card bg-white shadow-md rounded-md p-4 md:p-5">
                         <div className="w-full p-3 flex items-center justify-center flex-col">
-                            <div className="w-24 h-24 md:w-[110px] md:h-[110px] rounded-full overflow-hidden mb-4 relative group cursor-pointer shadow-sm border border-gray-100">
+                            <div className="w-24 h-24 md:w-27.5 md:h-27.5 rounded-full overflow-hidden mb-4 relative group cursor-pointer shadow-sm border border-gray-100">
                                 {uploadingAvatar ? (
                                     <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                                         <CircularProgress size={30} />
@@ -285,7 +338,7 @@ const Account = () => {
                                             alt="avatar"
                                             className='w-full h-full rounded-full object-cover transition-transform duration-300 group-hover:scale-110'
                                         />
-                                        <div 
+                                        <div
                                             className="overlay w-full h-full absolute top-0 left-0 z-10 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
                                             onClick={handleAvatarClick}
                                         >
@@ -293,11 +346,11 @@ const Account = () => {
                                         </div>
                                     </>
                                 )}
-                                <input 
-                                    type="file" 
+                                <input
+                                    type="file"
                                     ref={fileInputRef}
                                     accept='image/jpeg,image/png,image/gif,image/webp'
-                                    className='absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer' 
+                                    className='absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer'
                                     onChange={handleAvatarChange}
                                 />
                             </div>
@@ -305,7 +358,7 @@ const Account = () => {
                                 {formData.firstName} {formData.lastName}
                             </h3>
                             <p className='text-xs md:text-sm text-gray-500'>{formData.email}</p>
-                            
+
                             {/* Delete Avatar Button */}
                             {context.user?.avatar && (
                                 <Button
@@ -323,7 +376,7 @@ const Account = () => {
                         <ul className="list-none mt-2 flex flex-col gap-1">
                             <li className='w-full'>
                                 <Button
-                                    className={`w-full! !text-left px-5! flex items-center gap-5 h-10! md:h-11! !justify-start rounded-md! text-sm! capitalize! transition-all! ${nav === 'profile' ? 'bg-primary! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
+                                    className={`w-full! text-left! px-5! flex items-center gap-5 h-10! md:h-11! !justify-start rounded-md! text-sm! capitalize! transition-all! ${nav === 'profile' ? 'bg-primary! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
                                     onClick={() => setNav('profile')}
                                 >
                                     <FaRegUser className='text-lg shrink-0' />
@@ -348,6 +401,17 @@ const Account = () => {
                                     Orders
                                 </Button>
                             </li>
+                            {context.user?.role === 'buyer' && (
+                                <li className='w-full'>
+                                    <Button
+                                        className={`w-full! !text-left px-5! flex items-center gap-5 h-10! md:h-11! !justify-start rounded-md! text-sm! capitalize! transition-all! ${nav === 'seller' ? 'bg-primary! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
+                                        onClick={() => setNav('seller')}
+                                    >
+                                        <FaShoppingBag className='text-lg shrink-0' />
+                                        Become a Seller
+                                    </Button>
+                                </li>
+                            )}
                             <li className='w-full pt-2 mt-2 border-t border-gray-100'>
                                 <Button
                                     className='w-full! !text-left px-5! flex items-center text-red-600! gap-5 h-10! md:h-11! !justify-start rounded-md! text-sm! capitalize! hover:bg-red-50!'
@@ -363,8 +427,8 @@ const Account = () => {
 
                 <div className="col2 w-full md:w-[60%] lg:w-[75%] bg-white shadow-md rounded-md p-4 md:p-5">
                     {message.text && (
-                        <Alert 
-                            severity={message.type} 
+                        <Alert
+                            severity={message.type}
                             className="mb-4"
                             onClose={() => setMessage({ type: '', text: '' })}
                         >
@@ -447,7 +511,7 @@ const Account = () => {
                                         type="submit"
                                         variant="contained"
                                         disabled={loading}
-                                        className="bg-[#ff5252]! hover:bg-[#ff5252]! text-white! px-8! py-2.5! rounded-md! font-semibold! transition-all!"
+                                        className="bg-[#ff5252]! hover:bg-[#ff5252]! ! px-8! py-2.5! rounded-md! font-semibold! transition-all!"
                                         startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                                     >
                                         Save Changes
@@ -471,12 +535,108 @@ const Account = () => {
                             </Button>
                         </div>
                     )}
+
+                    {nav === 'seller' && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <h2 className='text-xl md:text-2xl font-bold text-gray-800 mb-6'>Become a Seller</h2>
+                            <p className="text-gray-500 mb-8">Fill in your business details to start selling on Chequemart.</p>
+                            <form onSubmit={handleBecomeSeller}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div className="col">
+                                        <TextField
+                                            label="Store/Business Name"
+                                            name="storeName"
+                                            value={sellerForm.storeName}
+                                            onChange={(e) => setSellerForm({ ...sellerForm, storeName: e.target.value })}
+                                            variant="outlined"
+                                            fullWidth
+                                            size="small"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="col">
+                                        <TextField
+                                            label="Business Category"
+                                            name="businessCategory"
+                                            value={sellerForm.businessCategory}
+                                            onChange={(e) => setSellerForm({ ...sellerForm, businessCategory: e.target.value })}
+                                            variant="outlined"
+                                            fullWidth
+                                            size="small"
+                                            required
+                                            select
+                                            SelectProps={{ native: true }}
+                                        >
+                                            <option value="">Select Category</option>
+                                            <option value="Electronics">Electronics</option>
+                                            <option value="Fashion">Fashion</option>
+                                            <option value="Bags & Accessories">Bags & Accessories</option>
+                                            <option value="Sports & Fitness">Sports & Fitness</option>
+                                            <option value="Home & Living">Home & Living</option>
+                                            <option value="Health & Beauty">Health & Beauty</option>
+                                            <option value="Books & Stationery">Books & Stationery</option>
+                                            <option value="Food & Grocery">Food & Grocery</option>
+                                        </TextField>
+                                    </div>
+                                </div>
+                                <div className="mb-6">
+                                    <TextField
+                                        label="Business Address"
+                                        name="businessAddress"
+                                        value={sellerForm.businessAddress}
+                                        onChange={(e) => setSellerForm({ ...sellerForm, businessAddress: e.target.value })}
+                                        variant="outlined"
+                                        fullWidth
+                                        size="small"
+                                        required
+                                    />
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                    <div className="col">
+                                        <TextField
+                                            label="Bank Code (optional)"
+                                            name="bankCode"
+                                            value={sellerForm.bankCode}
+                                            onChange={(e) => setSellerForm({ ...sellerForm, bankCode: e.target.value })}
+                                            variant="outlined"
+                                            fullWidth
+                                            size="small"
+                                            helperText="e.g., 044 for Access Bank"
+                                        />
+                                    </div>
+                                    <div className="col">
+                                        <TextField
+                                            label="Account Number (optional)"
+                                            name="accountNumber"
+                                            value={sellerForm.accountNumber}
+                                            onChange={(e) => setSellerForm({ ...sellerForm, accountNumber: e.target.value })}
+                                            variant="outlined"
+                                            fullWidth
+                                            size="small"
+                                            helperText="10-digit account number"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex justify-end">
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                        disabled={sellerLoading}
+                                        className="bg-[#ff5252]! hover:bg-[#ff5252]! ! px-8! py-2.5! rounded-md! font-semibold! transition-all!"
+                                        startIcon={sellerLoading ? <CircularProgress size={20} color="inherit" /> : null}
+                                    >
+                                        Become a Seller
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Password Change Dialog */}
-            <Dialog 
-                open={passwordDialogOpen} 
+            <Dialog
+                open={passwordDialogOpen}
                 onClose={() => setPasswordDialogOpen(false)}
                 maxWidth="xs"
                 fullWidth
@@ -491,14 +651,14 @@ const Account = () => {
                             label="Current Password"
                             type={showPasswords.current ? 'text' : 'password'}
                             value={passwordData.currentPassword}
-                            onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                            onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                             fullWidth
                             size="small"
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
                                         <IconButton
-                                            onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
+                                            onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
                                             edge="end"
                                         >
                                             {showPasswords.current ? <FaEyeSlash /> : <FaEye />}
@@ -511,7 +671,7 @@ const Account = () => {
                             label="New Password"
                             type={showPasswords.new ? 'text' : 'password'}
                             value={passwordData.newPassword}
-                            onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                             fullWidth
                             size="small"
                             helperText="At least 8 characters"
@@ -519,7 +679,7 @@ const Account = () => {
                                 endAdornment: (
                                     <InputAdornment position="end">
                                         <IconButton
-                                            onClick={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}
+                                            onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
                                             edge="end"
                                         >
                                             {showPasswords.new ? <FaEyeSlash /> : <FaEye />}
@@ -532,14 +692,14 @@ const Account = () => {
                             label="Confirm New Password"
                             type={showPasswords.confirm ? 'text' : 'password'}
                             value={passwordData.confirmPassword}
-                            onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                            onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                             fullWidth
                             size="small"
                             InputProps={{
                                 endAdornment: (
                                     <InputAdornment position="end">
                                         <IconButton
-                                            onClick={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}
+                                            onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
                                             edge="end"
                                         >
                                             {showPasswords.confirm ? <FaEyeSlash /> : <FaEye />}
@@ -554,7 +714,7 @@ const Account = () => {
                     <Button onClick={() => setPasswordDialogOpen(false)} className="text-gray-600!">
                         Cancel
                     </Button>
-                    <Button 
+                    <Button
                         onClick={handlePasswordChange}
                         variant="contained"
                         disabled={passwordLoading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}

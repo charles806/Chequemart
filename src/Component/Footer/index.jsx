@@ -27,7 +27,7 @@ const Footer = () => {
                 <div className="my-container">
                     <div className="flex items-center justify-center gap-2 py-3 lg:py-8 pb-0 lg:pb-8 px-0 lg:px-5 flex-row overflow-x-scroll overflow-y-hidden">
                         <div className="col flex items-center justify-center flex-col group min-w-[150px] shrink-0 lg:min-w-0 lg:w-[15%]">
-                            <FaShippingFast className='text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
+                            <FaShippingFast className='text-[40px] transition-all duration-300 group-hover:text-primary group-hover:-translate-y-1' />
                             <h3 className="text-[16px] font-semibold mt-3">
                                 Free Shipping
                             </h3>
@@ -36,7 +36,7 @@ const Footer = () => {
                             </p>
                         </div>
                         <div className="col flex items-center justify-center flex-col group min-w-[150px] shrink-0 lg:min-w-0 lg:w-[15%]">
-                            <PiKeyReturn className='text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
+                            <PiKeyReturn className='text-[40px] transition-all duration-300 group-hover:text-primary group-hover:-translate-y-1' />
                             <h3 className="text-[16px] font-semibold mt-3">
                                 30 Days Returns
                             </h3>
@@ -45,7 +45,7 @@ const Footer = () => {
                             </p>
                         </div>
                         <div className="col flex items-center justify-center flex-col group min-w-[150px] shrink-0 lg:min-w-0 lg:w-[15%]">
-                            <BsWallet2 className='text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
+                            <BsWallet2 className='text-[40px] transition-all duration-300 group-hover:text-primary group-hover:-translate-y-1' />
                             <h3 className="text-[16px] font-semibold mt-3">
                                 Secured Payment
                             </h3>
@@ -54,7 +54,7 @@ const Footer = () => {
                             </p>
                         </div>
                         <div className="col flex items-center justify-center flex-col group min-w-[150px] shrink-0 lg:min-w-0 lg:w-[15%]">
-                            <CiGift className='text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
+                            <CiGift className='text-[40px] transition-all duration-300 group-hover:text-primary group-hover:-translate-y-1' />
                             <h3 className="text-[16px] font-semibold mt-3">
                                 Special Gifts
                             </h3>
@@ -63,7 +63,7 @@ const Footer = () => {
                             </p>
                         </div>
                         <div className="col flex items-center justify-center flex-col group min-w-[150px] shrink-0 lg:min-w-0 lg:w-[15%]">
-                            <BiSupport className='text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
+                            <BiSupport className='text-[40px] transition-all duration-300 group-hover:text-primary group-hover:-translate-y-1' />
                             <h3 className="text-[16px] font-semibold mt-3">
                                 Support 24/7
                             </h3>
@@ -85,11 +85,11 @@ const Footer = () => {
                                 {"Chequemart - ecommerce salesive"}
                             </p>
                             <Link to="mailto:helpusers@chequemart.com" className='link text-[13px]'>helpusers@chequemart.com</Link>
-                            <span className="text-[22px] font-semibold block w-full mt-3 mb-5 text-[#ff5252]">
+                            <span className="text-[22px] font-semibold block w-full mt-3 mb-5 text-primary">
                                 {"(+234) 7032-355-643"}
                             </span>
                             <div className="flex items-center gap-2">
-                                <IoChatboxOutline className='text-[40px] text-[#ff5252]' />
+                                <IoChatboxOutline className='text-[40px] text-primary' />
                                 <span className="text-[16px] font-semibold">
                                     {"Chat with us"}
                                     <br />

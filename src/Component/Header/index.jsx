@@ -122,10 +122,10 @@ const Header = () => {
                 </li>
                 <li className="list-none">
                   <Link
-                    to="/become-a-seller"
+                    to="/seller/dashboard"
                     className="text-[11px] lg:text-[13px] link font-medium transition"
                   >
-                    Become a Seller
+                    Seller Dashboard
                   </Link>
                 </li>
               </ul>

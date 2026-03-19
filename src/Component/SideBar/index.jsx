@@ -38,14 +38,14 @@ const SideBar = () => {
                         className={`scroll px-4 relative -left-3.25 flex flex-col gap-2 transition-all duration-300 overflow-hidden ${isOpen ? 'max-h-125 opacity-100' : 'max-h-0 opacity-0'
                             }`}
                     >
-                        <FormControlLabel control={<Checkbox className='fill-[#ff5252]! text-[#ff5252]!' />} label="Fashion" className='fill-[#ff5252]! text-black!' />
-                        <FormControlLabel control={<Checkbox className='fill-[#ff5252]! text-[#ff5252]!' />} label="Electronics" className='fill-[#ff5252]! text-black!' />
-                        <FormControlLabel control={<Checkbox className='fill-[#ff5252]! text-[#ff5252]!' />} label="Bags" className='fill-[#ff5252]! text-black!' />
-                        <FormControlLabel control={<Checkbox className='fill-[#ff5252]! text-[#ff5252]!' />} label="Footware" className='fill-[#ff5252]! text-black!' />
-                        <FormControlLabel control={<Checkbox className='fill-[#ff5252]! text-[#ff5252]!' />} label="Jewellery" className='fill-[#ff5252]! text-black!' />
-                        <FormControlLabel control={<Checkbox className='fill-[#ff5252]! text-[#ff5252]!' />} label="Wellness" className='fill-[#ff5252]! text-black!' />
-                        <FormControlLabel control={<Checkbox className='fill-[#ff5252]! text-[#ff5252]!' />} label="Beauty" className='fill-[#ff5252]! text-black!' />
-                        <FormControlLabel control={<Checkbox className='fill-[#ff5252]! text-[#ff5252]!' />} label="Games" className='fill-[#ff5252]! text-black!' />
+                        <FormControlLabel control={<Checkbox className='fill-primary! text-primary!' />} label="Fashion" className='text-black!' />
+                        <FormControlLabel control={<Checkbox className='fill-primary! text-primary!' />} label="Electronics" className='text-black!' />
+                        <FormControlLabel control={<Checkbox className='fill-primary! text-primary!' />} label="Bags" className='text-black!' />
+                        <FormControlLabel control={<Checkbox className='fill-primary! text-primary!' />} label="Footware" className='text-black!' />
+                        <FormControlLabel control={<Checkbox className='fill-primary! text-primary!' />} label="Jewellery" className='text-black!' />
+                        <FormControlLabel control={<Checkbox className='fill-primary! text-primary!' />} label="Wellness" className='text-black!' />
+                        <FormControlLabel control={<Checkbox className='fill-primary! text-primary!' />} label="Beauty" className='text-black!' />
+                        <FormControlLabel control={<Checkbox className='fill-primary! text-primary!' />} label="Games" className='text-black!' />
                     </div>
 
                 </div>

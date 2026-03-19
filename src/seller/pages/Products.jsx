@@ -130,7 +130,7 @@ export default function ProductsPage() {
         </div>
         <button
           onClick={() => setModalProduct(null)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-hover transition cursor-pointer shadow-md shadow-red-200"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#ff5252] text-white text-sm font-bold hover:bg-[#ff5252] transition cursor-pointer shadow-md shadow-red-200"
         >
           <Icon d={ICONS.plus} size={15} />
           Add Product
@@ -177,7 +177,7 @@ export default function ProductsPage() {
               <div key={product.id} className="px-5 py-4 flex items-center gap-3 hover:bg-gray-50/50 transition">
 
                 {/* Placeholder image / initial */}
-                <div className="w-12 h-12 rounded-xl bg-primary/8 flex items-center justify-center flex-shrink-0 text-primary font-black text-sm">
+                <div className="w-12 h-12 rounded-xl bg-primary/8 flex items-center justify-center shrink-0 text-primary font-black text-sm">
                   {product.name.charAt(0)}
                 </div>
 
@@ -193,10 +193,10 @@ export default function ProductsPage() {
                 </div>
 
                 {/* Price */}
-                <p className="text-sm font-black text-gray-900 flex-shrink-0">{fmt(product.price)}</p>
+                <p className="text-sm font-black text-gray-900 shrink-0">{fmt(product.price)}</p>
 
                 {/* Actions */}
-                <div className="flex gap-1.5 flex-shrink-0">
+                <div className="flex gap-1.5 shrink-0">
                   <button
                     onClick={() => setModalProduct(product)}
                     className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition cursor-pointer"

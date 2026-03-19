@@ -89,8 +89,8 @@ const RevenueChart = ({ data }) => {
               style={{
                 height:     `${h}%`,
                 background: isH
-                  ? "linear-gradient(to top, #ff5252, #ff8a80)"
-                  : "linear-gradient(to top, #ff525255, #ff5252aa)",
+                  ? "linear-gradient(to top, var(--primary-color), var(--accent-color))"
+                  : "linear-gradient(to top, color-mix(in srgb, var(--primary-color) 33%, transparent), color-mix(in srgb, var(--primary-color) 66%, transparent))",
               }}
             />
             <span className="text-[9px] text-gray-400 font-semibold truncate w-full text-center">
@@ -131,7 +131,7 @@ const OrdersChart = ({ data }) => {
               className="w-full rounded-t-md transition-all duration-200"
               style={{
                 height:     `${h}%`,
-                background: isH ? "#6366f1" : "#6366f133",
+                background: isH ? "var(--accent-color)" : "color-mix(in srgb, var(--accent-color) 20%, transparent)",
               }}
             />
           </div>
@@ -149,22 +149,20 @@ const DonutChart = ({ data }) => {
   const r = 48, cx = 60, cy = 60;
   const circumference = 2 * Math.PI * r;
 
-  let offset = 0;
-  const segments = data.map((d) => {
+  const segments = data.map((d, i) => {
     const pct = d.count / total;
-    const seg = {
+    const prevOffset = data.slice(0, i).reduce((sum, item) => sum + item.count / total, 0);
+    return {
       ...d,
       strokeDasharray:  `${pct * circumference} ${circumference}`,
-      strokeDashoffset: -offset * circumference,
+      strokeDashoffset: -prevOffset * circumference,
     };
-    offset += pct;
-    return seg;
   });
 
   return (
     <div className="flex items-center gap-4">
       <svg width={120} height={120} viewBox="0 0 120 120" className="flex-shrink-0">
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#f3f4f6" strokeWidth={14} />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#e5e7eb" strokeWidth={14} />
         {segments.map((seg, i) => (
           <circle
             key={i}
@@ -179,10 +177,10 @@ const DonutChart = ({ data }) => {
             style={{ transition: "stroke-dasharray 0.5s ease" }}
           />
         ))}
-        <text x={cx} y={cy - 6} textAnchor="middle" fontSize="18" fontWeight="900" fill="#111">
+        <text x={cx} y={cy - 6} textAnchor="middle" fontSize="18" fontWeight="900" fill="var(--text-color)">
           {total}
         </text>
-        <text x={cx} y={cy + 10} textAnchor="middle" fontSize="9" fill="#9ca3af">
+        <text x={cx} y={cy + 10} textAnchor="middle" fontSize="9" fill="var(--text-color-2)">
           orders
         </text>
       </svg>

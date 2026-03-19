@@ -20,9 +20,8 @@
  * then call setSeller() and setWallet() with real data.
  */
 
-import { createContext, useContext, useState } from "react";
-
-const SellerContext = createContext(null);
+import { useContext, useState } from "react";
+import { SellerContext } from "../constants/sellerContext";
 
 export const SellerProvider = ({ children }) => {
   // ── Seller profile ─────────────────────────────────────────
