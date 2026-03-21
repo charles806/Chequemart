@@ -466,4 +466,44 @@ export default function Onboarding({ onComplete }) {
         <div className="overflow-y-auto max-h-[60vh] px-6 py-5">
           {step === 1 && <StepWelcome onNext={handleNext} />}
           {step === 2 && <StepPersonal data={personal} onChange={updatePersonal} errors={errors} />}
-          {step === 3 && <StepStore    data={
+          {step === 3 && <StepStore    data={store}    onChange={updateStore}    errors={errors} />}
+          {step === 4 && (
+            <StepBank
+              data={bank}
+              onChange={updateBank}
+              errors={errors}
+              onVerify={handleVerifyBank}
+              verified={bankVerified}
+              verifying={bankVerifying}
+            />
+          )}
+          {step === 5 && <StepMedia  data={media}   onChange={updateMedia} />}
+          {step === 6 && <StepReview personal={personal} store={store} bank={bank} />}
+        </div>
+
+        {/* Fixed footer — only shown after step 1 */}
+        {step > 1 && (
+          <div className="px-6 py-4 border-t border-gray-50">
+            <button
+              onClick={isLastStep ? handleSubmit : handleNext}
+              disabled={submitting}
+              className={`w-full py-3 rounded-2xl text-white font-bold text-sm
+                transition cursor-pointer flex items-center justify-center gap-2 shadow-md disabled:opacity-60
+                ${isLastStep
+                  ? "bg-green-500 hover:bg-green-600 shadow-green-200"
+                  : "bg-primary hover:bg-primary-hover shadow-red-200"}`}
+            >
+              {submitting ? (
+                <><span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" /> Setting up your store…</>
+              ) : isLastStep ? (
+                <><Icon d={ICONS.check} size={16} className="stroke-[3]" /> Launch My Store</>
+              ) : (
+                "Continue →"
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
