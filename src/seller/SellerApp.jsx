@@ -46,7 +46,6 @@ export default function SellerApp() {
     try {
       const user = JSON.parse(userStr);
       onboardingComplete = user.sellerInfo?.onboardingComplete || false;
-    // eslint-disable-next-line no-unused-vars
     } catch (e) {
       // ignore
     }

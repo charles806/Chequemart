@@ -16,8 +16,8 @@
  */
 
 import { useState, useRef } from "react";
-import Icon                 from "./Icon";
-import { ICONS }            from "./icons";
+import Icon from "./Icon";
+import { ICONS } from "./icons";
 
 // ─────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -44,7 +44,7 @@ const inputCls = (hasError) => `
   placeholder-gray-400 focus:outline-none focus:ring-2 transition-all
   ${hasError
     ? "border-red-400 bg-red-50 focus:ring-red-200"
-    : "border-gray-200 focus:ring-primary/25 focus:border-primary/50"}
+    : "border-gray-200 focus:ring-[#ff5252]/25 focus:border-[#ff5252]/50"}
 `;
 
 const Field = ({ label, error, hint, children }) => (
@@ -53,7 +53,7 @@ const Field = ({ label, error, hint, children }) => (
       <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</label>
     )}
     {children}
-    {hint  && !error && <p className="text-[10px] text-gray-400">{hint}</p>}
+    {hint && !error && <p className="text-[10px] text-gray-400">{hint}</p>}
     {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
   </div>
 );
@@ -119,7 +119,7 @@ const ImageUpload = ({ images, onChange }) => {
           >
             <img src={img.preview} alt="" className="w-full h-full object-cover" />
             {i === 0 && (
-              <span className="absolute bottom-0 inset-x-0 bg-primary text-white text-[8px] font-bold text-center py-0.5">
+              <span className="absolute bottom-0 inset-x-0 bg-[#ff5252] text-white text-[8px] font-bold text-center py-0.5">
                 COVER
               </span>
             )}
@@ -139,12 +139,12 @@ const ImageUpload = ({ images, onChange }) => {
           <button
             type="button"
             onClick={() => inputRef.current.click()}
-            className="w-16 h-16 rounded-xl border-2 border-dashed border-primary/30
-              bg-red-50/50 hover:border-primary/60 hover:bg-red-50 transition
+            className="w-16 h-16 rounded-xl border-2 border-dashed border-[#ff5252]/30
+              bg-red-50/50 hover:border-[#ff5252]/60 hover:bg-red-50 transition
               flex flex-col items-center justify-center gap-0.5 flex-shrink-0 cursor-pointer"
             aria-label="Add image"
           >
-            <Icon d={ICONS.upload} size={16} className="text-primary/50" />
+            <Icon d={ICONS.upload} size={16} className="text-[#ff5252]/50" />
             <span className="text-[9px] text-gray-400 font-medium">Add</span>
           </button>
         )}
@@ -173,7 +173,7 @@ const ProductModal = ({ product, onSave, onClose }) => {
       : { ...EMPTY_FORM }
   );
   const [errors, setErrors] = useState({});
-  const [saved,  setSaved]  = useState(false);
+  const [saved, setSaved] = useState(false);
 
   const update = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
@@ -181,11 +181,11 @@ const ProductModal = ({ product, onSave, onClose }) => {
   // ── Validation ───────────────────────────────────────────
   const validate = () => {
     const e = {};
-    if (!form.name.trim())                                       e.name        = "Product name is required";
-    if (!form.price || isNaN(form.price) || +form.price <= 0)   e.price       = "Enter a valid price";
-    if (form.stock === "" || isNaN(form.stock) || +form.stock < 0) e.stock    = "Enter a valid stock quantity";
-    if (!form.category)                                          e.category    = "Select a category";
-    if (!form.description.trim())                                e.description = "Add a product description";
+    if (!form.name.trim()) e.name = "Product name is required";
+    if (!form.price || isNaN(form.price) || +form.price <= 0) e.price = "Enter a valid price";
+    if (form.stock === "" || isNaN(form.stock) || +form.stock < 0) e.stock = "Enter a valid stock quantity";
+    if (!form.category) e.category = "Select a category";
+    if (!form.description.trim()) e.description = "Add a product description";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -193,8 +193,8 @@ const ProductModal = ({ product, onSave, onClose }) => {
   // ── Auto-compute status from stock ──────────────────────
   const computeStatus = (stock) => {
     const n = Number(stock);
-    if (n === 0)  return "Out";
-    if (n <= 3)   return "Low Stock";
+    if (n === 0) return "Out";
+    if (n <= 3) return "Low Stock";
     return "Active";
   };
 
@@ -205,10 +205,10 @@ const ProductModal = ({ product, onSave, onClose }) => {
 
     const payload = {
       ...form,
-      price:  Number(form.price),
-      stock:  Number(form.stock),
+      price: Number(form.price),
+      stock: Number(form.stock),
       status: computeStatus(form.stock),
-      id:     product?.id ?? Date.now(),
+      id: product?.id ?? Date.now(),
     };
 
     onSave(payload);
@@ -216,11 +216,11 @@ const ProductModal = ({ product, onSave, onClose }) => {
     setTimeout(onClose, 800);
   };
 
-  const liveStatus  = computeStatus(form.stock || 0);
+  const liveStatus = computeStatus(form.stock || 0);
   const statusColor = {
-    "Out":       "bg-red-50 border-red-100 text-red-600",
+    "Out": "bg-red-50 border-red-100 text-red-600",
     "Low Stock": "bg-orange-50 border-orange-100 text-orange-600",
-    "Active":    "bg-green-50 border-green-100 text-green-600",
+    "Active": "bg-green-50 border-green-100 text-green-600",
   }[liveStatus];
 
   return (
@@ -235,8 +235,8 @@ const ProductModal = ({ product, onSave, onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Icon d={isEdit ? ICONS.edit : ICONS.plus} size={15} className="text-primary" />
+            <div className="w-8 h-8 rounded-xl bg-[#ff5252]/10 flex items-center justify-center">
+              <Icon d={isEdit ? ICONS.edit : ICONS.plus} size={15} className="text-[#ff5252]" />
             </div>
             <h2 className="font-black text-gray-900 text-base">
               {isEdit ? "Edit Product" : "Add New Product"}
@@ -352,10 +352,10 @@ const ProductModal = ({ product, onSave, onClose }) => {
               flex items-center justify-center gap-2 shadow-md
               ${saved
                 ? "bg-green-500 shadow-green-200"
-                : "bg-primary hover:bg-primary-hover shadow-red-200"}`}
+                : "bg-[#ff5252] hover:bg-[#ff5252]-hover shadow-red-200"}`}
           >
             {saved ? (
-              <><Icon d={ICONS.check} size={15} className="stroke-[3]" /> Saved!</>
+              <><Icon d={ICONS.check} size={15} className="stroke-3" /> Saved!</>
             ) : (
               isEdit ? "Save Changes" : "Add Product"
             )}

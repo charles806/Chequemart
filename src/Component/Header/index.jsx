@@ -49,6 +49,12 @@ const Header = () => {
     setAnchorEl(null);
   };
 
+
+  const openCategoryPanel = () => {
+    context.setIsOpenCatPanel(true);
+  };
+
+
   // Persist login state from localStorage on mount
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState({ name: '', email: '' });
@@ -57,7 +63,7 @@ const Header = () => {
     const storedIsLogin = localStorage.getItem("isLogin") === "true";
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("accessToken");
-    
+
     setIsLoggedIn(storedIsLogin);
     if (storedUser) {
       try {
@@ -67,7 +73,7 @@ const Header = () => {
         setUserData({ name: 'User', email: '' });
       }
     }
-    
+
     // Update context if needed
     if (storedIsLogin && storedToken && context.login && context.user === null) {
       if (storedUser) {
@@ -100,35 +106,29 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white fixed lg:sticky left-0 w-full top-0 lg:-top-11.75 z-101 ">
+    <header className="bg-white fixed lg:sticky left-0 w-full top-0 lg:-top-11.75 z-101 shadow-md">
       <div className="top-strip hidden lg:block py-2 border-t border-b">
         <div className="my-container">
-          <div className="flex items-center justify-between">
-            <div className="col1 w-[50%] hidden lg:block">
+          <div className="flex items-center justify-between px-4">
+            <div className="col1 hidden lg:block">
               <p className="text-[12px] font-medium mt-0 mb-0">
                 Trusted By 1000+ Customers across Nigeria
               </p>
             </div>
 
-            <div className="col2 flex items-center justify-between w-full lg:w-[50%] lg:justify-end">
-              <ul className="flex items-center gap-3 w-full justify-between lg:w-50">
-                <li className="list-none">
-                  <Link
-                    to="/help-center"
-                    className="text-[11px] lg:text-[13px] link font-medium transition"
-                  >
-                    Help Center
-                  </Link>
-                </li>
-                <li className="list-none">
-                  <Link
-                    to="/seller/dashboard"
-                    className="text-[11px] lg:text-[13px] link font-medium transition"
-                  >
-                    Seller Dashboard
-                  </Link>
-                </li>
-              </ul>
+            <div className="col2 flex items-center justify-end gap-6">
+              <Link
+                to="/help-center"
+                className="text-[11px] lg:text-[13px] link font-medium transition"
+              >
+                Help Center
+              </Link>
+              <Link
+                to="/seller/dashboard"
+                className="text-[11px] lg:text-[13px] link font-medium transition"
+              >
+                Seller Dashboard
+              </Link>
             </div>
           </div>
         </div>
@@ -136,11 +136,12 @@ const Header = () => {
 
       <div className="header py-2 lg:py-4 border-b border-black/10">
         <div className="my-container h-16 lg:h-22.5 flex items-center justify-between gap-4 lg:gap-0">
-          <Button className="w-8.75! min-w-8.75! h-8.75! rounded-full! font-bold text-gray-800! lg:hidden! shrink-0!"
-            onClick={() => context.setOpenCartPanel(true)}>
-            <CiMenuBurger className="w-6 h-6" />
+          <Button className="w-8.75! min-w-8.75! h-8.75! rounded-full! font-bold text-black! lg:hidden! shrink-0!"
+            onClick={openCategoryPanel}>
+            <CiMenuBurger className="w-6 h-6 text-[20px] text-bold" />
           </Button>
 
+          {/* Logo */}
           <div className="col1 w-[40%] lg:w-[25%] shrink-0!">
             <Link to="/">
               <img
@@ -195,10 +196,10 @@ const Header = () => {
                         <FaRegUser className="text-black text-[20px]" />
                       </span>
 
-                        <div className="info flex flex-col cursor-pointer">
-                          <h4 className="leading-3 text-[13px] mb-0 capitalize text-left justify-start">{userData.name || context.user?.name || "User"}</h4>
-                          <span className="text-[14px] lowercase">{userData.email || context.user?.email || "user@example.com"}</span>
-                        </div>
+                      <div className="info flex flex-col cursor-pointer">
+                        <h4 className="leading-3 text-[13px] mb-0 capitalize text-left justify-start">{userData.name || context.user?.name || "User"}</h4>
+                        <span className="text-[14px] lowercase">{userData.email || context.user?.email || "user@example.com"}</span>
+                      </div>
                     </Button>
 
                     <Menu

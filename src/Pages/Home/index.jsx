@@ -179,11 +179,11 @@ const Home = () => {
                     <h2 className="text-[14px] md:text-[18px] font-semibold">
                       Stylish Bags
                     </h2>
-                    <span className="text-[20px] text-primary font-semibold w-full">
+                    <span className="text-[20px] text-[#ff5252] font-semibold w-full">
                       ₦10,000
                     </span>
                     <div className="w-full">
-                      <Link to="/products" className="text-[14px] text-primary font-medium hover:underline">Shop Now</Link>
+                      <Link to="/products" className="text-[14px] text-[#ff5252] font-medium hover:underline">Shop Now</Link>
                     </div>
                   </div>
                 </div>
@@ -196,11 +196,11 @@ const Home = () => {
                     <h2 className="text-[14px] md:text-[18px] font-semibold">
                       Digital Cameras
                     </h2>
-                    <span className="text-[20px] text-primary font-semibold w-full">
+                    <span className="text-[20px] text-[#ff5252] font-semibold w-full">
                       ₦90,000
                     </span>
                     <div className="w-full">
-                      <Link to="/products" className="text-[14px] text-primary font-medium hover:underline">Shop Now</Link>
+                      <Link to="/products" className="text-[14px] text-[#ff5252] font-medium hover:underline">Shop Now</Link>
                     </div>
                   </div>
                 </div>
@@ -213,11 +213,11 @@ const Home = () => {
                     <h2 className="text-[14px] md:text-[18px] font-semibold">
                       Mobile Phone
                     </h2>
-                    <span className="text-[20px] text-primary font-semibold w-full">
+                    <span className="text-[20px] text-[#ff5252] font-semibold w-full">
                       ₦310,000
                     </span>
                     <div className="w-full">
-                      <Link to="/products" className="text-[14px] text-primary font-medium hover:underline">Shop Now</Link>
+                      <Link to="/products" className="text-[14px] text-[#ff5252] font-medium hover:underline">Shop Now</Link>
                     </div>
                   </div>
                 </div>
@@ -230,11 +230,11 @@ const Home = () => {
                     <h2 className="text-[14px] md:text-[18px] font-semibold">
                       HeadPhone
                     </h2>
-                    <span className="text-[20px] text-primary font-semibold w-full">
+                    <span className="text-[20px] text-[#ff5252] font-semibold w-full">
                       ₦32,000
                     </span>
                     <div className="w-full">
-                      <Link to="/products" className="text-[14px] text-primary font-medium hover:underline">Shop Now</Link>
+                      <Link to="/products" className="text-[14px] text-[#ff5252] font-medium hover:underline">Shop Now</Link>
                     </div>
                   </div>
                 </div>

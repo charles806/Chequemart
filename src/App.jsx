@@ -55,6 +55,7 @@ const MarketplaceLayout = () => {
 
 const App = () => {
   const [openCartPanel, setOpenCartPanel] = useState(false);
+  const [isOpenCatPanel, setIsOpenCatPanel] = useState(false);
   const [count, setCount] = useState(1);
   const [isLogin, setIsLogin] = useState(() => {
     return localStorage.getItem("isLogin") === "true";
@@ -99,6 +100,8 @@ const App = () => {
   const values = {
     openCartPanel,
     setOpenCartPanel,
+    isOpenCatPanel,
+    setIsOpenCatPanel,
     isLogin,
     setIsLogin,
     user,
@@ -111,6 +114,11 @@ const App = () => {
   // Correct toggle function for cart
   const toggleCartPanel = (newOpen) => {
     setOpenCartPanel(newOpen);
+  };
+
+  // Toggle function for category panel
+  const toggleCatPanel = (newOpen) => {
+    setIsOpenCatPanel(newOpen);
   };
 
   return (
@@ -130,7 +138,7 @@ const App = () => {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/verify" element={<Verify />} />
+            <Route path="/verify-email" element={<Verify />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/account" element={<Account />} />
@@ -155,7 +163,7 @@ const App = () => {
               Shopping Cart (3)
             </h4>
             <IoCloseSharp
-              className="text-2xl cursor-pointer text-gray-500 hover:text-primary transition"
+              className="text-2xl cursor-pointer text-gray-500 hover:text-[#ff5252] transition"
               onClick={() => toggleCartPanel(false)}
             />
           </div>
@@ -180,13 +188,13 @@ const App = () => {
                     Barca Home Kit 2024/2025
                   </h4>
 
-                  <p className="text-base font-semibold text-primary">
+                  <p className="text-base font-semibold text-[#ff5252]">
                     ₦10,000
                   </p>
 
                   <div className="flex items-center gap-2 mt-1">
                     <button
-                      className="w-6 h-6 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-primary hover:text-accent hover:bg-[#fff5f2] transition"
+                      className="w-6 h-6 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-[#ff5252] hover:text-accent hover:bg-[#fff5f2] transition"
                       onClick={() => setCount((prev) => Math.max(0, prev - 1))}
                     >
                       -
@@ -216,7 +224,7 @@ const App = () => {
               <span className="text-base text-gray-500 font-medium">
                 Subtotal:
               </span>
-              <span className="text-xl text-primary font-bold">₦9000</span>
+              <span className="text-xl text-[#ff5252] font-bold">₦9000</span>
             </div>
 
             <div className="flex flex-col gap-3">
@@ -227,7 +235,7 @@ const App = () => {
               </Link>
 
               <Link to="/cart">
-                <button className="w-full py-3 rounded-md font-semibold text-primary border-2 border-[#ff5252] hover:bg-[#fff5f2] transition cursor-pointer">
+                <button className="w-full py-3 rounded-md font-semibold text-[#ff5252] border-2 border-[#ff5252] hover:bg-[#fff5f2] transition cursor-pointer">
                   View Cart
                 </button>
               </Link>

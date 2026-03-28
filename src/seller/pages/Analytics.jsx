@@ -228,7 +228,7 @@ const TopProducts = ({ products }) => {
             <div className="flex items-center gap-2">
               <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  className="h-full rounded-full bg-[#ff5252] transition-all duration-500"
                   style={{ width: `${(p.revenue / max) * 100}%` }}
                 />
               </div>
@@ -308,7 +308,7 @@ export default function AnalyticsPage() {
               onClick={() => setPeriod(p)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition cursor-pointer
                 ${period === p
-                  ? "bg-primary text-white shadow-md shadow-red-200"
+                  ? "bg-[#ff5252] text-white shadow-md shadow-red-200"
                   : "text-gray-400 hover:text-gray-600"}`}
             >
               {p}
@@ -329,7 +329,7 @@ export default function AnalyticsPage() {
         <div className="flex items-start justify-between mb-4">
           <div>
             <h3 className="font-black text-gray-900 text-sm">Revenue</h3>
-            <p className="text-2xl font-black text-primary mt-0.5">{fmt(totalRev)}</p>
+            <p className="text-2xl font-black text-[#ff5252] mt-0.5">{fmt(totalRev)}</p>
           </div>
           <div className="text-right">
             <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Orders</p>

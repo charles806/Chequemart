@@ -51,7 +51,7 @@ const Topbar = ({ active, setOpen }) => {
         >
           <Icon d={ICONS.bell} size={20} className="text-gray-600" />
           {notifCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 min-w-4 h-4 rounded-full bg-primary
+            <span className="absolute top-1.5 right-1.5 min-w-4 h-4 rounded-full bg-[#ff5252]
               text-black text-[9px] font-bold flex items-center justify-center px-0.5">
               {notifCount > 9 ? "9+" : notifCount}
             </span>
@@ -60,7 +60,7 @@ const Topbar = ({ active, setOpen }) => {
 
         {/* Seller avatar — TODO (backend dev): replace with real user data */}
         <div className="flex items-center gap-2 pl-2 border-l border-black/10">
-          <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-red-300 flex items-center justify-center  font-bold text-xs shrink-0">
+          <div className="w-8 h-8 rounded-full bg-linear-to-br from-[#ff5252] to-red-300 flex items-center justify-center  font-bold text-xs shrink-0">
             {initials}
           </div>
           <span className="hidden md:block text-sm font-medium text-gray-700 max-w-30 truncate">

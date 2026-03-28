@@ -79,7 +79,7 @@ const EscrowDetail = ({ escrow, onRelease, onClose }) => {
       <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[90vh] animate-slide-up">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center">
               <Icon d={ICONS.escrow} size={15} className="text-purple-600" />
@@ -101,7 +101,7 @@ const EscrowDetail = ({ escrow, onRelease, onClose }) => {
         <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
 
           {/* Amount hero */}
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 border border-purple-200 rounded-2xl p-4 text-center space-y-1.5">
+          <div className="bg-linear-to-br from-purple-50 to-purple-100/50 border border-purple-200 rounded-2xl p-4 text-center space-y-1.5">
             <p className="text-3xl font-black text-gray-900">{fmt(escrow.amount)}</p>
             <StatusBadge status={escrow.status} />
           </div>
@@ -125,7 +125,7 @@ const EscrowDetail = ({ escrow, onRelease, onClose }) => {
           {/* Note */}
           {escrow.note && (
             <div className="flex gap-2 bg-blue-50 border border-blue-100 rounded-xl p-3">
-              <Icon d={ICONS.info} size={14} className="text-blue-400 flex-shrink-0 mt-0.5" />
+              <Icon d={ICONS.info} size={14} className="text-blue-400 shrink-0 mt-0.5" />
               <p className="text-xs text-gray-500 leading-relaxed">{escrow.note}</p>
             </div>
           )}
@@ -136,11 +136,11 @@ const EscrowDetail = ({ escrow, onRelease, onClose }) => {
             <div className="space-y-0">
               {TIMELINE.map((step, i) => (
                 <div key={i} className="flex items-center gap-3 py-2">
-                  <div className="flex flex-col items-center flex-shrink-0">
+                  <div className="flex flex-col items-center shrink-0">
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center
                       ${step.done ? "bg-green-500" : "bg-gray-200"}`}>
                       {step.done
-                        ? <Icon d={ICONS.check} size={10} className="text-white stroke-[3]" />
+                        ? <Icon d={ICONS.check} size={10} className="text-white stroke-3" />
                         : <div className="w-2 h-2 rounded-full bg-gray-400" />}
                     </div>
                     {i < TIMELINE.length - 1 && (
@@ -158,7 +158,7 @@ const EscrowDetail = ({ escrow, onRelease, onClose }) => {
           {/* Dispute note */}
           {escrow.status === "disputed" && (
             <div className="flex gap-2.5 bg-red-50 border border-red-200 rounded-xl p-3">
-              <Icon d={ICONS.warning} size={15} className="text-red-500 flex-shrink-0 mt-0.5" />
+              <Icon d={ICONS.warning} size={15} className="text-red-500 shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs font-bold text-red-600">Dispute In Progress</p>
                 <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
@@ -180,7 +180,7 @@ const EscrowDetail = ({ escrow, onRelease, onClose }) => {
               {releasing ? (
                 <><span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" /> Releasing…</>
               ) : (
-                <><Icon d={ICONS.check} size={15} className="stroke-[3]" /> Release Funds Now</>
+                <><Icon d={ICONS.check} size={15} className="stroke-3" /> Release Funds Now</>
               )}
             </button>
           )}
@@ -257,7 +257,7 @@ export default function EscrowPage() {
       </div>
 
       {/* Summary banner */}
-      <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-3xl p-5 shadow-xl shadow-purple-900/30">
+      <div className="bg-linear-to-br from-purple-600 to-purple-800 rounded-3xl p-5 shadow-xl shadow-purple-900/30">
         <div className="grid grid-cols-2 gap-3">
           {[
             ["Total Held",       fmt(summary.totalHeld),       "text-white"         ],
@@ -275,7 +275,7 @@ export default function EscrowPage() {
 
       {/* Auto-release policy card */}
       <div className="flex gap-3 bg-blue-50 border border-blue-200 rounded-2xl p-4">
-        <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
           <Icon d={ICONS.clock} size={16} className="text-blue-500" />
         </div>
         <div>
@@ -304,7 +304,7 @@ export default function EscrowPage() {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0
+            className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0
               transition cursor-pointer
               ${filter === f
                 ? "bg-purple-600 text-white shadow-md shadow-purple-200"
@@ -338,7 +338,7 @@ export default function EscrowPage() {
                 onClick={() => setSelected(escrow)}
               >
                 {/* Icon */}
-                <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0">
                   <Icon d={ICONS.escrow} size={18} className="text-purple-500" />
                 </div>
 
@@ -356,7 +356,7 @@ export default function EscrowPage() {
                 </div>
 
                 {/* Amount */}
-                <div className="text-right flex-shrink-0">
+                <div className="text-right shrink-0">
                   <p className="text-sm font-black text-gray-900">{fmt(escrow.amount)}</p>
                   <p className="text-[10px] text-gray-400 capitalize mt-0.5">{escrow.deliveryStatus}</p>
                 </div>
@@ -373,7 +373,7 @@ export default function EscrowPage() {
                     onClick={(e) => { e.stopPropagation(); handleRelease(escrow.id); }}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-500 text-white text-xs font-bold hover:bg-green-600 transition cursor-pointer"
                   >
-                    <Icon d={ICONS.check} size={12} className="stroke-[3]" />
+                    <Icon d={ICONS.check} size={12} className="stroke-3" />
                     Release Now
                   </button>
                 </div>

@@ -42,7 +42,7 @@ const MiniBarChart = ({ data }) => {
   const max = Math.max(...data.map((d) => d.revenue));
 
   return (
-    <div className="flex items-end gap-1.5 h-28 w-full">
+    <div className="flex items-end gap-1.5 h-28 w-full cursor-pointer">
       {data.map((d, i) => {
         const h   = Math.max((d.revenue / max) * 100, 4);
         const isH = hovered === i;
@@ -65,8 +65,8 @@ const MiniBarChart = ({ data }) => {
               style={{
                 height:     `${h}%`,
                 background: isH
-                  ? "linear-gradient(to top, var(--primary-color), var(--accent-color))"
-                  : "linear-gradient(to top, color-mix(in srgb, var(--primary-color) 33%, transparent), color-mix(in srgb, var(--primary-color) 66%, transparent))",
+                  ? "linear-gradient(to top, var(--[#ff5252]-color), var(--accent-color))"
+                  : "linear-gradient(to top, color-mix(in srgb, var(--[#ff5252]-color) 33%, transparent), color-mix(in srgb, var(--[#ff5252]-color) 66%, transparent))",
               }}
             />
             <span className="text-[9px] text-gray-400 font-semibold">{d.label}</span>
@@ -83,10 +83,10 @@ const MiniBarChart = ({ data }) => {
 const StatCard = ({ label, value, change, icon }) => {
   const positive = change >= 0;
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 cursor-pointer">
       <div className="flex items-start justify-between mb-3">
-        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-          <Icon d={icon} size={16} className="text-primary" />
+        <div className="w-9 h-9 rounded-xl bg-[#ff5252]/10 flex items-center justify-center">
+          <Icon d={icon} size={16} className="text-[#ff5252]" />
         </div>
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5
           ${positive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
@@ -114,7 +114,7 @@ export default function DashboardPage() {
     <div className="space-y-5">
 
       {/* Welcome banner */}
-      <div className="bg-linear-to-br from-dark to-dark-2 rounded-3xl p-5 shadow-xl shadow-black/20">
+      <div className="bg-linear-to-br from-dark to-dark-2 rounded-3xl p-5 shadow-xl shadow-black/20 cursor-pointer">
         <p className="text-black/60 text-sm mb-0.5">Welcome back 👋</p>
         <h2 className="text-black text-2xl font-black">{seller.storeName}</h2>
         <p className="text-black/40 text-xs mt-1">Here's what's happening in your store today.</p>
@@ -152,7 +152,7 @@ export default function DashboardPage() {
               {fmt(chartData.reduce((s, d) => s + d.revenue, 0))} this week
             </p>
           </div>
-          <Icon d={ICONS.bar} size={18} className="text-primary/30" />
+          <Icon d={ICONS.bar} size={18} className="text-[#ff5252]/30" />
         </div>
         <MiniBarChart data={chartData} />
       </div>
@@ -161,15 +161,15 @@ export default function DashboardPage() {
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
           <h3 className="font-black text-gray-900 text-sm">Recent Orders</h3>
-          <span className="text-[10px] text-primary font-bold cursor-pointer hover:underline">
+          <span className="text-[10px] text-[#ff5252] font-bold cursor-pointer hover:underline">
             View all
           </span>
         </div>
         <div className="divide-y divide-gray-50">
           {recentOrders.map((order) => (
             <div key={order.id} className="px-5 py-3.5 flex items-center gap-3 hover:bg-gray-50/50 transition">
-              <div className="w-9 h-9 rounded-xl bg-primary/8 flex items-center justify-center flex-shrink-0">
-                <Icon d={ICONS.truck} size={16} className="text-primary" />
+              <div className="w-9 h-9 rounded-xl bg-[#ff5252]/8 flex items-center justify-center shrink-0">
+                <Icon d={ICONS.truck} size={16} className="text-[#ff5252]" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-800 truncate">{order.product}</p>
@@ -178,7 +178,7 @@ export default function DashboardPage() {
                   <p className="text-[10px] text-gray-400">{order.customer}</p>
                 </div>
               </div>
-              <div className="text-right flex-shrink-0 space-y-1">
+              <div className="text-right shrink-0 space-y-1">
                 <p className="text-sm font-black text-gray-900">{fmt(order.amount)}</p>
                 <StatusBadge status={order.status} />
               </div>

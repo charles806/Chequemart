@@ -34,7 +34,7 @@ const Sidebar = ({ open, setOpen }) => {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center gap-3 px-6 py-4 border-b border-black/5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-red-300 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#ff5252] to-red-300 flex items-center justify-center">
               <span className="text-white font-bold text-sm">S</span>
             </div>
             <span className="text-lg font-bold text-gray-900">Seller Hub</span>
@@ -49,7 +49,7 @@ const Sidebar = ({ open, setOpen }) => {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-primary/10 text-primary"
+                      ? "bg-[#ff5252]/10 text-[#ff5252]"
                       : "text-gray-600 hover:bg-black/5 hover:text-gray-900"
                   }`
                 }

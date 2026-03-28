@@ -107,15 +107,15 @@ const MyList = () => {
         console.log("Added to cart:", id)
     }
 
-    const handleShare = () => {
-        if (navigator.share) {
-            navigator.share({
-                title: 'My Wishlist',
-                text: 'Check out my wishlist!',
-                url: window.location.href
-            })
-        }
-    }
+    // const handleShare = () => {
+    //     if (navigator.share) {   
+    //         navigator.share({
+    //             title: 'My Wishlist',
+    //             text: 'Check out my wishlist!',
+    //             url: window.location.href
+    //         })
+    //     }
+    // }
 
     const sortOptions = [
         { label: 'Date Added (Newest)', value: 'date-desc' },
@@ -171,7 +171,7 @@ const MyList = () => {
                                             </MenuItem>
                                         ))}
                                     </Menu>
-                                    <Button
+                                    {/* <Button
                                         variant="outlined"
                                         size="small"
                                         startIcon={<FaShareAlt />}
@@ -179,7 +179,7 @@ const MyList = () => {
                                         className="border-gray-300! text-gray-600! hover:border-[#ff5252]! hover:text-[#ff5252]!"
                                     >
                                         Share
-                                    </Button>
+                                    </Button> */}
                                 </>
                             )}
                         </div>
@@ -201,7 +201,7 @@ const MyList = () => {
                         </p>
                         <Button
                             variant="contained"
-                            className="bg-gradient-to-r from-[#ff5252] to-[#ff7b7b]! hover:from-[#e04848]! hover:to-[#ff5252]! text-white! px-8 py-2.5! rounded-lg!"
+                            className="bg-linear-to-r from-[#ff5252] to-[#ff7b7b]! hover:from-[#e04848]! hover:to-[#ff5252]! text-white! px-8 py-2.5! rounded-lg!"
                         >
                             <Link to="/products" className="text-white!">
                                 Start Shopping

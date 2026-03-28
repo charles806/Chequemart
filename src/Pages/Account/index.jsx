@@ -376,7 +376,7 @@ const Account = () => {
                         <ul className="list-none mt-2 flex flex-col gap-1">
                             <li className='w-full'>
                                 <Button
-                                    className={`w-full! text-left! px-5! flex items-center gap-5 h-10! md:h-11! !justify-start rounded-md! text-sm! capitalize! transition-all! ${nav === 'profile' ? 'bg-primary! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
+                                    className={`w-full! text-left! px-5! flex items-center gap-5 h-10! md:h-11! justify-start! rounded-md! text-sm! capitalize! transition-all! ${nav === 'profile' ? 'bg-[#ff525]! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
                                     onClick={() => setNav('profile')}
                                 >
                                     <FaRegUser className='text-lg shrink-0' />
@@ -385,7 +385,7 @@ const Account = () => {
                             </li>
                             <li className='w-full'>
                                 <Button
-                                    className={`w-full! !text-left px-5! flex items-center gap-5 h-10! md:h-11! !justify-start rounded-md! text-sm! capitalize! transition-all! ${nav === 'list' ? 'bg-primary! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
+                                    className={`w-full! text-left! px-5! flex items-center gap-5 h-10! md:h-11! justify-start! rounded-md! text-sm! capitalize! transition-all! ${nav === 'list' ? 'bg-[#ff525]! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
                                     onClick={() => setNav('list')}
                                 >
                                     <FaHeart className='text-lg shrink-0' />
@@ -394,7 +394,7 @@ const Account = () => {
                             </li>
                             <li className='w-full'>
                                 <Button
-                                    className={`w-full! !text-left px-5! flex items-center gap-5 h-10! md:h-11! !justify-start rounded-md! text-sm! capitalize! transition-all! ${nav === 'orders' ? 'bg-primary! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
+                                    className={`w-full! text-left! px-5! flex items-center gap-5 h-10! md:h-11! justify-start! rounded-md! text-sm! capitalize! transition-all! ${nav === 'orders' ? 'bg-[#ff525]! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
                                     onClick={() => navigate('/orders')}
                                 >
                                     <FaShoppingBag className='text-lg shrink-0' />
@@ -404,17 +404,17 @@ const Account = () => {
                             {context.user?.role === 'buyer' && (
                                 <li className='w-full'>
                                     <Button
-                                        className={`w-full! !text-left px-5! flex items-center gap-5 h-10! md:h-11! !justify-start rounded-md! text-sm! capitalize! transition-all! ${nav === 'seller' ? 'bg-primary! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
+                                        className={`w-full! text-left! px-5! text-white! flex items-center gap-5 h-10! md:h-11! justify-start! rounded-md! text-sm! capitalize! transition-all! ${nav === 'seller' ? 'bg-[#ff525]! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
                                         onClick={() => setNav('seller')}
                                     >
                                         <FaShoppingBag className='text-lg shrink-0' />
-                                        Become a Seller
+                                        Become a Seller 
                                     </Button>
                                 </li>
                             )}
                             <li className='w-full pt-2 mt-2 border-t border-gray-100'>
                                 <Button
-                                    className='w-full! !text-left px-5! flex items-center text-red-600! gap-5 h-10! md:h-11! !justify-start rounded-md! text-sm! capitalize! hover:bg-red-50!'
+                                    className='w-full! text-left! px-5! flex items-center text-red-600! gap-5 h-10! md:h-11! justify-start! rounded-md! text-sm! capitalize! hover:bg-red-50!'
                                     onClick={handleLogout}
                                 >
                                     <CiLogout className='text-lg shrink-0' />
@@ -511,7 +511,7 @@ const Account = () => {
                                         type="submit"
                                         variant="contained"
                                         disabled={loading}
-                                        className="bg-[#ff5252]! hover:bg-[#ff5252]! ! px-8! py-2.5! rounded-md! font-semibold! transition-all!"
+                                        className="bg-[#ff5252]! text-white! hover:bg-[#ff5252]! ! px-8! py-2.5! rounded-md! font-semibold! transition-all!"
                                         startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                                     >
                                         Save Changes
@@ -556,7 +556,7 @@ const Account = () => {
                                     </div>
                                     <div className="col">
                                         <TextField
-                                            label="Business Category"
+                                            // label="Business Category"
                                             name="businessCategory"
                                             value={sellerForm.businessCategory}
                                             onChange={(e) => setSellerForm({ ...sellerForm, businessCategory: e.target.value })}
@@ -646,7 +646,7 @@ const Account = () => {
                     Change Password
                 </DialogTitle>
                 <DialogContent>
-                    <div className="pt-2 space-y-4">
+                    <div className="pt-2 flex flex-col gap-5 space-y-4">
                         <TextField
                             label="Current Password"
                             type={showPasswords.current ? 'text' : 'password'}
@@ -718,7 +718,7 @@ const Account = () => {
                         onClick={handlePasswordChange}
                         variant="contained"
                         disabled={passwordLoading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
-                        className="bg-[#ff5252]! hover:bg-[#ff5252]!"
+                        className="bg-[#ff5252]! hover:bg-[#ff5252]! text-white! cursor-pointer!"
                         startIcon={passwordLoading ? <CircularProgress size={20} color="inherit" /> : null}
                     >
                         Update Password
