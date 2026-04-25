@@ -24,7 +24,7 @@
 
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { SellerProvider } from "./context/SellerContext";
-import DashboardLayout from "./components/layout/DashboardLayout";
+import DashboardLayout from "./components/layout/DashboardLayout.jsx";
 import Onboarding from "./pages/Onboarding.jsx"
 import DashboardPage from "./pages/Dashboard";
 import StorefrontPage from "./pages/Storefront";
