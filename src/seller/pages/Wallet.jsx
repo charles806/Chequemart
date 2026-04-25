@@ -37,17 +37,14 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { useState }        from "react";
-import Icon                from "../components/ui/Icon";
-import StatusBadge         from "../components/ui/StatusBadge";
+import { useState, useEffect } from "react";
+import Icon from "../components/ui/Icon";
+import StatusBadge from "../components/ui/StatusBadge";
 import Toast, { useToast } from "../components/ui/Toast";
-import { ICONS }           from "../components/ui/icons";
-import { useSeller }       from "../context/SellerContext";
-import {
-  mockTransactions,
-  mockBankAccounts,
-  BANKS_LIST,
-} from "../mock/wallet";
+import { ICONS } from "../components/ui/icons";
+import { useSeller } from "../context/SellerContext";
+import CircularProgress from "@mui/material/CircularProgress";
+import { BANKS_LIST } from "../constants/banks";
 
 const fmt = (n) => "₦" + Number(n).toLocaleString();
 
@@ -449,37 +446,79 @@ const WithdrawModal = ({ wallet, bankAccounts, onSuccess, onClose, onAddBank }) 
 // WALLET PAGE
 // ─────────────────────────────────────────────────────────────
 export default function WalletPage() {
-  const { wallet, setWallet }     = useSeller();
-  const [transactions, setTxns]   = useState(mockTransactions);
-  const [bankAccounts, setBanks]  = useState(mockBankAccounts);
-  const [showWithdraw, setWithdraw] = useState(false);
-  const [showAddBank,  setAddBank]  = useState(false);
-  const [txFilter,     setTxFilter] = useState("all");
-  const { toast, showToast }        = useToast();
+    const { wallet, setWallet } = useSeller();
+    const [transactions, setTxns] = useState([]);
+    const [bankAccounts, setBanks] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showWithdraw, setWithdraw] = useState(false);
+    const [showAddBank, setAddBank] = useState(false);
+    const [txFilter, setTxFilter] = useState("all");
+    const { toast, showToast } = useToast();
 
-  const handleWithdrawSuccess = (amount) => {
-    // Optimistic update — webhook will confirm final status
-    setWallet((w) => ({ ...w, availableBalance: w.availableBalance - amount }));
-    setTxns((prev) => [{
-      id:          `TXN-${Date.now()}`,
-      type:        "debit",
-      description: "Withdrawal to bank (processing…)",
-      amount,
-      status:      "pending",
-      date:        "Just now",
-      reference:   `WTH-${Date.now()}`,
-    }, ...prev]);
-    showToast("✅ Withdrawal request submitted");
-  };
+    const fetchWalletData = async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem("accessToken");
+            const headers = { Authorization: `Bearer ${token}` };
 
-  const handleAddBank = (account) => {
-    setBanks((prev) => [...prev, account]);
-    showToast("✅ Bank account added");
-  };
+            const [txRes, bankRes] = await Promise.all([
+                fetch(`${import.meta.env.VITE_API_URL}/api/seller/wallet/transactions`, { headers }),
+                fetch(`${import.meta.env.VITE_API_URL}/api/seller/bank-accounts`, { headers })
+            ]);
 
-  const filteredTx = transactions.filter((t) =>
-    txFilter === "all" ? true : t.type === txFilter
-  );
+            const txData = await txRes.json();
+            const bankData = await bankRes.json();
+
+            if (txData.success) setTxns(txData.transactions);
+            if (bankData.success) setBanks(bankData.accounts);
+        } catch (error) {
+            console.error("Wallet data fetch failed:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchWalletData();
+    }, []);
+
+    const handleWithdrawSuccess = (amount) => {
+        showToast("✅ Withdrawal request submitted");
+        fetchWalletData(); // Refresh to show new transaction
+    };
+
+    const handleAddBank = async (account) => {
+        try {
+            const token = localStorage.getItem("accessToken");
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/seller/bank-accounts`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(account)
+            });
+
+            if (res.ok) {
+                showToast("✅ Bank account added");
+                fetchWalletData();
+            }
+        } catch (error) {
+            showToast("❌ Failed to add bank account");
+        }
+    };
+
+    const filteredTx = transactions.filter((t) =>
+        txFilter === "all" ? true : t.type.toLowerCase() === txFilter
+    );
+
+    if (loading) {
+        return (
+            <div className="h-96 flex items-center justify-center">
+                <CircularProgress size={40} className="text-[#ff5252]" />
+            </div>
+        );
+    }
 
   return (
     <div className="space-y-4">

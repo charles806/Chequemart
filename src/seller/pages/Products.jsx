@@ -24,13 +24,13 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { useState }        from "react";
-import Icon                from "../components/ui/Icon";
-import StatusBadge         from "../components/ui/StatusBadge";
-import ProductModal        from "../components/ui/ProductModal";
+import { useState, useEffect } from "react";
+import Icon from "../components/ui/Icon";
+import StatusBadge from "../components/ui/StatusBadge";
+import ProductModal from "../components/ui/ProductModal";
 import Toast, { useToast } from "../components/ui/Toast";
-import { ICONS }           from "../components/ui/icons";
-import { mockProducts }    from "../mock/products";
+import { ICONS } from "../components/ui/icons";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const fmt = (n) => "₦" + Number(n).toLocaleString();
 
@@ -75,49 +75,105 @@ const DeleteConfirm = ({ product, onConfirm, onClose }) => (
 // PRODUCTS PAGE
 // ─────────────────────────────────────────────────────────────
 export default function ProductsPage() {
-  const [products,     setProducts]     = useState(mockProducts);
-  const [search,       setSearch]       = useState("");
-  const [modalProduct, setModalProduct] = useState(undefined); // undefined=closed, null=add, obj=edit
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const { toast, showToast }            = useToast();
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState("");
+    const [modalProduct, setModalProduct] = useState(undefined); // undefined=closed, null=add, obj=edit
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const { toast, showToast } = useToast();
 
-  // ── Derived stats ─────────────────────────────────────────
-  const total    = products.length;
-  const active   = products.filter((p) => p.status === "Active").length;
-  const lowStock = products.filter((p) => p.status === "Low Stock").length;
-  const out      = products.filter((p) => p.status === "Out").length;
+    const fetchProducts = async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem("accessToken");
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my-products`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                setProducts(data.products);
+            }
+        } catch (error) {
+            console.error("Fetch products failed:", error);
+            showToast("❌ Failed to load products");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  // ── Filtered list ─────────────────────────────────────────
-  const filtered = products.filter((p) => {
-    const q = search.toLowerCase();
-    return (
-      p.name.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q) ||
-      p.sku.toLowerCase().includes(q)
-    );
-  });
+    useEffect(() => {
+        fetchProducts();
+    }, []);
 
-  // ── Handlers ──────────────────────────────────────────────
+    // ── Derived stats ─────────────────────────────────────────
+    const total = products.length;
+    const active = products.filter((p) => p.status === "Active").length;
+    const lowStock = products.filter((p) => p.status === "Low Stock").length;
+    const out = products.filter((p) => p.status === "Out").length;
 
-  // POST /api/seller/products/add  OR  PUT /api/seller/products/:id
-  const handleSave = (saved) => {
-    setProducts((prev) => {
-      const exists = prev.find((p) => p.id === saved.id);
-      return exists
-        ? prev.map((p) => (p.id === saved.id ? saved : p))
-        : [saved, ...prev];
+    // ── Filtered list ─────────────────────────────────────────
+    const filtered = products.filter((p) => {
+        const q = search.toLowerCase();
+        return (
+            p.name.toLowerCase().includes(q) ||
+            p.category.toLowerCase().includes(q) ||
+            (p.sku && p.sku.toLowerCase().includes(q))
+        );
     });
-    showToast(saved.id && products.find((p) => p.id === saved.id)
-      ? "✅ Product updated"
-      : "✅ Product added");
-  };
 
-  // DELETE /api/seller/products/:id
-  const handleDelete = () => {
-    setProducts((prev) => prev.filter((p) => p.id !== deleteTarget.id));
-    setDeleteTarget(null);
-    showToast("🗑️ Product deleted");
-  };
+    // ── Handlers ──────────────────────────────────────────────
+
+    // POST /api/seller/products/add  OR  PUT /api/seller/products/:id
+    const handleSave = async (payload) => {
+        const isEdit = !!modalProduct?._id;
+        try {
+            const token = localStorage.getItem("accessToken");
+            const url = isEdit
+                ? `${import.meta.env.VITE_API_URL}/api/products/${modalProduct._id}`
+                : `${import.meta.env.VITE_API_URL}/api/products`;
+
+            const res = await fetch(url, {
+                method: isEdit ? "PUT" : "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                showToast(isEdit ? "✅ Product updated" : "✅ Product added");
+                fetchProducts();
+                setModalProduct(undefined);
+            } else {
+                showToast(`❌ ${data.message || "Failed to save product"}`);
+            }
+        } catch (error) {
+            showToast("❌ Network error. Try again.");
+        }
+    };
+
+    // DELETE /api/seller/products/:id
+    const handleDelete = async () => {
+        try {
+            const token = localStorage.getItem("accessToken");
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${deleteTarget._id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                showToast("🗑️ Product deleted");
+                fetchProducts();
+                setDeleteTarget(null);
+            } else {
+                showToast("❌ Failed to delete product");
+            }
+        } catch (error) {
+            showToast("❌ Network error. Try again.");
+        }
+    };
 
   return (
     <div className="space-y-4">
@@ -165,8 +221,12 @@ export default function ProductsPage() {
       </div>
 
       {/* Products list */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-        {filtered.length === 0 ? (
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[300px]">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <CircularProgress size={30} className="text-[#ff5252]" />
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-14 text-gray-400">
             <Icon d={ICONS.package} size={36} className="mx-auto mb-2 opacity-20" />
             <p className="text-sm font-semibold">No products found</p>
@@ -174,11 +234,15 @@ export default function ProductsPage() {
         ) : (
           <div className="divide-y divide-gray-50">
             {filtered.map((product) => (
-              <div key={product.id} className="px-5 py-4 flex items-center gap-3 hover:bg-gray-50/50 transition">
+              <div key={product._id} className="px-5 py-4 flex items-center gap-3 hover:bg-gray-50/50 transition">
 
-                {/* Placeholder image / initial */}
-                <div className="w-12 h-12 rounded-xl bg-primary/8 flex items-center justify-center shrink-0 text-primary font-black text-sm">
-                  {product.name.charAt(0)}
+                {/* Image */}
+                <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center shrink-0 text-[#ff5252] font-black text-sm overflow-hidden border border-red-100">
+                   {product.images && product.images.length > 0 ? (
+                     <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
+                   ) : (
+                     product.name.charAt(0)
+                   )}
                 </div>
 
                 {/* Info */}
@@ -188,7 +252,7 @@ export default function ProductsPage() {
                     <StatusBadge status={product.status} />
                   </div>
                   <p className="text-[11px] text-gray-400 mt-0.5">
-                    {product.category} · {product.sku} · {product.stock} in stock
+                    {product.category} · {product.sku || "No SKU"} · {product.stock} in stock
                   </p>
                 </div>
 

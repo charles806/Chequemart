@@ -54,6 +54,8 @@ const Register = () => {
         }
         if (formFields.password.length < 8) {
             newErrors.password = "Password must be at least 8 characters.";
+        } else if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formFields.password)) {
+            newErrors.password = "Password must contain uppercase, lowercase, and number.";
         }
         if (formFields.password !== formFields.confirmPassword) {
             newErrors.confirmPassword = "Passwords do not match.";
@@ -222,7 +224,7 @@ const Register = () => {
                         <TextField fullWidth type={isShowPassword ? "text" : "password"}
                             label="Password" variant="standard"
                             name="password" value={formFields.password} onChange={handleChange}
-                            error={!!errors.password} helperText={errors.password} />
+                            error={!!errors.password} helperText={errors.password || "Min 8 characters, with upper, lower, & number"} />
                         <Button type="button" disableRipple
                             onClick={() => setIsShowPassword(!isShowPassword)}
                             className="!absolute !top-2 !right-0 !w-10 !h-10 !min-w-[40px] !rounded-full !text-black/60 hover:bg-black/5!">

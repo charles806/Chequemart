@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import verifyImg from "../../assets/image/verify3.png";
@@ -9,12 +9,17 @@ const Verify = () => {
     const navigate = useNavigate();
     const [status, setStatus] = useState("verifying");
     const token = searchParams.get("token");
+    const hasFetched = useRef(false);
+    const context = React.useContext(MyContext);
 
     useEffect(() => {
         if (!token) {
             setStatus("error");
             return;
         }
+
+        if (hasFetched.current) return;
+        hasFetched.current = true;
 
         const verifyEmail = async () => {
             try {
@@ -25,15 +30,15 @@ const Verify = () => {
 
                 if (data.success) {
                     setStatus("success");
-                    toast.success("Email verified successfully!");
+                    context.openAlertBox?.("success", "Email verified successfully!");
                     setTimeout(() => navigate("/login"), 2000);
                 } else {
                     setStatus("error");
-                    toast.error(data.message || "Verification failed");
+                    context.openAlertBox?.("error", data.message || "Verification failed");
                 }
             } catch (error) {
                 setStatus("error");
-                toast.error("Something went wrong. Please try again.");
+                context.openAlertBox?.("error", "Something went wrong. Please try again.");
             }
         };
 

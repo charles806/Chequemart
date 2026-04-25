@@ -55,43 +55,8 @@ const Header = () => {
   };
 
 
-  // Persist login state from localStorage on mount
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState({ name: '', email: '' });
-
-  useEffect(() => {
-    const storedIsLogin = localStorage.getItem("isLogin") === "true";
-    const storedUser = localStorage.getItem("user");
-    const storedToken = localStorage.getItem("accessToken");
-
-    setIsLoggedIn(storedIsLogin);
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
-        setUserData({ name: user.name || 'User', email: user.email || '' });
-      } catch (e) {
-        setUserData({ name: 'User', email: '' });
-      }
-    }
-
-    // Update context if needed
-    if (storedIsLogin && storedToken && context.login && context.user === null) {
-      if (storedUser) {
-        context.login(JSON.parse(storedUser), storedToken);
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const handleLogout = () => {
     handleCloseMenu();
-    // Clear localStorage
-    localStorage.removeItem("user");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("isLogin");
-    setIsLoggedIn(false);
-    setUserData({ name: '', email: '' });
-    // Call context logout
     if (context.logout) {
       context.logout();
     }
@@ -112,7 +77,7 @@ const Header = () => {
           <div className="flex items-center justify-between px-4">
             <div className="col1 hidden lg:block">
               <p className="text-[12px] font-medium mt-0 mb-0">
-                Trusted By 1000+ Customers across Nigeria
+                Trusted By 100+ Customers across Nigeria
               </p>
             </div>
 
@@ -124,10 +89,10 @@ const Header = () => {
                 Help Center
               </Link>
               <Link
-                to="/seller/dashboard"
+                to={context.user?.role === "seller" ? "/seller/dashboard" : "/account?openBecomeSeller=true"}
                 className="text-[11px] lg:text-[13px] link font-medium transition"
               >
-                Seller Dashboard
+                {context.user?.role === "seller" ? "Seller Dashboard" : "Sell on Chequemart"}
               </Link>
             </div>
           </div>
@@ -152,7 +117,7 @@ const Header = () => {
             </Link>
           </div>
 
-          <div className="col2 hidden lg:block lg:w-[40%] lg:shrink-0!">
+          <div className="col2 hidden lg:block lg:w-[30%] lg:shrink-0!">
             <div className="searchBox w-full h-12.5 bg-[#e5e5e5] rounded-[5px] relative p-2">
               <input
                 type="text"
@@ -166,11 +131,11 @@ const Header = () => {
             </div>
           </div>
 
-          <div className="col3 w-auto lg:w-[30%] flex items-center shrink-0!">
+          <div className="col3 w-auto lg:w-[40%] flex items-center shrink-0!">
 
 
             <ul className="flex items-center justify-end gap-3 w-full">
-              {!isLoggedIn ? (
+              {!context.isLogin ? (
                 <li className="list-none whitespace-nowrap hidden lg:block">
                   <Link
                     to="/login"
@@ -197,8 +162,8 @@ const Header = () => {
                       </span>
 
                       <div className="info flex flex-col cursor-pointer">
-                        <h4 className="leading-3 text-[13px] mb-0 capitalize text-left justify-start">{userData.name || context.user?.name || "User"}</h4>
-                        <span className="text-[14px] lowercase">{userData.email || context.user?.email || "user@example.com"}</span>
+                        <h4 className="leading-3 text-[13px] mb-0 capitalize text-left justify-start">{context.user?.name || "User"}</h4>
+                        <span className="text-[14px] lowercase">{context.user?.email || "user@example.com"}</span>
                       </div>
                     </Button>
 
@@ -306,6 +271,8 @@ const Header = () => {
       <div className="hidden lg:block border-b border-black/10">
         <Navigation />
       </div>
+
+      {/* Bottom Nav */}
 
       <div className="mobileNav lg:hidden bg-white p-1 px-3 w-full flex items-center justify-between fixed bottom-0 left-0 gap-0 z-51">
         <Link to="/">

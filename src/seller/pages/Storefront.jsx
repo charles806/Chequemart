@@ -23,7 +23,7 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { useState, useRef }  from "react";
+import { useState, useEffect, useRef }  from "react";
 import Icon                  from "../components/ui/Icon";
 import Toast, { useToast }   from "../components/ui/Toast";
 import { ICONS }             from "../components/ui/icons";
@@ -168,20 +168,36 @@ const StorePreview = ({ form, stats }) => (
 // STOREFRONT PAGE
 // ─────────────────────────────────────────────────────────────
 export default function StorefrontPage() {
-  const { setSeller }      = useSeller();
+  const { seller, setSeller } = useSeller();
   const { toast, showToast } = useToast();
 
   const [form, setForm] = useState({
-    storeName:     MOCK_PROFILE.storeName,
-    description:   MOCK_PROFILE.description,
-    location:      MOCK_PROFILE.location,
-    category:      MOCK_PROFILE.category,
-    instagram:     MOCK_PROFILE.socialLinks.instagram,
-    twitter:       MOCK_PROFILE.socialLinks.twitter,
-    whatsapp:      MOCK_PROFILE.socialLinks.whatsapp,
-    logoPreview:   MOCK_PROFILE.logo,
-    bannerPreview: MOCK_PROFILE.banner,
+    storeName: seller?.sellerInfo?.storeName || "",
+    description: seller?.sellerInfo?.description || "",
+    location: seller?.sellerInfo?.location || "",
+    category: seller?.sellerInfo?.category || "",
+    instagram: seller?.sellerInfo?.socialLinks?.instagram || "",
+    twitter: seller?.sellerInfo?.socialLinks?.twitter || "",
+    whatsapp: seller?.sellerInfo?.socialLinks?.whatsapp || "",
+    logoPreview: seller?.sellerInfo?.logo || "",
+    bannerPreview: seller?.sellerInfo?.banner || "",
   });
+
+  useEffect(() => {
+    if (seller?.sellerInfo) {
+      setForm({
+        storeName: seller.sellerInfo.storeName || "",
+        description: seller.sellerInfo.description || "",
+        location: seller.sellerInfo.location || "",
+        category: seller.sellerInfo.category || "",
+        instagram: seller.sellerInfo.socialLinks?.instagram || "",
+        twitter: seller.sellerInfo.socialLinks?.twitter || "",
+        whatsapp: seller.sellerInfo.socialLinks?.whatsapp || "",
+        logoPreview: seller.sellerInfo.logo || "",
+        bannerPreview: seller.sellerInfo.banner || "",
+      });
+    }
+  }, [seller]);
 
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
@@ -189,18 +205,46 @@ export default function StorefrontPage() {
   const update = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
-  // PUT /api/seller/profile
-  const handleSave = () => {
+  // PUT /api/users/profile
+  const handleSave = async () => {
     setSaving(true);
-    // TODO: replace setTimeout with real fetch call
-    setTimeout(() => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          sellerInfo: {
+            storeName: form.storeName,
+            description: form.description,
+            location: form.location,
+            category: form.category,
+            socialLinks: {
+              instagram: form.instagram,
+              twitter: form.twitter,
+              whatsapp: form.whatsapp
+            },
+            logo: form.logoPreview,
+            banner: form.bannerPreview
+          }
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setSaving(false);
+        setSaved(true);
+        setSeller(data.user);
+        showToast("✅ Store profile updated successfully");
+        setTimeout(() => setSaved(false), 2500);
+      }
+    } catch (error) {
+      showToast("❌ Failed to update profile");
       setSaving(false);
-      setSaved(true);
-      // Update global context so Topbar/Sidebar reflect new store name
-      setSeller((prev) => ({ ...prev, storeName: form.storeName }));
-      showToast("✅ Store profile updated successfully");
-      setTimeout(() => setSaved(false), 2500);
-    }, 800);
+    }
   };
 
   const stats = {

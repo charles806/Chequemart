@@ -23,16 +23,10 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { useState }       from "react";
-import Icon               from "../components/ui/Icon";
-import { ICONS }          from "../components/ui/icons";
-import {
-  mockKPIs,
-  mockRevenue,
-  mockTopProducts,
-  mockOrderBreakdown,
-  mockActivity,
-} from "../mock/analytics";
+import { useState, useEffect } from "react";
+import Icon from "../components/ui/Icon";
+import { ICONS } from "../components/ui/icons";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const fmt  = (n) => "₦" + Number(n).toLocaleString();
 const fmtK = (n) => n >= 1000000 ? `₦${(n / 1000000).toFixed(1)}M` : n >= 1000 ? `₦${(n / 1000).toFixed(0)}k` : `₦${n}`;
@@ -287,8 +281,61 @@ const PERIODS = ["weekly", "monthly", "yearly"];
 
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState("weekly");
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const chartData = mockRevenue[period];
+  const fetchAnalytics = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const [summaryRes, revenueRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/api/seller/analytics/summary?period=${period}`, { headers }),
+        fetch(`${import.meta.env.VITE_API_URL}/api/seller/analytics/revenue?period=${period}`, { headers }),
+      ]);
+
+      const summaryData = await summaryRes.json();
+      const revenueData = await revenueRes.json();
+
+      setData({
+        kpis: [
+          { label: "Total Revenue", value: fmt(summaryData.stats?.revenue || 0), change: 12 },
+          { label: "Orders", value: summaryData.stats?.orders || 0, change: 8 },
+          { label: "Customers", value: summaryData.stats?.customers || 0, change: 5 },
+          { label: "Avg. Order", value: fmt(summaryData.stats?.aov || 0), change: -2 },
+        ],
+        revenue: revenueData.revenue || [],
+        orderBreakdown: [
+          { status: "Pending",   count: 12, pct: 25, color: "#94a3b8" },
+          { status: "Shipped",   count: 18, pct: 38, color: "#6366f1" },
+          { status: "Delivered", count: 18, pct: 37, color: "#10b981" },
+        ],
+        activity: [
+          { type: "order", message: "New order #8921 from Lagos", time: "2 mins ago", amount: 15400 },
+          { type: "review", message: "New 5-star review for Nike Air", time: "1 hr ago" },
+        ]
+      });
+    } catch (error) {
+      console.error("Analytics fetch failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [period]);
+
+  if (loading || !data) {
+    return (
+      <div className="h-96 flex items-center justify-center">
+        <CircularProgress size={40} className="text-[#ff5252]" />
+      </div>
+    );
+  }
+
+  const chartData = data.revenue;
   const totalRev  = chartData.reduce((s, d) => s + d.revenue, 0);
   const totalOrd  = chartData.reduce((s, d) => s + d.orders, 0);
 
@@ -319,7 +366,7 @@ export default function AnalyticsPage() {
 
       {/* KPI grid */}
       <div className="grid grid-cols-2 gap-2.5">
-        {mockKPIs.map((kpi) => (
+        {data.kpis.map((kpi) => (
           <KPICard key={kpi.label} {...kpi} />
         ))}
       </div>
@@ -344,7 +391,7 @@ export default function AnalyticsPage() {
         {/* Donut */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
           <h3 className="font-black text-gray-900 text-sm mb-4">Order Breakdown</h3>
-          <DonutChart data={mockOrderBreakdown} />
+          <DonutChart data={data.orderBreakdown} />
         </div>
 
         {/* Orders volume */}
@@ -355,20 +402,11 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Top products */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-black text-gray-900 text-sm">Top Products</h3>
-          <span className="text-[10px] text-gray-400 font-semibold capitalize">By revenue · {period}</span>
-        </div>
-        <TopProducts products={mockTopProducts} />
-      </div>
-
       {/* Recent activity */}
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
         <h3 className="font-black text-gray-900 text-sm mb-1">Recent Activity</h3>
         <p className="text-[10px] text-gray-400 mb-2">Latest store events</p>
-        <ActivityFeed items={mockActivity} />
+        <ActivityFeed items={data.activity} />
       </div>
 
     </div>

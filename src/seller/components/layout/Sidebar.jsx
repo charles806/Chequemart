@@ -37,7 +37,7 @@ const Sidebar = ({ open, setOpen }) => {
             <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#ff5252] to-red-300 flex items-center justify-center">
               <span className="text-white font-bold text-sm">S</span>
             </div>
-            <span className="text-lg font-bold text-gray-900">Seller Hub</span>
+            <span className="text-lg font-bold text-gray-900">Seller Dashboard</span>
           </div>
 
           {/* Navigation */}
@@ -47,10 +47,9 @@ const Sidebar = ({ open, setOpen }) => {
                 key={item.key}
                 to={`/seller/${item.key}`}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-[#ff5252]/10 text-[#ff5252]"
-                      : "text-gray-600 hover:bg-black/5 hover:text-gray-900"
+                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
+                    ? "bg-[#ff5252]/10 text-[#ff5252]"
+                    : "text-gray-600 hover:bg-black/5 hover:text-gray-900"
                   }`
                 }
                 onClick={() => setOpen(false)}

@@ -22,12 +22,12 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { useState }        from "react";
-import Icon                from "../components/ui/Icon";
-import StatusBadge         from "../components/ui/StatusBadge";
+import { useState, useEffect } from "react";
+import Icon from "../components/ui/Icon";
+import StatusBadge from "../components/ui/StatusBadge";
 import Toast, { useToast } from "../components/ui/Toast";
-import { ICONS }           from "../components/ui/icons";
-import { mockProducts }    from "../mock/products";
+import { ICONS } from "../components/ui/icons";
+import CircularProgress from "@mui/material/CircularProgress";
 
 // ─────────────────────────────────────────────────────────────
 // RESTOCK MODAL
@@ -153,25 +153,55 @@ const RestockModal = ({ product, onSave, onClose }) => {
 // INVENTORY PAGE
 // ─────────────────────────────────────────────────────────────
 export default function InventoryPage() {
-  const [products,   setProducts]   = useState(mockProducts);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [restocking, setRestocking] = useState(null);
-  const [search,     setSearch]     = useState("");
-  const [filter,     setFilter]     = useState("All");
-  const { toast, showToast }        = useToast();
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("All");
+  const { toast, showToast } = useToast();
 
-  // PUT /api/seller/inventory/:id
-  const handleRestock = (id, newStock) => {
-    const autoStatus = (n, threshold) =>
-      n === 0 ? "Out" : n <= threshold ? "Low Stock" : "Active";
+  const fetchInventory = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my-products`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setProducts(data.products);
+      }
+    } catch (error) {
+      console.error("Fetch inventory failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? { ...p, stock: newStock, status: autoStatus(newStock, p.lowStockThreshold) }
-          : p
-      )
-    );
-    showToast("✅ Stock updated successfully");
+  useEffect(() => {
+    fetchInventory();
+  }, []);
+
+  // PUT /api/products/:id
+  const handleRestock = async (id, newStock) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ stock: newStock })
+      });
+
+      if (res.ok) {
+        showToast("✅ Stock updated successfully");
+        fetchInventory();
+      }
+    } catch (error) {
+      showToast("❌ Failed to update stock");
+    }
   };
 
   const FILTERS   = ["All", "Active", "Low Stock", "Out"];
@@ -252,8 +282,12 @@ export default function InventoryPage() {
       </div>
 
       {/* Inventory list */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-        {filtered.length === 0 ? (
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[300px]">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <CircularProgress size={30} className="text-[#ff5252]" />
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-14 text-gray-400">
             <Icon d={ICONS.inventory} size={36} className="mx-auto mb-2 opacity-20" />
             <p className="text-sm font-semibold">No products found</p>
@@ -262,10 +296,10 @@ export default function InventoryPage() {
           <div className="divide-y divide-gray-50">
             {filtered.map((p) => {
               const barPct   = Math.min((p.stock / 20) * 100, 100);
-              const barColor = p.stock === 0 ? "var(--[#ff5252]-color)" : p.stock <= p.lowStockThreshold ? "var(--accent-color)" : "#22c55e";
+              const barColor = p.stock === 0 ? "#ff5252" : p.stock <= p.lowStockThreshold ? "#f97316" : "#22c55e";
 
               return (
-                <div key={p.id} className="px-5 py-4 flex items-center gap-3 hover:bg-gray-50/50 transition">
+                <div key={p._id} className="px-5 py-4 flex items-center gap-3 hover:bg-gray-50/50 transition">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <p className="text-sm font-bold text-gray-900 truncate">{p.name}</p>

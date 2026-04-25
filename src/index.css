@@ -208,3 +208,13 @@ input[type="number"]::-webkit-outer-spin-button {
 .cartPanel .MUiPaper-root {
   width: 400px !important ;
 }
+
+/* Make toaster come from bottom on mobile */
+@media (max-width: 768px) {
+  .mobile-toaster {
+    top: auto !important;
+    bottom: 20px !important;
+    justify-content: center !important;
+  }
+}
+

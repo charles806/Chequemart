@@ -25,12 +25,13 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { useState }        from "react";
-import Icon                from "../components/ui/Icon";
-import StatusBadge         from "../components/ui/StatusBadge";
+import { useState, useEffect } from "react";
+import Icon from "../components/ui/Icon";
+import StatusBadge from "../components/ui/StatusBadge";
 import Toast, { useToast } from "../components/ui/Toast";
-import { ICONS }           from "../components/ui/icons";
-import { mockOrders }      from "../mock/orders";
+import { ICONS } from "../components/ui/icons";
+import CircularProgress from "@mui/material/CircularProgress";
+import { Link } from "react-router-dom";
 
 const fmt = (n) => "₦" + Number(n).toLocaleString();
 
@@ -50,7 +51,7 @@ const OrderDetail = ({ order, onClose, onUpdateStatus }) => {
 
   // PUT /api/seller/orders/:id/status
   const handleStatus = (newStatus) => {
-    onUpdateStatus(order.id, newStatus);
+    onUpdateStatus(order._id, newStatus);
     onClose();
   };
 
@@ -69,8 +70,8 @@ const OrderDetail = ({ order, onClose, onUpdateStatus }) => {
               <Icon d={ICONS.orders} size={15} className="text-primary" />
             </div>
             <div>
-              <h3 className="font-black text-gray-900 text-sm leading-none">{order.id}</h3>
-              <p className="text-[10px] text-gray-400 mt-0.5">{order.date}</p>
+              <h3 className="font-black text-gray-900 text-sm leading-none uppercase">#{order._id.slice(-6)}</h3>
+              <p className="text-[10px] text-gray-400 mt-0.5">{new Date(order.createdAt).toLocaleDateString()}</p>
             </div>
           </div>
           <button
@@ -93,10 +94,10 @@ const OrderDetail = ({ order, onClose, onUpdateStatus }) => {
           {/* Details */}
           <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50 overflow-hidden">
             {[
-              ["Product",  order.product],
-              ["Quantity", `${order.quantity} unit${order.quantity > 1 ? "s" : ""}`],
-              ["Customer", order.customer],
-              ["Date",     order.date],
+              ["Product",  order.products.map(p => p.name).join(", ")],
+              ["Quantity", `${order.products.reduce((s, p) => s + p.quantity, 0)} items`],
+              ["Customer", order.buyer?.name || "Customer"],
+              ["Date",     new Date(order.createdAt).toLocaleDateString()],
               ["Tracking", order.trackingNumber || "Not yet assigned"],
             ].map(([k, v]) => (
               <div key={k} className="flex justify-between items-center px-4 py-2.5 text-sm">
@@ -113,7 +114,9 @@ const OrderDetail = ({ order, onClose, onUpdateStatus }) => {
             <Icon d={ICONS.map} size={15} className="text-blue-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-xs font-bold text-gray-600">Shipping Address</p>
-              <p className="text-xs text-gray-500 mt-0.5">{order.shippingAddress}</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {order.shippingAddress?.fullName}, {order.shippingAddress?.address}, {order.shippingAddress?.city}
+              </p>
             </div>
           </div>
 
@@ -157,18 +160,55 @@ const OrderDetail = ({ order, onClose, onUpdateStatus }) => {
 // ORDERS PAGE
 // ─────────────────────────────────────────────────────────────
 export default function OrdersPage() {
-  const [orders,   setOrders]   = useState(mockOrders);
-  const [filter,   setFilter]   = useState("All");
-  const [search,   setSearch]   = useState("");
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("All");
+  const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
-  const { toast, showToast }    = useToast();
+  const { toast, showToast } = useToast();
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/seller/orders?status=all&limit=50`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setOrders(data.orders);
+      }
+    } catch (error) {
+      console.error("Fetch orders failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
   // PUT /api/seller/orders/:id/status
-  const handleUpdateStatus = (orderId, newStatus) => {
-    setOrders((prev) =>
-      prev.map((o) => o.id === orderId ? { ...o, status: newStatus } : o)
-    );
-    showToast(`✅ Order ${orderId} marked as ${newStatus}`);
+  const handleUpdateStatus = async (orderId, newStatus) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/seller/orders/${orderId}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (res.ok) {
+        showToast(`✅ Order status updated to ${newStatus}`);
+        fetchOrders();
+      }
+    } catch (error) {
+      showToast("❌ Failed to update status");
+    }
   };
 
   const FILTERS = ["All", "Pending", "Shipped", "Delivered", "Cancelled"];
@@ -176,9 +216,9 @@ export default function OrdersPage() {
   const filtered = orders.filter((o) => {
     const matchStatus = filter === "All" || o.status === filter;
     const q           = search.toLowerCase();
-    const matchSearch = o.id.toLowerCase().includes(q)      ||
-                        o.product.toLowerCase().includes(q) ||
-                        o.customer.toLowerCase().includes(q);
+    const matchSearch = (o._id && o._id.toLowerCase().includes(q))      ||
+                        (o.products && o.products.some(p => p.name.toLowerCase().includes(q))) ||
+                        (o.buyer && o.buyer.name && o.buyer.name.toLowerCase().includes(q));
     return matchStatus && matchSearch;
   });
 
@@ -236,42 +276,49 @@ export default function OrdersPage() {
       </div>
 
       {/* Orders list */}
-      <div className="space-y-2">
-        {filtered.length === 0 && (
+      <div className="space-y-2 min-h-[300px]">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+             <CircularProgress size={30} className="text-[#ff5252]" />
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-14 bg-white rounded-2xl border border-gray-100 text-gray-400">
             <Icon d={ICONS.orders} size={36} className="mx-auto mb-2 opacity-20" />
             <p className="text-sm font-semibold">No orders found</p>
           </div>
+        ) : (
+          filtered.map((order) => (
+            <div
+              key={order._id}
+              onClick={() => setSelected(order)}
+              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3
+                hover:shadow-md hover:border-gray-200 transition-all cursor-pointer"
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary/8 flex items-center justify-center flex-shrink-0">
+                <Icon d={ICONS.truck} size={18} className="text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                  <p className="text-sm font-bold text-gray-900 truncate">
+                    {order.products.map(p => p.name).join(", ")}
+                  </p>
+                  <StatusBadge status={order.status} />
+                </div>
+                <div className="flex items-center gap-3 text-xs text-gray-400">
+                  <span className="font-mono uppercase tracking-tighter">#{order._id.slice(-6)}</span>
+                  <span>{order.buyer?.name || "Customer"}</span>
+                  <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-sm font-black text-gray-900">{fmt(order.totalAmount)}</p>
+                {order.trackingNumber && (
+                  <p className="text-[10px] text-blue-400 font-medium mt-0.5">{order.trackingNumber}</p>
+                )}
+              </div>
+            </div>
+          ))
         )}
-        {filtered.map((order) => (
-          <div
-            key={order.id}
-            onClick={() => setSelected(order)}
-            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3
-              hover:shadow-md hover:border-gray-200 transition-all cursor-pointer"
-          >
-            <div className="w-10 h-10 rounded-xl bg-primary/8 flex items-center justify-center flex-shrink-0">
-              <Icon d={ICONS.truck} size={18} className="text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                <p className="text-sm font-bold text-gray-900 truncate">{order.product}</p>
-                <StatusBadge status={order.status} />
-              </div>
-              <div className="flex items-center gap-3 text-xs text-gray-400">
-                <span className="font-mono">{order.id}</span>
-                <span>{order.customer}</span>
-                <span>{order.date}</span>
-              </div>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-sm font-black text-gray-900">{fmt(order.amount)}</p>
-              {order.trackingNumber && (
-                <p className="text-[10px] text-blue-400 font-medium mt-0.5">{order.trackingNumber}</p>
-              )}
-            </div>
-          </div>
-        ))}
       </div>
 
       {selected && (

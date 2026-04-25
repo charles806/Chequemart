@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect, useRef } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { MyContext } from '../../MyContext'
 import { FaCloudUploadAlt, FaRegUser, FaHeart, FaShoppingBag, FaTrash, FaCheck, FaTimes, FaLock } from 'react-icons/fa'
 // import { FaMdNotifications } from 'react-icons/fa'
@@ -21,11 +21,11 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa'
 const Account = () => {
     const context = useContext(MyContext);
     const navigate = useNavigate();
+    const location = useLocation();
     const fileInputRef = useRef(null);
 
     const [nav, setNav] = useState("profile");
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState({ type: '', text: '' });
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -72,6 +72,13 @@ const Account = () => {
         }
     }, [context.isLogin, context.user, navigate]);
 
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (params.get("openBecomeSeller") === "true") {
+            setNav("seller");
+        }
+    }, [location.search]);
+
     const handleFormChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -98,17 +105,17 @@ const Account = () => {
             const data = await response.json();
 
             if (data.success) {
-                setMessage({ type: 'success', text: 'Profile updated successfully!' });
+                context.openAlertBox?.('success', 'Profile updated successfully!');
                 // Update context with new user data
                 if (context.user) {
                     context.user.name = data.user.name;
                     context.user.phone = data.user.phone;
                 }
             } else {
-                setMessage({ type: 'error', text: data.message || 'Failed to update profile' });
+                context.openAlertBox?.('error', data.message || 'Failed to update profile');
             }
         } catch (error) {
-            setMessage({ type: 'error', text: 'Network error. Please try again.' });
+            context.openAlertBox?.('error', 'Network error. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -125,18 +132,17 @@ const Account = () => {
         // Validate file type
         const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         if (!validTypes.includes(file.type)) {
-            setMessage({ type: 'error', text: 'Invalid file type. Use JPEG, PNG, GIF, or WebP.' });
+            context.openAlertBox?.('error', 'Invalid file type. Use JPEG, PNG, GIF, or WebP.');
             return;
         }
 
         // Validate file size (2MB)
         if (file.size > 2 * 1024 * 1024) {
-            setMessage({ type: 'error', text: 'File too large. Maximum 2MB allowed.' });
+            context.openAlertBox?.('error', 'File too large. Maximum 2MB allowed.');
             return;
         }
 
         setUploadingAvatar(true);
-        setMessage({ type: '', text: '' });
 
         try {
             const token = context.accessToken || localStorage.getItem('accessToken');
@@ -160,15 +166,15 @@ const Account = () => {
             console.log("Upload response data:", data);
 
             if (data.success) {
-                setMessage({ type: 'success', text: 'Avatar updated successfully!' });
+                context.openAlertBox?.('success', 'Avatar updated successfully!');
                 if (context.user) {
                     context.user.avatar = data.user.avatar;
                 }
             } else {
-                setMessage({ type: 'error', text: data.message || 'Failed to upload avatar' });
+                context.openAlertBox?.('error', data.message || 'Failed to upload avatar');
             }
         } catch (error) {
-            setMessage({ type: 'error', text: 'Network error. Please try again.' });
+            context.openAlertBox?.('error', 'Network error. Please try again.');
         } finally {
             setUploadingAvatar(false);
             // Reset file input
@@ -182,7 +188,6 @@ const Account = () => {
         if (!confirm('Are you sure you want to delete your profile picture?')) return;
 
         setLoading(true);
-        setMessage({ type: '', text: '' });
 
         try {
             const token = context.accessToken || localStorage.getItem('accessToken');
@@ -196,15 +201,15 @@ const Account = () => {
             const data = await response.json();
 
             if (data.success) {
-                setMessage({ type: 'success', text: 'Avatar deleted successfully!' });
+                context.openAlertBox?.('success', 'Avatar deleted successfully!');
                 if (context.user) {
                     context.user.avatar = null;
                 }
             } else {
-                setMessage({ type: 'error', text: data.message || 'Failed to delete avatar' });
+                context.openAlertBox?.('error', data.message || 'Failed to delete avatar');
             }
         } catch (error) {
-            setMessage({ type: 'error', text: 'Network error. Please try again.' });
+            context.openAlertBox?.('error', 'Network error. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -213,7 +218,6 @@ const Account = () => {
     const handleBecomeSeller = async (e) => {
         e.preventDefault();
         setSellerLoading(true);
-        setMessage({ type: '', text: '' });
 
         try {
             const token = context.accessToken || localStorage.getItem('accessToken');
@@ -235,7 +239,7 @@ const Account = () => {
             const data = await response.json();
 
             if (data.success) {
-                setMessage({ type: 'success', text: 'Congratulations! You are now a seller. Redirecting to onboarding...' });
+                context.openAlertBox?.('success', 'Congratulations! You are now a seller. Redirecting to onboarding...');
                 // Update user in context
                 if (context.login) {
                     context.login(data.user, data.accessToken);
@@ -245,10 +249,10 @@ const Account = () => {
                     navigate('/seller/onboarding');
                 }, 2000);
             } else {
-                setMessage({ type: 'error', text: data.message || 'Failed to become seller' });
+                context.openAlertBox?.('error', data.message || 'Failed to become seller');
             }
         } catch (error) {
-            setMessage({ type: 'error', text: 'Network error. Please try again.' });
+            context.openAlertBox?.('error', 'Network error. Please try again.');
         } finally {
             setSellerLoading(false);
         }
@@ -256,18 +260,12 @@ const Account = () => {
 
     const handlePasswordChange = async () => {
         // Validation
-        if (passwordData.newPassword.length < 8) {
-            setMessage({ type: 'error', text: 'Password must be at least 8 characters' });
-            return;
-        }
-
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            setMessage({ type: 'error', text: 'Passwords do not match' });
+            context.openAlertBox?.('error', 'Passwords do not match');
             return;
         }
 
         setPasswordLoading(true);
-        setMessage({ type: '', text: '' });
 
         try {
             const token = context.accessToken || localStorage.getItem('accessToken');
@@ -286,7 +284,7 @@ const Account = () => {
             const data = await response.json();
 
             if (data.success) {
-                setMessage({ type: 'success', text: 'Password changed successfully! Please log in again.' });
+                context.openAlertBox?.('success', 'Password changed successfully! Please log in again.');
                 setPasswordDialogOpen(false);
                 setPasswordData({
                     currentPassword: '',
@@ -299,10 +297,10 @@ const Account = () => {
                     navigate('/login');
                 }, 2000);
             } else {
-                setMessage({ type: 'error', text: data.message || 'Failed to change password' });
+                context.openAlertBox?.('error', data.message || 'Failed to change password');
             }
         } catch (error) {
-            setMessage({ type: 'error', text: 'Network error. Please try again.' });
+            context.openAlertBox?.('error', 'Network error. Please try again.');
         } finally {
             setPasswordLoading(false);
         }
@@ -376,7 +374,7 @@ const Account = () => {
                         <ul className="list-none mt-2 flex flex-col gap-1">
                             <li className='w-full'>
                                 <Button
-                                    className={`w-full! text-left! px-5! flex items-center gap-5 h-10! md:h-11! justify-start! rounded-md! text-sm! capitalize! transition-all! ${nav === 'profile' ? 'bg-[#ff525]! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
+                                    className={`w-full! text-left! px-5! flex items-center gap-5 h-10! md:h-11! justify-start! rounded-md! text-sm! capitalize! transition-all! ${nav === 'profile' ? 'bg-[#ff5252]! text-white!' : 'text-gray-700! hover:bg-gray-100!'}`}
                                     onClick={() => setNav('profile')}
                                 >
                                     <FaRegUser className='text-lg shrink-0' />
@@ -385,7 +383,7 @@ const Account = () => {
                             </li>
                             <li className='w-full'>
                                 <Button
-                                    className={`w-full! text-left! px-5! flex items-center gap-5 h-10! md:h-11! justify-start! rounded-md! text-sm! capitalize! transition-all! ${nav === 'list' ? 'bg-[#ff525]! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
+                                    className={`w-full! text-left! px-5! flex items-center gap-5 h-10! md:h-11! justify-start! rounded-md! text-sm! capitalize! transition-all! ${nav === 'list' ? 'bg-[#ff5252]! text-white!' : 'text-gray-700! hover:bg-gray-100!'}`}
                                     onClick={() => setNav('list')}
                                 >
                                     <FaHeart className='text-lg shrink-0' />
@@ -394,7 +392,7 @@ const Account = () => {
                             </li>
                             <li className='w-full'>
                                 <Button
-                                    className={`w-full! text-left! px-5! flex items-center gap-5 h-10! md:h-11! justify-start! rounded-md! text-sm! capitalize! transition-all! ${nav === 'orders' ? 'bg-[#ff525]! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
+                                    className={`w-full! text-left! px-5! flex items-center gap-5 h-10! md:h-11! justify-start! rounded-md! text-sm! capitalize! transition-all! ${nav === 'orders' ? ' text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
                                     onClick={() => navigate('/orders')}
                                 >
                                     <FaShoppingBag className='text-lg shrink-0' />
@@ -404,7 +402,7 @@ const Account = () => {
                             {context.user?.role === 'buyer' && (
                                 <li className='w-full'>
                                     <Button
-                                        className={`w-full! text-left! px-5! text-white! flex items-center gap-5 h-10! md:h-11! justify-start! rounded-md! text-sm! capitalize! transition-all! ${nav === 'seller' ? 'bg-[#ff525]! text-black!' : 'text-gray-700! hover:bg-gray-100!'}`}
+                                        className={`w-full! text-left! px-5! flex items-center gap-5 h-10! md:h-11! justify-start! rounded-md! text-sm! capitalize! transition-all! ${nav === 'seller' ? 'bg-[#ff5252]! text-white!' : 'text-gray-700! hover:bg-gray-100!'}`}
                                         onClick={() => setNav('seller')}
                                     >
                                         <FaShoppingBag className='text-lg shrink-0' />
@@ -426,15 +424,7 @@ const Account = () => {
                 </div>
 
                 <div className="col2 w-full md:w-[60%] lg:w-[75%] bg-white shadow-md rounded-md p-4 md:p-5">
-                    {message.text && (
-                        <Alert
-                            severity={message.type}
-                            className="mb-4"
-                            onClose={() => setMessage({ type: '', text: '' })}
-                        >
-                            {message.text}
-                        </Alert>
-                    )}
+
 
                     {nav === 'profile' && (
                         <div className="animate-in fade-in duration-500">

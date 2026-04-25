@@ -33,13 +33,13 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { useState }        from "react";
-import Icon                from "../components/ui/Icon";
-import StatusBadge         from "../components/ui/StatusBadge";
+import { useState, useEffect } from "react";
+import Icon from "../components/ui/Icon";
+import StatusBadge from "../components/ui/StatusBadge";
 import Toast, { useToast } from "../components/ui/Toast";
-import { ICONS }           from "../components/ui/icons";
-import { useSeller }       from "../context/SellerContext";
-import { mockEscrowSummary, mockEscrows } from "../mock/escrow";
+import { ICONS } from "../components/ui/icons";
+import { useSeller } from "../context/SellerContext";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const fmt = (n) => "₦" + Number(n).toLocaleString();
 
@@ -194,36 +194,58 @@ const EscrowDetail = ({ escrow, onRelease, onClose }) => {
 // ESCROW PAGE
 // ─────────────────────────────────────────────────────────────
 export default function EscrowPage() {
-  const { setWallet }               = useSeller();
-  const [summary, setSummary]       = useState(mockEscrowSummary);
-  const [escrows, setEscrows]       = useState(mockEscrows);
-  const [selected, setSelected]     = useState(null);
-  const [filter, setFilter]         = useState("All");
-  const [search, setSearch]         = useState("");
-  const { toast, showToast }        = useToast();
+  const { setWallet } = useSeller();
+  const [summary, setSummary] = useState({ totalHeld: 0, pendingRelease: 0, releasedToday: 0, totalReleased: 0 });
+  const [escrows, setEscrows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(null);
+  const [filter, setFilter] = useState("All");
+  const [search, setSearch] = useState("");
+  const { toast, showToast } = useToast();
+
+  const fetchEscrowData = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const [summaryRes, listRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/api/seller/escrow/summary`, { headers }),
+        fetch(`${import.meta.env.VITE_API_URL}/api/seller/escrow`, { headers }),
+      ]);
+
+      const summaryData = await summaryRes.json();
+      const listData = await listRes.json();
+
+      if (summaryData.success) setSummary(summaryData.summary);
+      if (listData.success) setEscrows(listData.escrows);
+    } catch (error) {
+      console.error("Escrow data fetch failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEscrowData();
+  }, []);
 
   // POST /api/seller/escrow/:id/release
-  const handleRelease = (id) => {
-    const escrow = escrows.find((e) => e.id === id);
-    if (!escrow) return;
+  const handleRelease = async (id) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/seller/escrow/${id}/release`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-    // Update escrow status
-    setEscrows((prev) =>
-      prev.map((e) => e.id === id
-        ? { ...e, status: "released", releaseDate: "Today" }
-        : e
-      )
-    );
-    // Update summary
-    setSummary((s) => ({
-      ...s,
-      totalHeld:       s.totalHeld - escrow.amount,
-      releasedToday:   s.releasedToday + escrow.amount,
-      totalReleased:   s.totalReleased + escrow.amount,
-    }));
-    // Update global wallet context (optimistic)
-    setWallet((w) => ({ ...w, availableBalance: w.availableBalance + escrow.amount }));
-    showToast(`✅ ${fmt(escrow.amount)} released to your wallet`);
+      if (res.ok) {
+        showToast(`✅ Funds released to your wallet`);
+        fetchEscrowData();
+      }
+    } catch (error) {
+      showToast("❌ Failed to release funds");
+    }
   };
 
   const FILTERS = ["All", "In Escrow", "Released", "Disputed"];
@@ -241,9 +263,9 @@ export default function EscrowPage() {
     const matchFilter = !statusVal || e.status === statusVal;
     const q           = search.toLowerCase();
     const matchSearch =
-      e.id.toLowerCase().includes(q)      ||
-      e.product.toLowerCase().includes(q) ||
-      e.customer.toLowerCase().includes(q);
+      (e._id && e._id.toLowerCase().includes(q))      ||
+      (e.product && e.product.toLowerCase().includes(q)) ||
+      (e.customer && e.customer.toLowerCase().includes(q));
     return matchFilter && matchSearch;
   });
 
@@ -316,23 +338,22 @@ export default function EscrowPage() {
       </div>
 
       {/* Escrow list */}
-      <div className="space-y-2">
-        {filtered.length === 0 && (
+      <div className="space-y-2 min-h-[300px]">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <CircularProgress size={30} className="text-purple-600" />
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-14 bg-white rounded-2xl border border-gray-100 text-gray-400">
             <Icon d={ICONS.escrow} size={36} className="mx-auto mb-2 opacity-20" />
             <p className="text-sm font-semibold">No escrow records found</p>
           </div>
-        )}
-
-        {filtered.map((escrow) => {
-          const canRelease =
-            escrow.status === "held" && escrow.deliveryStatus === "delivered";
-
-          return (
-            <div
-              key={escrow.id}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md hover:border-gray-200 transition-all"
-            >
+        ) : (
+        filtered.map((escrow) => (
+          <div
+            key={escrow._id}
+            className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 hover:shadow-md hover:border-gray-200 transition-all"
+          >
               <div
                 className="flex items-center gap-3 cursor-pointer"
                 onClick={() => setSelected(escrow)}
@@ -379,8 +400,8 @@ export default function EscrowPage() {
                 </div>
               )}
             </div>
-          );
-        })}
+          )
+        ))}
       </div>
 
       {selected && (

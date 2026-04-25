@@ -20,18 +20,18 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { useState }    from "react";
-import Icon            from "../components/ui/Icon";
-import StatusBadge     from "../components/ui/StatusBadge";
-import { ICONS }       from "../components/ui/icons";
-import { useSeller }   from "../context/SellerContext";
-import { mockOrders }  from "../mock/orders";
-import { mockRevenue, mockKPIs } from "../mock/analytics";
+import { useState, useEffect } from "react";
+import Icon from "../components/ui/Icon";
+import StatusBadge from "../components/ui/StatusBadge";
+import { ICONS } from "../components/ui/icons";
+import { useSeller } from "../context/SellerContext";
+import CircularProgress from "@mui/material/CircularProgress";
+import { Link } from "react-router-dom";
 
 // ─────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────
-const fmt  = (n) => "₦" + Number(n).toLocaleString();
+const fmt = (n) => "₦" + Number(n).toLocaleString();
 const fmtK = (n) => n >= 1000 ? `₦${(n / 1000).toFixed(0)}k` : `₦${n}`;
 
 // ─────────────────────────────────────────────────────────────
@@ -42,34 +42,54 @@ const MiniBarChart = ({ data }) => {
   const max = Math.max(...data.map((d) => d.revenue));
 
   return (
-    <div className="flex items-end gap-1.5 h-28 w-full cursor-pointer">
+    <div className="flex items-end gap-2 h-28 w-full">
       {data.map((d, i) => {
-        const h   = Math.max((d.revenue / max) * 100, 4);
-        const isH = hovered === i;
+        const height = Math.max((d.revenue / max) * 100, 6);
+        const isActive = hovered === i;
+
         return (
           <div
             key={i}
-            className="flex-1 flex flex-col items-center gap-1 cursor-default"
+            className="relative flex-1 flex flex-col items-center justify-end gap-1"
             onMouseEnter={() => setHovered(i)}
             onMouseLeave={() => setHovered(null)}
           >
             {/* Tooltip */}
-            <div className={`text-[9px] font-black text-gray-700 bg-white border border-gray-100
-              shadow-md rounded-lg px-2 py-1 whitespace-nowrap transition-all duration-100
-              ${isH ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+            <div
+              className={`
+                absolute -top-6 text-[10px] font-semibold
+                bg-gray-900 text-white px-2 py-1 rounded-md
+                shadow-md whitespace-nowrap
+                transition-all duration-200
+                ${isActive ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 pointer-events-none"}
+              `}
+            >
               {fmtK(d.revenue)}
             </div>
+
             {/* Bar */}
             <div
-              className="w-full rounded-t-lg transition-all duration-200"
+              className={`
+                w-full rounded-t-xl transition-all duration-300
+                ${isActive ? "scale-105" : "scale-100"}
+              `}
               style={{
-                height:     `${h}%`,
-                background: isH
-                  ? "linear-gradient(to top, var(--[#ff5252]-color), var(--accent-color))"
-                  : "linear-gradient(to top, color-mix(in srgb, var(--[#ff5252]-color) 33%, transparent), color-mix(in srgb, var(--[#ff5252]-color) 66%, transparent))",
+                height: `${height}%`,
+                background: isActive
+                  ? "linear-gradient(to top, #4f46e5, #818cf8)"
+                  : "linear-gradient(to top, #c7d2fe, #e0e7ff)",
               }}
             />
-            <span className="text-[9px] text-gray-400 font-semibold">{d.label}</span>
+
+            {/* Label */}
+            <span
+              className={`
+                text-[10px] font-medium transition-colors duration-200
+                ${isActive ? "text-gray-800" : "text-gray-400"}
+              `}
+            >
+              {d.label}
+            </span>
           </div>
         );
       })}
@@ -105,34 +125,92 @@ const StatCard = ({ label, value, change, icon }) => {
 // ─────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { seller, wallet } = useSeller();
-  const recentOrders       = mockOrders.slice(0, 5);
-  const chartData          = mockRevenue.weekly;
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState({
+    summary: {
+      totalRevenue: 0,
+      totalOrders: 0,
+      totalCustomers: 0,
+      avgOrderValue: 0
+    },
+    weeklyRevenue: [],
+    recentOrders: []
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("accessToken");
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const [summaryRes, revenueRes, ordersRes] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_URL}/api/seller/analytics/summary`, { headers }),
+          fetch(`${import.meta.env.VITE_API_URL}/api/seller/analytics/revenue`, { headers }),
+          fetch(`${import.meta.env.VITE_API_URL}/api/seller/orders?limit=5`, { headers })
+        ]);
+
+        const [summaryData, revenueData, ordersData] = await Promise.all([
+          summaryRes.json(),
+          revenueRes.json(),
+          ordersRes.json()
+        ]);
+
+        setDashboardData({
+          summary: summaryData.summary || dashboardData.summary,
+          weeklyRevenue: revenueData.weekly || [],
+          recentOrders: ordersData.orders || []
+        });
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   const STAT_ICONS = [ICONS.bar, ICONS.package, ICONS.tag, ICONS.users];
+
+  if (loading) {
+    return (
+      <div className="h-96 flex items-center justify-center">
+        <CircularProgress size={40} className="text-[#ff5252]" />
+      </div>
+    );
+  }
+
+  const kpis = [
+    { label: "Total Revenue", value: fmt(dashboardData.summary.totalRevenue), change: 0 },
+    { label: "Total Orders", value: dashboardData.summary.totalOrders, change: 0 },
+    { label: "Avg. Order Value", value: fmt(dashboardData.summary.avgOrderValue), change: 0 },
+    { label: "Total Customers", value: dashboardData.summary.totalCustomers, change: 0 },
+  ];
 
   return (
     <div className="space-y-5">
 
       {/* Welcome banner */}
-      <div className="bg-linear-to-br from-dark to-dark-2 rounded-3xl p-5 shadow-xl shadow-black/20 cursor-pointer">
-        <p className="text-black/60 text-sm mb-0.5">Welcome back 👋</p>
-        <h2 className="text-black text-2xl font-black">{seller.storeName}</h2>
-        <p className="text-black/40 text-xs mt-1">Here's what's happening in your store today.</p>
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="bg-black/10 rounded-2xl p-3">
-            <p className="text-black text-lg font-black">{fmt(wallet.availableBalance)}</p>
-            <p className="text-black/50 text-[10px] font-semibold mt-0.5">Available Balance</p>
+      <div className="bg-white rounded-3xl p-5 shadow-2xl shadow-black/20">
+        <p className="text-gray-600 text-sm mb-0.5 font-medium">Welcome back 👋</p>
+        <h2 className="text-gray-900 text-2xl font-black">{seller.storeName || "My Store"}</h2>
+        <p className="text-gray-400 text-[10px] font-semibold mt-1 uppercase tracking-wider">Here's what's happening in your store today.</p>
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <div className="bg-white/5 rounded-2xl p-4 backdrop-blur-md border border-white/5 hover:bg-white/10 transition-colors">
+            <p className="text-white text-xl font-black">{fmt(wallet.availableBalance)}</p>
+            <p className="text-white/50 text-[10px] font-bold mt-1 uppercase">Available Balance</p>
           </div>
-          <div className="bg-black/10 rounded-2xl p-3">
-            <p className="text-yellow-300 text-lg font-black">{fmt(wallet.escrowBalance)}</p>
-            <p className="text-black/50 text-[10px] font-semibold mt-0.5">In Escrow</p>
+          <div className="bg-white/5 rounded-2xl p-4 backdrop-blur-md border border-white/5 hover:bg-white/10 transition-colors">
+            <p className="text-white text-xl font-black">{fmt(wallet.escrowBalance)}</p>
+            <p className="text-[#ff5252] text-[10px] font-bold mt-1 uppercase tracking-widest">In Escrow</p>
           </div>
         </div>
       </div>
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 gap-3">
-        {mockKPIs.slice(0, 4).map((kpi, i) => (
+        {kpis.map((kpi, i) => (
           <StatCard
             key={kpi.label}
             label={kpi.label}
@@ -149,12 +227,12 @@ export default function DashboardPage() {
           <div>
             <h3 className="font-black text-gray-900 text-sm">Weekly Revenue</h3>
             <p className="text-xs text-gray-400 mt-0.5">
-              {fmt(chartData.reduce((s, d) => s + d.revenue, 0))} this week
+              {fmt(dashboardData.weeklyRevenue.reduce((s, d) => s + d.revenue, 0))} this week
             </p>
           </div>
           <Icon d={ICONS.bar} size={18} className="text-[#ff5252]/30" />
         </div>
-        <MiniBarChart data={chartData} />
+        <MiniBarChart data={dashboardData.weeklyRevenue} />
       </div>
 
       {/* Recent orders */}
@@ -162,28 +240,38 @@ export default function DashboardPage() {
         <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
           <h3 className="font-black text-gray-900 text-sm">Recent Orders</h3>
           <span className="text-[10px] text-[#ff5252] font-bold cursor-pointer hover:underline">
-            View all
+            <Link to="/seller/orders">
+              View all
+            </Link>
           </span>
         </div>
         <div className="divide-y divide-gray-50">
-          {recentOrders.map((order) => (
-            <div key={order.id} className="px-5 py-3.5 flex items-center gap-3 hover:bg-gray-50/50 transition">
-              <div className="w-9 h-9 rounded-xl bg-[#ff5252]/8 flex items-center justify-center shrink-0">
-                <Icon d={ICONS.truck} size={16} className="text-[#ff5252]" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-800 truncate">{order.product}</p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <p className="text-[10px] text-gray-400 font-mono">{order.id}</p>
-                  <p className="text-[10px] text-gray-400">{order.customer}</p>
+          {dashboardData.recentOrders.length === 0 ? (
+            <div className="px-5 py-10 text-center">
+              <p className="text-gray-400 text-sm italic font-medium">No orders yet</p>
+            </div>
+          ) : (
+            dashboardData.recentOrders.map((order) => (
+              <div key={order._id} className="px-5 py-3.5 flex items-center gap-3 hover:bg-gray-50/50 transition">
+                <div className="w-9 h-9 rounded-xl bg-[#ff5252]/8 flex items-center justify-center shrink-0">
+                  <Icon d={ICONS.truck} size={16} className="text-[#ff5252]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 truncate">
+                    {order.products.map(p => p.name).join(', ')}
+                  </p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-[10px] text-gray-400 font-mono">#{order._id.slice(-6).toUpperCase()}</p>
+                    <p className="text-[10px] text-gray-400">{order.buyer?.name || "Customer"}</p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0 space-y-1">
+                  <p className="text-sm font-black text-gray-900">{fmt(order.totalAmount)}</p>
+                  <StatusBadge status={order.status} />
                 </div>
               </div>
-              <div className="text-right shrink-0 space-y-1">
-                <p className="text-sm font-black text-gray-900">{fmt(order.amount)}</p>
-                <StatusBadge status={order.status} />
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 

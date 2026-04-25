@@ -20,40 +20,92 @@
  * then call setSeller() and setWallet() with real data.
  */
 
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { SellerContext } from "../constants/sellerContext";
 
 export const SellerProvider = ({ children }) => {
-  // ── Seller profile ─────────────────────────────────────────
-  // Populated on mount via GET /api/seller/profile
   const [seller, setSeller] = useState({
-    id:         "",
-    firstName:  "John",
-    lastName:   "Doe",
-    storeName:  "John's Store",
-    email:      "johndoe@example.com",
-    phone:      "",
-    avatar:     null,
-    isVerified: true,
+    id: "",
+    firstName: "",
+    lastName: "",
+    storeName: "",
+    email: "",
+    phone: "",
+    avatar: null,
+    isVerified: false,
   });
 
-  // ── Wallet ─────────────────────────────────────────────────
-  // Populated on mount via GET /api/seller/wallet
-  // Updated optimistically after withdrawals & escrow releases
   const [wallet, setWallet] = useState({
-    availableBalance: 320500,
-    escrowBalance:    122000,
-    totalEarned:     1284000,
-    totalWithdrawn:   963500,
+    availableBalance: 0,
+    escrowBalance: 0,
+    totalEarned: 0,
+    totalWithdrawn: 0,
   });
 
-  // ── Notifications ──────────────────────────────────────────
-  // Populated via GET /api/seller/notifications/count (or websocket)
-  const [notifCount, setNotifCount] = useState(3);
+  const [notifCount, setNotifCount] = useState(0);
+  const [status, setStatus] = useState("idle"); // idle | loading | success | error
+
+  const refreshSellerData = async () => {
+    setStatus("loading");
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) return;
+
+      const headers = { Authorization: `Bearer ${token}` };
+      const [profileRes, walletRes] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_URL}/api/users/profile`, { headers }),
+        fetch(`${import.meta.env.VITE_API_URL}/api/seller/wallet`, { headers }),
+      ]);
+
+      const profileData = await profileRes.json();
+      const walletData = await walletRes.json();
+
+      if (profileData.success) {
+        const user = profileData.user;
+        const [fName = "", ...rest] = (user.name || "").split(" ");
+        setSeller({
+          id: user._id,
+          firstName: fName,
+          lastName: rest.join(" "),
+          storeName: user.sellerInfo?.storeName || "My Store",
+          email: user.email,
+          phone: user.phone || "",
+          avatar: user.avatar,
+          isVerified: user.role === "seller",
+        });
+      }
+
+      if (walletData.success) {
+        setWallet({
+          availableBalance: Number(walletData.wallet.available_balance),
+          escrowBalance: Number(walletData.wallet.pending_balance), // Assuming pending is escrow
+          totalEarned: Number(walletData.wallet.total_earned),
+          totalWithdrawn: 0, // In a real app, sum successful withdrawals
+        });
+      }
+      setStatus("success");
+    } catch (error) {
+      console.error("SellerProvider data fetch failed:", error);
+      setStatus("error");
+    }
+  };
+
+  useEffect(() => {
+    refreshSellerData();
+  }, []);
 
   return (
     <SellerContext.Provider
-      value={{ seller, setSeller, wallet, setWallet, notifCount, setNotifCount }}
+      value={{
+        seller,
+        setSeller,
+        wallet,
+        setWallet,
+        notifCount,
+        setNotifCount,
+        refreshSellerData,
+        status
+      }}
     >
       {children}
     </SellerContext.Provider>

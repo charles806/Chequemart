@@ -89,9 +89,33 @@ const App = () => {
   const openAlertBox = (type, message) => {
     console.log(`[${type.toUpperCase()}] ${message}`);
     if (type === "success") {
-      toast.success(message);
+      toast.success(message, {
+        duration: 4000,
+        style: { background: '#22c55e', color: '#fff', fontWeight: '500' },
+        iconTheme: { primary: '#fff', secondary: '#22c55e' }
+      });
     } else if (type === "error") {
-      toast.error(message);
+      toast.error((t) => (
+        <span className="flex items-center gap-3">
+          {message}
+          <button 
+            onClick={() => toast.dismiss(t.id)} 
+            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/20 transition ml-2"
+          >
+            <IoCloseSharp className="text-xl" />
+          </button>
+        </span>
+      ), {
+        duration: Infinity,
+        style: { background: '#ef4444', color: '#fff', fontWeight: '500' },
+        iconTheme: { primary: '#fff', secondary: '#ef4444' }
+      });
+    } else if (type === "warning") {
+      toast(message, {
+        duration: 7000,
+        icon: '⚠️',
+        style: { background: '#eab308', color: '#fff', fontWeight: '500' }
+      });
     } else {
       toast(message);
     }
@@ -146,7 +170,18 @@ const App = () => {
             <Route path="/orders" element={<Orders />} />
           </Route>
         </Routes>
-        <Toaster position="top-center" />
+        <Toaster 
+          position="top-center" 
+          containerClassName="mobile-toaster"
+          toastOptions={{
+            success: {
+              duration: 4000,
+            },
+            error: {
+              duration: Infinity,
+            },
+          }}
+        />
 
         {/* Cart Drawer */}
         <Drawer
