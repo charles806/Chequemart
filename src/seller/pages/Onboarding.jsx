@@ -24,7 +24,7 @@
  *
  * On success:
  *   - Backend creates seller record + wallet + returns JWT
- *   - Store JWT in localStorage: "seller_token"
+ *   - Store JWT in Cookies: "accessToken"
  *   - Call props.onComplete() to enter dashboard
  *
  * PROPS:
@@ -33,6 +33,7 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import Cookies from "js-cookie";
 import Icon from "../components/ui/Icon";
 import { ICONS } from "../components/ui/icons";
 import { BANKS_LIST } from "../constants/banks";
@@ -631,7 +632,7 @@ export default function Onboarding({ onComplete }) {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem("accessToken");
+        const token = Cookies.get("accessToken");
         if (!token) return;
 
         const response = await fetch(
@@ -713,21 +714,30 @@ export default function Onboarding({ onComplete }) {
     setBankVerifying(true);
 
     try {
-      // TODO: replace with real API call
-      // const res = await fetch(
-      //   `${import.meta.env.VITE_API_URL}/api/seller/bank-accounts/verify?bankCode=${bank.bankCode}&accountNumber=${bank.accountNumber}`,
-      //   { headers: { Authorization: `Bearer ${localStorage.getItem("accessToken")}` } }
-      // );
-      // const { accountName } = await res.json();
-      // if (!res.ok) throw new Error("Verification failed");
-      // updateBank("accountName", accountName);
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/resolve-account`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            bankCode: bank.bankCode,
+            accountNumber: bank.accountNumber,
+          }),
+        }
+      );
 
-      // Simulated delay (remove when using real API)
-      await new Promise((res) => setTimeout(res, 1200));
-      updateBank("accountName", "JOHN DOE");
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Verification failed");
+      }
+
+      updateBank("accountName", data.accountName);
       setBankVerified(true);
-    } catch {
-      setErrors({ accountNumber: "Verification failed. Please try again." });
+    } catch (err) {
+      setErrors({ accountNumber: err.message || "Verification failed. Please try again." });
     } finally {
       setBankVerifying(false);
     }
@@ -756,7 +766,7 @@ export default function Onboarding({ onComplete }) {
     setSubmitError("");
 
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = Cookies.get("accessToken");
       if (!token) throw new Error("Session expired. Please log in again.");
 
       const response = await fetch(
@@ -778,7 +788,7 @@ export default function Onboarding({ onComplete }) {
       }
 
       if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
+        Cookies.set("user", JSON.stringify(data.user), { expires: 7 });
       }
 
       onComplete();

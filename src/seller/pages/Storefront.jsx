@@ -24,6 +24,7 @@
  */
 
 import { useState, useEffect, useRef }  from "react";
+import Cookies from "js-cookie";
 import Icon                  from "../components/ui/Icon";
 import Toast, { useToast }   from "../components/ui/Toast";
 import { ICONS }             from "../components/ui/icons";
@@ -209,7 +210,7 @@ export default function StorefrontPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = Cookies.get("accessToken");
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/profile`, {
         method: "PUT",
         headers: {

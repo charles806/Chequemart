@@ -1,28 +1,15 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import cartImg from "../../assets/image/product1.jpg";
 import { IoCloseSharp, IoBagCheckOutline } from "react-icons/io5";
 import { GoTriangleDown } from "react-icons/go";
 import { Rating, Button, Menu, MenuItem } from "@mui/material";
+import { MyContext } from "../../MyContext";
 
 const SIZES = ["S", "M", "L", "XL"];
 const QTY_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 const Cart = () => {
-    // Later this will come from backend
-    const [cartItems, setCartItems] = useState([
-        {
-            id: 1,
-            name: "Barca Home Kit 2024/2025",
-            brand: "Barca",
-            price: 10000,
-            oldPrice: 20000,
-            rating: 4,
-            size: "M",
-            qty: 1,
-            image: cartImg,
-        },
-    ]);
+    const { cart, removeFromCart, updateCartQty } = React.useContext(MyContext);
 
     const [anchorEl, setAnchorEl] = useState(null);
     const [menuType, setMenuType] = useState(null); // "size" or "qty"
@@ -43,28 +30,16 @@ const Cart = () => {
     };
 
     const updateSize = (size) => {
-        setCartItems((prev) =>
-            prev.map((item) =>
-                item.id === activeItemId ? { ...item, size } : item
-            )
-        );
+        // Size isn't globally tracked in this simple cart, but we could add it
         closeMenu();
     };
 
     const updateQty = (qty) => {
-        setCartItems((prev) =>
-            prev.map((item) =>
-                item.id === activeItemId ? { ...item, qty } : item
-            )
-        );
+        updateCartQty(activeItemId, qty);
         closeMenu();
     };
 
-    const removeItem = (id) => {
-        setCartItems((prev) => prev.filter((item) => item.id !== id));
-    };
-
-    const subtotal = cartItems.reduce(
+    const subtotal = cart.reduce(
         (sum, item) => sum + item.price * item.qty,
         0
     );
@@ -81,13 +56,22 @@ const Cart = () => {
                             <p>
                                 There are{" "}
                                 <span className="font-bold text-[#ff5252]">
-                                    {cartItems.length}
+                                    {cart.length}
                                 </span>{" "}
                                 products in your cart
                             </p>
                         </div>
 
-                        {cartItems.map((item) => (
+                        {cart.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                                <IoBagCheckOutline className="text-6xl mb-4 opacity-20" />
+                                <p className="text-lg">Your cart is empty</p>
+                                <Link to="/products" className="mt-4 text-[#ff5252] font-semibold hover:underline">
+                                    Start Shopping
+                                </Link>
+                            </div>
+                        ) : (
+                            cart.map((item) => (
                             <div
                                 key={item.id}
                                 className="cartItem w-full p-3 flex flex-col sm:flex-row items-center gap-4 pb-5 border-b border-[rgba(0,0,0,0.1)]"
@@ -99,7 +83,7 @@ const Cart = () => {
                                 <div className="w-full sm:w-[80%] relative">
                                     <IoCloseSharp
                                         className="cursor-pointer absolute top-0 right-0 text-[22px]"
-                                        onClick={() => removeItem(item.id)}
+                                        onClick={() => removeFromCart(item.id)}
                                     />
 
                                     <span className="text-[13px]">{item.brand}</span>
@@ -117,7 +101,7 @@ const Cart = () => {
                                             onClick={(e) => openMenu(e, "size", item.id)}
                                             className="flex items-center bg-[#f1f1f1] text-[12px] font-semibold py-1 px-2 rounded-md cursor-pointer"
                                         >
-                                            Size: {item.size} <GoTriangleDown />
+                                            Size: {item.size || "M"} <GoTriangleDown />
                                         </span>
 
                                         {/* QTY */}
@@ -131,21 +115,25 @@ const Cart = () => {
                                     </div>
 
                                     <div className="flex items-center gap-4 mt-2">
-                                        <span className="line-through text-gray-500 text-[15px]">
-                                            ₦{item.oldPrice.toLocaleString()}
-                                        </span>
+                                        {item.oldPrice > item.price && (
+                                            <span className="line-through text-gray-500 text-[15px]">
+                                                ₦{item.oldPrice.toLocaleString()}
+                                            </span>
+                                        )}
                                         <span className="text-[#ff5252] font-semibold">
                                             ₦{item.price.toLocaleString()}
                                         </span>
-                                        <span className="text-[#ff5252] font-semibold">
-                                            {Math.round(
-                                                ((item.oldPrice - item.price) / item.oldPrice) * 100
-                                            )}% OFF
-                                        </span>
+                                        {item.oldPrice > item.price && (
+                                            <span className="text-[#ff5252] font-semibold">
+                                                {Math.round(
+                                                    ((item.oldPrice - item.price) / item.oldPrice) * 100
+                                                )}% OFF
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        )))}
                     </div>
                 </div>
 

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import productImg1 from '../../assets/image/product1.jpg';
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -7,9 +6,9 @@ import "swiper/css/free-mode";
 import "swiper/css/thumbs";
 import { Navigation, Thumbs, FreeMode } from "swiper/modules";
 
-const images = [productImg1, productImg1, productImg1, productImg1];
 
-const ProductZoom = () => {
+
+const ProductZoom = ({images}) => {
     const [zoomed, setZoomed] = useState(false);
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [thumbsSwiper, setThumbsSwiper] = useState(null);

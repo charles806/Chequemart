@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link, useLocation, Outlet } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "sonner";
 
 // Pages
 import Home from "./Pages/Home";
@@ -30,8 +30,7 @@ import MyContextProvider, { MyContext } from "./MyContext";
 
 // UI & Icons
 import Drawer from "@mui/material/Drawer";
-import { IoCloseSharp } from "react-icons/io5";
-import cartImg from "../src/assets/image/product1.jpg";
+import { IoCloseSharp, IoBagCheckOutline } from "react-icons/io5";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -54,232 +53,161 @@ const MarketplaceLayout = () => {
 };
 
 const App = () => {
-  const [openCartPanel, setOpenCartPanel] = useState(false);
-  const [isOpenCatPanel, setIsOpenCatPanel] = useState(false);
-  const [count, setCount] = useState(1);
-  const [isLogin, setIsLogin] = useState(() => {
-    return localStorage.getItem("isLogin") === "true";
-  });
-  const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
-  const [accessToken, setAccessToken] = useState(() => {
-    return localStorage.getItem("accessToken");
-  });
+  return (
+    <BrowserRouter>
+      <ScrollToTop />
+      <MyContextProvider>
+        <AppContent />
+      </MyContextProvider>
+    </BrowserRouter>
+  );
+};
 
-  const login = (userData, token) => {
-    setUser(userData);
-    setAccessToken(token);
-    setIsLogin(true);
-    localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("accessToken", token);
-    localStorage.setItem("isLogin", "true");
-  };
+const AppContent = () => {
+  const { cart, removeFromCart, updateCartQty, openAlertBox, openCartPanel, setOpenCartPanel } = React.useContext(MyContext);
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-  const logout = () => {
-    setUser(null);
-    setAccessToken(null);
-    setIsLogin(false);
-    localStorage.removeItem("user");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("isLogin");
-  };
-
-  const openAlertBox = (type, message) => {
-    console.log(`[${type.toUpperCase()}] ${message}`);
-    if (type === "success") {
-      toast.success(message, {
-        duration: 4000,
-        style: { background: '#22c55e', color: '#fff', fontWeight: '500' },
-        iconTheme: { primary: '#fff', secondary: '#22c55e' }
-      });
-    } else if (type === "error") {
-      toast.error((t) => (
-        <span className="flex items-center gap-3">
-          {message}
-          <button 
-            onClick={() => toast.dismiss(t.id)} 
-            className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white/20 transition ml-2"
-          >
-            <IoCloseSharp className="text-xl" />
-          </button>
-        </span>
-      ), {
-        duration: Infinity,
-        style: { background: '#ef4444', color: '#fff', fontWeight: '500' },
-        iconTheme: { primary: '#fff', secondary: '#ef4444' }
-      });
-    } else if (type === "warning") {
-      toast(message, {
-        duration: 7000,
-        icon: '⚠️',
-        style: { background: '#eab308', color: '#fff', fontWeight: '500' }
-      });
-    } else {
-      toast(message);
-    }
-  };
-
-  const values = {
-    openCartPanel,
-    setOpenCartPanel,
-    isOpenCatPanel,
-    setIsOpenCatPanel,
-    isLogin,
-    setIsLogin,
-    user,
-    accessToken,
-    login,
-    logout,
-    openAlertBox,
-  };
-
-  // Correct toggle function for cart
   const toggleCartPanel = (newOpen) => {
     setOpenCartPanel(newOpen);
   };
 
-  // Toggle function for category panel
-  const toggleCatPanel = (newOpen) => {
-    setIsOpenCatPanel(newOpen);
-  };
-
   return (
-    <BrowserRouter>
-      <ScrollToTop />
-      <MyContext.Provider value={values}>
-        <Routes>
-          {/* Seller app — isolated, no marketplace layout */}
-          <Route path="/seller/*" element={<ProtectedRoute><SellerApp /></ProtectedRoute>} />
+    <>
+      <Routes>
+        {/* Seller app — isolated, no marketplace layout */}
+        <Route path="/seller/*" element={<ProtectedRoute><SellerApp /></ProtectedRoute>} />
 
-          {/* Marketplace routes — wrapped in marketplace layout */}
-          <Route element={<MarketplaceLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/products/:id" element={<ProductDetail />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/verify-email" element={<Verify />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/my-list" element={<MyList />} />
-            <Route path="/orders" element={<Orders />} />
-          </Route>
-        </Routes>
-        <Toaster 
-          position="top-center" 
-          containerClassName="mobile-toaster"
-          toastOptions={{
-            success: {
-              duration: 4000,
-            },
-            error: {
-              duration: Infinity,
-            },
-          }}
-        />
+        {/* Marketplace routes — wrapped in marketplace layout */}
+        <Route element={<MarketplaceLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/products/:id" element={<ProductDetail />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<Verify />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="/my-list" element={<MyList />} />
+          <Route path="/orders" element={<Orders />} />
+        </Route>
+      </Routes>
+      <Toaster 
+        position="top-center" 
+        richColors 
+        closeButton
+        expand={false}
+      />
 
-        {/* Cart Drawer */}
-        <Drawer
-          open={openCartPanel}
-          anchor="right"
-          onClose={() => toggleCartPanel(false)}
-          PaperProps={{
-            className: "w-[400px] bg-white flex flex-col",
-          }}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-6 border-b border-black/10">
-            <h4 className="text-[18px] font-semibold text-black">
-              Shopping Cart (3)
-            </h4>
-            <IoCloseSharp
-              className="text-2xl cursor-pointer text-gray-500 hover:text-[#ff5252] transition"
-              onClick={() => toggleCartPanel(false)}
-            />
-          </div>
+      {/* Cart Drawer */}
+      <Drawer
+        open={openCartPanel}
+        anchor="right"
+        onClose={() => toggleCartPanel(false)}
+        PaperProps={{
+          className: "w-[400px] bg-white flex flex-col",
+        }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-6 border-b border-black/10">
+          <h4 className="text-[18px] font-semibold text-black">
+            Shopping Cart ({cart.length})
+          </h4>
+          <IoCloseSharp
+            className="text-2xl cursor-pointer text-gray-500 hover:text-[#ff5252] transition"
+            onClick={() => toggleCartPanel(false)}
+          />
+        </div>
 
-          {/* Cart Items */}
-          <div className="flex-1 overflow-y-auto">
-            {[1].map((item) => (
+        {/* Cart Items */}
+        <div className="flex-1 overflow-y-auto">
+          {cart.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-gray-400 p-10 text-center">
+              <IoBagCheckOutline className="text-5xl mb-4 opacity-20" />
+              <p>Your cart is empty</p>
+            </div>
+          ) : (
+            cart.map((item) => (
               <div
-                key={item}
+                key={item.id}
                 className="flex gap-4 p-6 border-b border-black/10 hover:bg-gray-50 transition"
               >
                 <div className="w-20 h-20 rounded-lg overflow-hidden border border-black/10 shrink-0">
                   <img
-                    src={cartImg}
-                    alt="Product"
+                    src={item.image}
+                    alt={item.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
 
                 <div className="flex-1 flex flex-col gap-2">
                   <h4 className="text-sm font-medium text-gray-800">
-                    Barca Home Kit 2024/2025
+                    {item.name}
                   </h4>
 
                   <p className="text-base font-semibold text-[#ff5252]">
-                    ₦10,000
+                    ₦{item.price.toLocaleString()}
                   </p>
 
                   <div className="flex items-center gap-2 mt-1">
                     <button
-                      className="w-6 h-6 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-[#ff5252] hover:text-accent hover:bg-[#fff5f2] transition"
-                      onClick={() => setCount((prev) => Math.max(0, prev - 1))}
+                      className="w-6 h-6 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-[#ff5252] hover:text-[#ff5252] hover:bg-[#fff5f2] transition"
+                      onClick={() => updateCartQty(item.id, Math.max(1, item.qty - 1))}
                     >
                       -
                     </button>
 
                     <span className="min-w-7.5 text-center text-sm font-medium text-gray-800">
-                      {count}
+                      {item.qty}
                     </span>
 
                     <button
-                      className="w-6 h-6 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-accent hover:text-accent hover:bg-[#fff5f2] transition"
-                      onClick={() => setCount((prev) => prev + 1)}
+                      className="w-6 h-6 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-[#ff5252] hover:text-[#ff5252] hover:bg-[#fff5f2] transition"
+                      onClick={() => updateCartQty(item.id, item.qty + 1)}
                     >
                       +
                     </button>
                   </div>
                 </div>
 
-                <IoCloseSharp className="text-lg text-gray-400 cursor-pointer hover:text-red-500 transition" />
+                <IoCloseSharp 
+                  className="text-lg text-gray-400 cursor-pointer hover:text-red-500 transition" 
+                  onClick={() => removeFromCart(item.id)}
+                />
               </div>
-            ))}
+            ))
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 border-t border-black/10 bg-white">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-base text-gray-500 font-medium">
+              Subtotal:
+            </span>
+            <span className="text-xl text-[#ff5252] font-bold">₦{subtotal.toLocaleString()}</span>
           </div>
 
-          {/* Footer */}
-          <div className="p-6 border-t border-black/10 bg-white">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-base text-gray-500 font-medium">
-                Subtotal:
-              </span>
-              <span className="text-xl text-[#ff5252] font-bold">₦9000</span>
-            </div>
+          <div className="flex flex-col gap-3">
+            <Link to="/checkout" onClick={() => toggleCartPanel(false)}>
+              <button className="w-full py-3 rounded-md font-semibold text-white bg-[#ff5252] hover:bg-accent hover:-translate-y-px hover:shadow-lg hover:shadow-orange-400/30 transition cursor-pointer">
+                Checkout
+              </button>
+            </Link>
 
-            <div className="flex flex-col gap-3">
-              <Link to="/checkout">
-                <button className="w-full py-3 rounded-md font-semibold text-white bg-[#ff5252] hover:bg-accent hover:-translate-y-px hover:shadow-lg hover:shadow-orange-400/30 transition cursor-pointer">
-                  Checkout
-                </button>
-              </Link>
-
-              <Link to="/cart">
-                <button className="w-full py-3 rounded-md font-semibold text-[#ff5252] border-2 border-[#ff5252] hover:bg-[#fff5f2] transition cursor-pointer">
-                  View Cart
-                </button>
-              </Link>
-            </div>
+            <Link to="/cart" onClick={() => toggleCartPanel(false)}>
+              <button className="w-full py-3 rounded-md font-semibold text-[#ff5252] border-2 border-[#ff5252] hover:bg-[#fff5f2] transition cursor-pointer">
+                View Cart
+              </button>
+            </Link>
           </div>
-        </Drawer>
-      </MyContext.Provider>
-    </BrowserRouter>
+        </div>
+      </Drawer>
+    </>
   );
 };
+
 
 export default App;

@@ -9,20 +9,53 @@ import { FaRegHeart } from "react-icons/fa";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import productImg1 from '../../assets/image/product1.jpg';
 
+import { MyContext } from '../../MyContext';
+import { toast } from "sonner";
+
 const ProductItem = ({ product }) => {
+    const { addToCart, setOpenCartPanel, user } = React.useContext(MyContext);
     // Destructure product data with fallback values
     const {
-        id = 123,
-        name = "Product Name",
-        brand = "BRAND",
-        price = 10000,
-        oldPrice = 20000,
-        rating = 4,
-        image = productImg1,
-        discount = 50
+        id,
+        name = "Loading...",
+        brand = "",
+        price = 0,
+        oldPrice = 0,
+        rating = 0,
+        image = "",
+        discount = 0
     } = product || {};
 
     const [value, setValue] = React.useState(rating);
+
+    const handleAddToCart = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!user) {
+            toast.error("Please login to add products to cart!", {
+                icon: '⚠️',
+                style: {
+                    background: '#eab308',
+                    color: '#fff',
+                }
+            });
+            return;
+        }
+
+        addToCart({
+            id,
+            name,
+            brand,
+            price,
+            oldPrice,
+            image,
+            rating,
+            qty: 1
+        });
+        toast.success(`${name} added to cart!`);
+        setOpenCartPanel(true);
+    };
 
     return (
         <div className='productItem shadow-md hover:shadow-2xl rounded-xl overflow-hidden border border-gray-100 transition-all duration-300 hover:-translate-y-1 bg-white'>
@@ -79,7 +112,10 @@ const ProductItem = ({ product }) => {
                 </div>
 
                 <div className="w-full">
-                    <Button className='bg-gradient-to-r from-[#ff5252] to-[#ff7b7b]! hover:from-[#e04848]! hover:to-[#ff5252]! text-white! flex w-full items-center justify-center gap-2 py-2! rounded-lg! shadow-md! hover:shadow-lg! transition-all! duration-300! font-medium! text-[13px]! sm:text-[14px]!'>
+                    <Button 
+                        onClick={handleAddToCart}
+                        className='bg-gradient-to-r from-[#ff5252] to-[#ff7b7b]! hover:from-[#e04848]! hover:to-[#ff5252]! text-white! flex w-full items-center justify-center gap-2 py-2! rounded-lg! shadow-md! hover:shadow-lg! transition-all! duration-300! font-medium! text-[13px]! sm:text-[14px]!'
+                    >
                         <MdOutlineShoppingCart className='text-[18px]' />
                         Add to Cart
                     </Button>

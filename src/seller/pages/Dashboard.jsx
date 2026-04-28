@@ -21,6 +21,7 @@
  */
 
 import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 import Icon from "../components/ui/Icon";
 import StatusBadge from "../components/ui/StatusBadge";
 import { ICONS } from "../components/ui/icons";
@@ -141,7 +142,7 @@ export default function DashboardPage() {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem("accessToken");
+        const token = Cookies.get("accessToken");
         const headers = { Authorization: `Bearer ${token}` };
 
         const [summaryRes, revenueRes, ordersRes] = await Promise.all([

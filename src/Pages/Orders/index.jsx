@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import Cookies from 'js-cookie'
 //MUI
 import Button from '@mui/material/Button';
 import Tabs from '@mui/material/Tabs';
@@ -15,7 +16,6 @@ import { FaShippingFast } from "react-icons/fa";
 import { FaCheckCircle } from "react-icons/fa";
 import { FaTimesCircle } from "react-icons/fa";
 import { FaRegArrowAltCircleLeft } from "react-icons/fa";
-import { FaEye } from "react-icons/fa";
 import { FaRedo } from "react-icons/fa";
 import { FaChevronDown } from "react-icons/fa";
 import { FaCalendarAlt } from "react-icons/fa";
@@ -78,25 +78,75 @@ const mockOrders = [
 ]
 
 const statusConfig = {
+    pending: { label: "Pending", color: "#6b7280", bg: "#f3f4f6", icon: <FaBoxOpen /> },
     processing: { label: "Processing", color: "#f59e0b", bg: "#fef3c7", icon: <FaBoxOpen /> },
+    confirmed: { label: "Confirmed", color: "#8b5cf6", bg: "#ede9fe", icon: <FaCheckCircle /> },
     shipped: { label: "Shipped", color: "#3b82f6", bg: "#dbeafe", icon: <FaShippingFast /> },
     delivered: { label: "Delivered", color: "#10b981", bg: "#d1fae5", icon: <FaCheckCircle /> },
+    collected: { label: "Collected", color: "#0d9488", bg: "#ccfbf1", icon: <FaCheckCircle /> },
     cancelled: { label: "Cancelled", color: "#ef4444", bg: "#fee2e2", icon: <FaTimesCircle /> }
 }
 
 const Orders = () => {
     const [activeTab, setActiveTab] = useState(0)
     const [expandedOrder, setExpandedOrder] = useState(null)
+    const [orders, setOrders] = useState([])
+    const [loading, setLoading] = useState(true)
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        fetchOrders()
+    }, [])
+
+    const fetchOrders = async () => {
+        try {
+            const token = Cookies.get("accessToken");
+            const response = await fetch(
+                `${import.meta.env.VITE_API_URL}/api/orders`,
+                {
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    }
+                }
+            );
+            const { success, orders } = await response.json();
+            if (success) {
+                setOrders(orders);
+            }
+        } catch (error) {
+            console.error("Failed to fetch orders:", error);
+        } finally {
+            setLoading(false);
+        }
+    }
 
     const handleTabChange = (event, newValue) => {
         setActiveTab(newValue);
     };
 
+    const transformOrder = (order) => ({
+        id: order._id,
+        date: order.createdAt,
+        status: order.status || 'pending',
+        items: (order.products || []).map(p => ({
+            name: p.name,
+            price: p.price,
+            qty: p.quantity,
+            image: p.image
+        })),
+        total: order.totalAmount,
+        shipping: 0,
+        payment: order.isPaid ? "Paid" : order.paymentStatus || "Pending",
+        address: order.shippingAddress?.address || 'N/A'
+    })
+
     const getFilteredOrders = () => {
-        const filters = ['all', 'processing', 'shipped', 'delivered', 'cancelled']
+        const filters = ['all', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']
         const filter = filters[activeTab]
-        if (filter === 'all') return mockOrders
-        return mockOrders.filter(order => order.status === filter)
+        let filtered = filter === 'all' ? orders : orders.filter(order => order.status === filter)
+        return filtered.map(order => transformOrder(order))
     }
 
     const filteredOrders = getFilteredOrders()
@@ -106,13 +156,63 @@ const Orders = () => {
         return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
     }
 
-    const handleViewDetails = (orderId) => {
-        console.log("View details:", orderId)
-    }
-
     const handleReorder = (orderId) => {
         console.log("Reorder:", orderId)
     }
+
+    const handleMarkAsReceived = async (orderId) => {
+        try {
+            const token = Cookies.get("accessToken");
+            const response = await fetch(
+                `${import.meta.env.VITE_API_URL}/api/orders/${orderId}/receive`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    credentials: "include"
+                }
+            );
+            const data = await response.json();
+            if (data.success) {
+                fetchOrders();
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error("Mark as received error:", error);
+            alert("Failed to mark order as received");
+        }
+    };
+
+    const handleCancelOrder = async (orderId) => {
+        if (!confirm("Are you sure you want to cancel this order?")) return;
+        
+        try {
+            const token = Cookies.get("accessToken");
+            const response = await fetch(
+                `${import.meta.env.VITE_API_URL}/api/orders/${orderId}/cancel`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    credentials: "include"
+                }
+            );
+            const data = await response.json();
+            if (data.success) {
+                fetchOrders();
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error("Cancel order error:", error);
+            alert("Failed to cancel order");
+        }
+    };
 
     return (
         <section className='section py-8 pb-12 bg-gray-50 min-h-screen'>
@@ -131,14 +231,19 @@ const Orders = () => {
                                 My Orders
                             </h1>
                             <p className="mt-1 text-gray-500">
-                                {mockOrders.length} orders placed
+                                {orders.length} orders placed
                             </p>
                         </div>
                     </div>
                 </div>
 
                 {/* Tabs */}
-                <Box className="mb-6 bg-white rounded-xl shadow-sm p-2">
+                {loading ? (
+                    <div className="flex justify-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff5252]"></div>
+                    </div>
+                ) : (
+                    <Box className="mb-6 bg-white rounded-xl shadow-sm p-2">
                     <Tabs
                         value={activeTab}
                         onChange={handleTabChange}
@@ -152,31 +257,40 @@ const Orders = () => {
                         <Tab label="All Orders" className={activeTab === 0 ? "text-[#ff5252]!" : "text-gray-600!"} />
                         <Tab label={
                             <span className="flex items-center gap-2">
-                                Processing
-                                <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs">
-                                    {mockOrders.filter(o => o.status === 'processing').length}
+                                Confirmed
+                                <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs">
+                                    {orders.filter(o => o.status === 'confirmed').length}
                                 </span>
                             </span>
                         } className={activeTab === 1 ? "text-[#ff5252]!" : "text-gray-600!"} />
                         <Tab label={
                             <span className="flex items-center gap-2">
-                                Shipped
-                                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">
-                                    {mockOrders.filter(o => o.status === 'shipped').length}
+                                Processing
+                                <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs">
+                                    {orders.filter(o => o.status === 'processing').length}
                                 </span>
                             </span>
                         } className={activeTab === 2 ? "text-[#ff5252]!" : "text-gray-600!"} />
                         <Tab label={
                             <span className="flex items-center gap-2">
-                                Delivered
-                                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">
-                                    {mockOrders.filter(o => o.status === 'delivered').length}
+                                Shipped
+                                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">
+                                    {orders.filter(o => o.status === 'shipped').length}
                                 </span>
                             </span>
                         } className={activeTab === 3 ? "text-[#ff5252]!" : "text-gray-600!"} />
-                        <Tab label="Cancelled" className={activeTab === 4 ? "text-[#ff5252]!" : "text-gray-600!"} />
+                        <Tab label={
+                            <span className="flex items-center gap-2">
+                                Delivered
+                                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">
+                                    {orders.filter(o => o.status === 'delivered').length}
+                                </span>
+                            </span>
+                        } className={activeTab === 4 ? "text-[#ff5252]!" : "text-gray-600!"} />
+                        <Tab label="Cancelled" className={activeTab === 5 ? "text-[#ff5252]!" : "text-gray-600!"} />
                     </Tabs>
-                </Box>
+                    </Box>
+                )}
 
                 {/* Orders List */}
                 {filteredOrders.length === 0 ? (
@@ -264,15 +378,26 @@ const Orders = () => {
 
                                     {/* Order Actions */}
                                     <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-100">
-                                        {/* <Button
-                                            variant="outlined"
-                                            size="small"
-                                            startIcon={<FaEye />}
-                                            onClick={() => handleViewDetails(order.id)}
-                                            className="border-gray-300! text-gray-600! hover:border-[#ff5252]! hover:text-[#ff5252]!"
-                                        >
-                                            View Details
-                                        </Button> */}
+                                        {order.status === 'shipped' && (
+                                            <Button
+                                                variant="contained"
+                                                size="small"
+                                                onClick={() => handleMarkAsReceived(order.id)}
+                                                className="bg-green-600 hover:bg-green-700!"
+                                            >
+                                                Mark as Received
+                                            </Button>
+                                        )}
+                                        {['pending', 'confirmed'].includes(order.status) && (
+                                            <Button
+                                                variant="outlined"
+                                                size="small"
+                                                color="error"
+                                                onClick={() => handleCancelOrder(order.id)}
+                                            >
+                                                Cancel Order
+                                            </Button>
+                                        )}
                                         {order.status !== 'cancelled' && (
                                             <Button
                                                 variant="outlined"

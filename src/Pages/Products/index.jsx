@@ -1,34 +1,43 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import SideBar from "../../Component/SideBar";
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ProductItem from "../../Component/ProductItem/index";
-import productImg1 from '../../assets/image/product1.jpg';
-const MOCK_PRODUCTS = [
-    { id: 1, name: "Barcelona Home Jersey", brand: "BARCA", price: 10000, oldPrice: 20000, rating: 4, image: productImg1, discount: 50 },
-    { id: 2, name: "Wireless Headphones", brand: "SONY", price: 15000, oldPrice: 25000, rating: 5, image: productImg1, discount: 40 },
-    { id: 3, name: "Smart Watch", brand: "APPLE", price: 45000, oldPrice: 60000, rating: 5, image: productImg1, discount: 25 },
-    { id: 4, name: "Running Shoes", brand: "NIKE", price: 12000, oldPrice: 18000, rating: 4, image: productImg1, discount: 33 },
-    { id: 5, name: "Laptop Backpack", brand: "SAMSONITE", price: 8000, oldPrice: 15000, rating: 3, image: productImg1, discount: 47 },
-    { id: 6, name: "Bluetooth Speaker", brand: "JBL", price: 18000, oldPrice: 30000, rating: 5, image: productImg1, discount: 40 },
-    { id: 7, name: "Gaming Mouse", brand: "LOGITECH", price: 7000, oldPrice: 12000, rating: 4, image: productImg1, discount: 42 },
-    { id: 8, name: "Yoga Mat", brand: "ADIDAS", price: 5000, oldPrice: 8000, rating: 4, image: productImg1, discount: 38 },
-    { id: 9, name: "Coffee Maker", brand: "PHILIPS", price: 22000, oldPrice: 35000, rating: 5, image: productImg1, discount: 37 },
-    { id: 10, name: "Desk Lamp", brand: "IKEA", price: 6000, oldPrice: 10000, rating: 3, image: productImg1, discount: 40 },
-    { id: 11, name: "Water Bottle", brand: "THERMOS", price: 3500, oldPrice: 6000, rating: 4, image: productImg1, discount: 42 },
-    { id: 12, name: "Phone Case", brand: "SPIGEN", price: 2500, oldPrice: 5000, rating: 5, image: productImg1, discount: 50 },
-    { id: 13, name: "Sunglasses", brand: "RAY-BAN", price: 25000, oldPrice: 40000, rating: 5, image: productImg1, discount: 38 },
-    { id: 14, name: "Fitness Tracker", brand: "FITBIT", price: 20000, oldPrice: 32000, rating: 4, image: productImg1, discount: 38 },
-    { id: 15, name: "Portable Charger", brand: "ANKER", price: 8500, oldPrice: 14000, rating: 5, image: productImg1, discount: 39 },
-    { id: 16, name: "Travel Pillow", brand: "TRTL", price: 4500, oldPrice: 7500, rating: 4, image: productImg1, discount: 40 },
-];
+import CircularProgress from "@mui/material/CircularProgress";
 
 const Products = () => {
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [anchorEl, setAnchorEl] = useState(null);
     const [sortOption, setSortOption] = useState("name-asc");
     const [sortLabel, setSortLabel] = useState("Name, A to Z");
     const open = Boolean(anchorEl);
+
+    const [searchParams] = useSearchParams();
+    const searchQuery = searchParams.get("search");
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                let url = `${import.meta.env.VITE_API_URL}/api/products`;
+                if (searchQuery) {
+                    url += `?search=${encodeURIComponent(searchQuery)}`;
+                }
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.success) {
+                    setProducts(data.data || []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch products:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, [searchQuery]);
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -46,7 +55,7 @@ const Products = () => {
 
     // Sort products based on selected option
     const sortedProducts = useMemo(() => {
-        const productsCopy = [...MOCK_PRODUCTS];
+        const productsCopy = [...products];
 
         switch (sortOption) {
             case "name-asc":
@@ -60,7 +69,7 @@ const Products = () => {
             default:
                 return productsCopy;
         }
-    }, [sortOption]);
+    }, [products, sortOption]);
 
     return (
         <section className="min-h-screen pb-8">
@@ -71,11 +80,14 @@ const Products = () => {
                     </div>
                     <div className="rightContent w-full lg:w-[80%] py-3">
                         {/* Sort By Header - Sticky with backdrop blur */}
-                        <div className="bg-white/90 backdrop-blur-md p-3 px-4 w-full mb-6 rounded-lg flex items-center justify-between sticky top-33.75 z-50 shadow-md border border-gray-200">
+                        <div className="bg-white/90 backdrop-blur-md p-3 px-4 w-full mb-6 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between sticky top-33.75 z-50 shadow-md border border-gray-200 gap-3 sm:gap-0">
                             <div className="text-sm text-gray-600">
                                 Showing <span className="font-semibold text-gray-900">{sortedProducts.length}</span> products
+                                {searchQuery && (
+                                    <span> for "<span className="font-semibold text-gray-900">{searchQuery}</span>"</span>
+                                )}
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 self-end sm:self-auto">
                                 <span className="text-[14px] font-medium text-gray-700 hidden sm:block">Sort By:</span>
                                 <Button
                                     className="bg-white! border-2! border-[#ff5252]! text-[13px]! text-black! hover:bg-[#ff5252]! hover:text-white! transition-all! font-medium! px-4! py-1.5! rounded-lg! shadow-sm!"
@@ -155,14 +167,31 @@ const Products = () => {
                         </div>
 
                         {/* Product Grid - Fully Responsive */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 animate-fadeIn">
-                            {sortedProducts.map((product) => (
-                                <ProductItem
-                                    key={product.id}
-                                    product={product}
-                                />
-                            ))}
-                        </div>
+                        {loading ? (
+                            <div className="flex items-center justify-center py-20 w-full">
+                                <CircularProgress size={40} className="text-[#ff5252]" />
+                            </div>
+                        ) : sortedProducts.length === 0 ? (
+                            <div className="text-center py-20 w-full text-gray-400">
+                                <p className="text-lg font-medium">No products found</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 animate-fadeIn">
+                                {sortedProducts.map((product) => (
+                                    <ProductItem
+                                        key={product._id}
+                                        product={{
+                                            id: product._id,
+                                            name: product.name,
+                                            price: product.price,
+                                            oldPrice: product.price * 1.2,
+                                            image: product.images?.[0],
+                                            brand: product.seller?.storeName || "Vendor"
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

@@ -64,6 +64,16 @@ const Header = () => {
   };
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e) => {
+    if (e.key === "Enter" || e.type === "click") {
+      if (searchQuery.trim()) {
+        navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+        setIsSearchOpen(false);
+      }
+    }
+  };
 
 
   const toggleSearch = () => {
@@ -89,10 +99,10 @@ const Header = () => {
                 Help Center
               </Link>
               <Link
-                to={context.user?.role === "seller" ? "/seller/dashboard" : "/account?openBecomeSeller=true"}
+                to={context.user?.role === "seller" && context.user?.sellerInfo?.onboardingComplete ? "/seller/dashboard" : "/account?openBecomeSeller=true"}
                 className="text-[11px] lg:text-[13px] link font-medium transition"
               >
-                {context.user?.role === "seller" ? "Seller Dashboard" : "Sell on Chequemart"}
+                {context.user?.role === "seller" && context.user?.sellerInfo?.onboardingComplete ? "Seller Dashboard" : "Sell on Chequemart"}
               </Link>
             </div>
           </div>
@@ -122,10 +132,13 @@ const Header = () => {
               <input
                 type="text"
                 placeholder="Search for products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch}
                 className="w-full h-8.75 focus:outline-none bg-inherit p-2 text-[15px]"
               />
 
-              <Button className="absolute! top-2 right-1.25 z-50 w-9.25! min-w-9.25! h-9.25 rounded-full! text-black!">
+              <Button onClick={handleSearch} className="absolute! top-2 right-1.25 z-50 w-9.25! min-w-9.25! h-9.25 rounded-full! text-black!">
                 <CiSearch className="text-[#000000] text-[22px] font-bold" />
               </Button>
             </div>
@@ -226,7 +239,7 @@ const Header = () => {
 
               <li className="list-none">
                 <IconButton aria-label="cart" onClick={() => context.setOpenCartPanel(true)}>
-                  <StyledBadge badgeContent={4} color="secondary">
+                  <StyledBadge badgeContent={context.cart.length} color="secondary">
                     <MdOutlineShoppingCart className="text-[22px] lg:text-[26px] text-black" />
                   </StyledBadge>
                 </IconButton>
@@ -259,9 +272,12 @@ const Header = () => {
             <input
               type="text"
               placeholder="Search for products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearch}
               className="w-full h-full focus:outline-none bg-inherit text-[14px]"
             />
-            <Button className="min-w-10! w-10! h-10! rounded-full! text-black!">
+            <Button onClick={handleSearch} className="min-w-10! w-10! h-10! rounded-full! text-black!">
               <CiSearch className="text-[20px]" />
             </Button>
           </div>

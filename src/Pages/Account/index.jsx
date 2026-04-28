@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect, useRef } from 'react'
+import Cookies from 'js-cookie'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { MyContext } from '../../MyContext'
 import { FaCloudUploadAlt, FaRegUser, FaHeart, FaShoppingBag, FaTrash, FaCheck, FaTimes, FaLock } from 'react-icons/fa'
@@ -89,7 +90,7 @@ const Account = () => {
         setMessage({ type: '', text: '' });
 
         try {
-            const token = context.accessToken || localStorage.getItem('accessToken');
+            const token = context.accessToken || Cookies.get('accessToken');
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/profile`, {
                 method: 'PUT',
                 headers: {
@@ -145,7 +146,7 @@ const Account = () => {
         setUploadingAvatar(true);
 
         try {
-            const token = context.accessToken || localStorage.getItem('accessToken');
+            const token = context.accessToken || Cookies.get('accessToken');
             const formDataUpload = new FormData();
             formDataUpload.append('avatar', file);
 
@@ -190,7 +191,7 @@ const Account = () => {
         setLoading(true);
 
         try {
-            const token = context.accessToken || localStorage.getItem('accessToken');
+            const token = context.accessToken || Cookies.get('accessToken');
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/avatar`, {
                 method: 'DELETE',
                 headers: {
@@ -220,7 +221,7 @@ const Account = () => {
         setSellerLoading(true);
 
         try {
-            const token = context.accessToken || localStorage.getItem('accessToken');
+            const token = context.accessToken || Cookies.get('accessToken');
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/become-seller`, {
                 method: 'POST',
                 headers: {
@@ -268,7 +269,7 @@ const Account = () => {
         setPasswordLoading(true);
 
         try {
-            const token = context.accessToken || localStorage.getItem('accessToken');
+            const token = context.accessToken || Cookies.get('accessToken');
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/users/password`, {
                 method: 'PUT',
                 headers: {

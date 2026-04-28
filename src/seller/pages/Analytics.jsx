@@ -24,6 +24,7 @@
  */
 
 import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 import Icon from "../components/ui/Icon";
 import { ICONS } from "../components/ui/icons";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -287,7 +288,7 @@ export default function AnalyticsPage() {
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = Cookies.get("accessToken");
       const headers = { Authorization: `Bearer ${token}` };
 
       const [summaryRes, revenueRes] = await Promise.all([

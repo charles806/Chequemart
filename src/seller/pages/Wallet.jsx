@@ -38,6 +38,7 @@
  */
 
 import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 import Icon from "../components/ui/Icon";
 import StatusBadge from "../components/ui/StatusBadge";
 import Toast, { useToast } from "../components/ui/Toast";
@@ -458,7 +459,7 @@ export default function WalletPage() {
     const fetchWalletData = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem("accessToken");
+            const token = Cookies.get("accessToken");
             const headers = { Authorization: `Bearer ${token}` };
 
             const [txRes, bankRes] = await Promise.all([
@@ -489,7 +490,7 @@ export default function WalletPage() {
 
     const handleAddBank = async (account) => {
         try {
-            const token = localStorage.getItem("accessToken");
+            const token = Cookies.get("accessToken");
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/seller/bank-accounts`, {
                 method: "POST",
                 headers: {

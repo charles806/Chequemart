@@ -15,13 +15,11 @@
  *   Images: POST /api/cloudinary/upload  (per image, before saving)
  */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import Cookies from "js-cookie";
+import CircularProgress from "@mui/material/CircularProgress";
 import Icon from "./Icon";
 import { ICONS } from "./icons";
-
-// ─────────────────────────────────────────────────────────────
-// CONSTANTS
-// ─────────────────────────────────────────────────────────────
 const CATEGORIES = [
   "Electronics", "Fashion", "Bags & Accessories",
   "Sports & Fitness", "Home & Living", "Health & Beauty",
@@ -75,7 +73,11 @@ const FSelect = ({ label, error, options, ...props }) => (
   <Field label={label} error={error}>
     <select className={inputCls(!!error) + " cursor-pointer"} {...props}>
       <option value="">Select…</option>
-      {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      {options.map((o) => (
+        <option key={o.id || o} value={o.id || o}>
+          {o.name || o}
+        </option>
+      ))}
     </select>
   </Field>
 );
@@ -92,32 +94,58 @@ const FTextarea = ({ label, error, hint, ...props }) => (
 // ─────────────────────────────────────────────────────────────
 const ImageUpload = ({ images, onChange }) => {
   const inputRef = useRef();
+  const [uploading, setUploading] = useState(false);
 
-  const handleFiles = (e) => {
-    const newFiles = Array.from(e.target.files).map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-    }));
-    onChange([...images, ...newFiles].slice(0, 5));
-    // Reset input so the same file can be re-selected if removed
-    e.target.value = "";
+  const handleFiles = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setUploading(true);
+    const newUrls = [...images];
+
+    try {
+      const token = Cookies.get("accessToken");
+      for (const file of files) {
+        if (newUrls.length >= 5) break;
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/upload/product-image`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          newUrls.push(data.url);
+        }
+      }
+      onChange(newUrls);
+    } catch (error) {
+      console.error("Upload failed:", error);
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   const removeImage = (index) => {
-    // Revoke the object URL to free memory
-    URL.revokeObjectURL(images[index].preview);
     onChange(images.filter((_, i) => i !== index));
   };
 
   return (
     <Field label="Product Images" hint="Up to 5 images. First image is used as the cover.">
       <div className="flex gap-2 flex-wrap">
-        {images.map((img, i) => (
+        {images.map((url, i) => (
           <div
             key={i}
             className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-gray-200 group flex-shrink-0"
           >
-            <img src={img.preview} alt="" className="w-full h-full object-cover" />
+            <img src={url} alt="" className="w-full h-full object-cover" />
             {i === 0 && (
               <span className="absolute bottom-0 inset-x-0 bg-[#ff5252] text-white text-[8px] font-bold text-center py-0.5">
                 COVER
@@ -138,14 +166,21 @@ const ImageUpload = ({ images, onChange }) => {
         {images.length < 5 && (
           <button
             type="button"
+            disabled={uploading}
             onClick={() => inputRef.current.click()}
             className="w-16 h-16 rounded-xl border-2 border-dashed border-[#ff5252]/30
               bg-red-50/50 hover:border-[#ff5252]/60 hover:bg-red-50 transition
-              flex flex-col items-center justify-center gap-0.5 flex-shrink-0 cursor-pointer"
+              flex flex-col items-center justify-center gap-0.5 flex-shrink-0 cursor-pointer disabled:opacity-50"
             aria-label="Add image"
           >
-            <Icon d={ICONS.upload} size={16} className="text-[#ff5252]/50" />
-            <span className="text-[9px] text-gray-400 font-medium">Add</span>
+            {uploading ? (
+              <CircularProgress size={16} className="text-[#ff5252]" />
+            ) : (
+              <>
+                <Icon d={ICONS.upload} size={16} className="text-[#ff5252]/50" />
+                <span className="text-[9px] text-gray-400 font-medium">Add</span>
+              </>
+            )}
           </button>
         )}
       </div>
@@ -165,15 +200,21 @@ const ImageUpload = ({ images, onChange }) => {
 // PRODUCT MODAL
 // ─────────────────────────────────────────────────────────────
 const ProductModal = ({ product, onSave, onClose }) => {
-  const isEdit = !!product?.id;
+  const isEdit = !!product?._id;
 
   const [form, setForm] = useState(
     product
-      ? { ...product, price: String(product.price), stock: String(product.stock) }
+      ? { 
+          ...product, 
+          price: String(product.price), 
+          stock: String(product.stock),
+          category: product.category
+        }
       : { ...EMPTY_FORM }
   );
   const [errors, setErrors] = useState({});
   const [saved, setSaved] = useState(false);
+
 
   const update = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
@@ -208,7 +249,6 @@ const ProductModal = ({ product, onSave, onClose }) => {
       price: Number(form.price),
       stock: Number(form.stock),
       status: computeStatus(form.stock),
-      id: product?.id ?? Date.now(),
     };
 
     onSave(payload);

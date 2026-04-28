@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
     Button,
     TextField,
@@ -8,22 +8,39 @@ import {
     MenuItem,
 } from "@mui/material";
 import { IoBagCheckOutline } from "react-icons/io5";
-import cartImg from "../../assets/image/product1.jpg";
+import { useNavigate } from "react-router-dom";
+import Cookies from 'js-cookie';
+
 import { nigeriaStates } from "../../data/nigeriaStates.js";
 
+import { MyContext } from "../../MyContext";
+
 const Checkout = () => {
+    const { cart, user } = React.useContext(MyContext);
     const [state, setState] = useState("");
     const [city, setCity] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [billingDetails, setBillingDetails] = useState({
+        fullName: user?.name || "",
+        email: user?.email || "",
+        address: "",
+        apartment: "",
+        phone: user?.phone || "",
+        zipCode: "",
+        additionalInfo: ""
+    });
+    const navigate = useNavigate();
 
-    const [cartItems] = useState([
-        {
-            id: 1,
-            name: "Barca Home Kit 2024/2025",
-            price: 10000,
-            qty: 1,
-            image: cartImg,
-        },
-    ]);
+    useEffect(() => {
+        if (user) {
+            setBillingDetails(prev => ({
+                ...prev,
+                fullName: user.name || prev.fullName,
+                email: user.email || prev.email,
+                phone: user.phone || prev.phone
+            }));
+        }
+    }, [user]);
 
     const handleStateChange = (event) => {
         setState(event.target.value);
@@ -34,7 +51,69 @@ const Checkout = () => {
         setCity(event.target.value);
     };
 
-    const subtotal = cartItems.reduce(
+    const handleBillingChange = (field) => (event) => {
+        setBillingDetails(prev => ({ ...prev, [field]: event.target.value }));
+    };
+
+    const handleCheckout = async () => {
+        if (cart.length === 0) return;
+        
+        setLoading(true);
+        try {
+            const token = Cookies.get("accessToken");
+            const items = cart.map(item => ({
+                productId: item.id,
+                quantity: item.qty
+            }));
+
+            const orderResponse = await fetch(
+                `${import.meta.env.VITE_API_URL}/api/orders`,
+                {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({ items, shippingAddress: { ...billingDetails, state, city } })
+                }
+            );
+            const orderData = await orderResponse.json();
+            
+            if (!orderData.success) {
+                throw new Error(orderData.message);
+            }
+
+            const orderIds = orderData.orders.map(o => o._id);
+
+            const paymentResponse = await fetch(
+                `${import.meta.env.VITE_API_URL}/api/orders/initialize-payment`,
+                {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        ...(token && { Authorization: `Bearer ${token}` })
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({ orderIds })
+                }
+            );
+            const paymentData = await paymentResponse.json();
+
+            if (paymentData.success && paymentData.data?.authorization_url) {
+                window.location.href = paymentData.data.authorization_url;
+            } else {
+                alert("Payment initialization failed");
+            }
+        } catch (error) {
+            console.error("Checkout error:", error);
+            alert(error.message || "Checkout failed. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const subtotal = cart.reduce(
         (total, item) => total + item.price * item.qty,
         0
     );
@@ -50,14 +129,33 @@ const Checkout = () => {
                         <form className="w-full mt-5">
                             {/* Name & Email */}
                             <div className="flex flex-col sm:flex-row gap-4 pb-5">
-                                <TextField fullWidth label="Full Name" size="small" />
-                                <TextField fullWidth label="Email" type="email" size="small" />
+                                <TextField 
+                                    fullWidth 
+                                    label="Full Name" 
+                                    size="small" 
+                                    value={billingDetails.fullName}
+                                    onChange={handleBillingChange('fullName')}
+                                />
+                                <TextField 
+                                    fullWidth 
+                                    label="Email" 
+                                    type="email" 
+                                    size="small" 
+                                    value={billingDetails.email}
+                                    onChange={handleBillingChange('email')}
+                                />
                             </div>
 
                             {/* Address */}
                             <h4 className="text-sm font-medium mb-2">Street Address</h4>
                             <div className="pb-4">
-                                <TextField fullWidth label="Home Address" size="small" />
+                                <TextField 
+                                    fullWidth 
+                                    label="Home Address" 
+                                    size="small"
+                                    value={billingDetails.address}
+                                    onChange={handleBillingChange('address')}
+                                />
                             </div>
 
                             <div className="pb-4">
@@ -65,6 +163,8 @@ const Checkout = () => {
                                     fullWidth
                                     label="Apartment, suite, unit (optional)"
                                     size="small"
+                                    value={billingDetails.apartment}
+                                    onChange={handleBillingChange('apartment')}
                                 />
                             </div>
 
@@ -101,8 +201,20 @@ const Checkout = () => {
 
                             {/* Phone & Zip */}
                             <div className="flex flex-col sm:flex-row gap-4 pb-5">
-                                <TextField fullWidth label="Phone Number" size="small" />
-                                <TextField fullWidth label="Zip Code" size="small" />
+                                <TextField 
+                                    fullWidth 
+                                    label="Phone Number" 
+                                    size="small" 
+                                    value={billingDetails.phone}
+                                    onChange={handleBillingChange('phone')}
+                                />
+                                <TextField 
+                                    fullWidth 
+                                    label="Zip Code" 
+                                    size="small"
+                                    value={billingDetails.zipCode}
+                                    onChange={handleBillingChange('zipCode')}
+                                />
                             </div>
 
                             {/* Extra Info */}
@@ -113,11 +225,9 @@ const Checkout = () => {
                                 size="small"
                                 multiline
                                 rows={4}
+                                value={billingDetails.additionalInfo}
+                                onChange={handleBillingChange('additionalInfo')}
                             />
-
-                            <div className="flex justify-center mt-6">
-                                <Button className="btn-org">Add Billing Details</Button>
-                            </div>
                         </form>
                     </div>
                 </div>
@@ -133,30 +243,35 @@ const Checkout = () => {
                                 <span>Subtotal</span>
                             </div>
 
-                            {cartItems.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="flex justify-between py-3 text-sm"
-                                >
-                                    <div className="flex gap-3">
-                                        <div className="w-14 h-14 rounded-md overflow-hidden">
-                                            <img
-                                                src={item.image}
-                                                className="w-full h-full object-cover"
-                                            />
+                            {cart.length === 0 ? (
+                                <p className="text-center py-5 text-gray-400">Cart is empty</p>
+                            ) : (
+                                cart.map((item) => (
+                                    <div
+                                        key={item.id}
+                                        className="flex justify-between py-3 text-sm"
+                                    >
+                                        <div className="flex gap-3">
+                                            <div className="w-14 h-14 rounded-md overflow-hidden">
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <h4>{item.name}</h4>
+                                                <span>Qty: {item.qty}</span>
+                                            </div>
                                         </div>
 
-                                        <div>
-                                            <h4>{item.name}</h4>
-                                            <span>Qty: {item.qty}</span>
-                                        </div>
+                                        <span className="font-medium">
+                                            ₦{(item.price * item.qty).toLocaleString()}
+                                        </span>
                                     </div>
-
-                                    <span className="font-medium">
-                                        ₦{(item.price * item.qty).toLocaleString()}
-                                    </span>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
 
                         {/* TOTAL */}
@@ -165,9 +280,13 @@ const Checkout = () => {
                             <span>₦{subtotal.toLocaleString()}</span>
                         </div>
 
-                        <Button className="btn-org w-full flex items-center justify-center gap-2 mt-4">
+                        <Button 
+                            className="btn-org w-full flex items-center justify-center gap-2 mt-4"
+                            onClick={handleCheckout}
+                            disabled={loading || cart.length === 0}
+                        >
                             <IoBagCheckOutline className="text-xl" />
-                            Checkout
+                            {loading ? "Processing..." : "Checkout"}
                         </Button>
                     </div>
                 </div>

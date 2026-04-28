@@ -23,6 +23,7 @@
  */
 
 import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 import Icon from "../components/ui/Icon";
 import StatusBadge from "../components/ui/StatusBadge";
 import Toast, { useToast } from "../components/ui/Toast";
@@ -163,7 +164,7 @@ export default function InventoryPage() {
   const fetchInventory = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = Cookies.get("accessToken");
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my-products`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -185,7 +186,7 @@ export default function InventoryPage() {
   // PUT /api/products/:id
   const handleRestock = async (id, newStock) => {
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = Cookies.get("accessToken");
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
         method: "PUT",
         headers: {

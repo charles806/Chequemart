@@ -1,7 +1,8 @@
 import { Navigate, useLocation } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 const ProtectedRoute = ({ children }) => {
-    const token = localStorage.getItem('accessToken');
+    const token = Cookies.get('accessToken');
     const location = useLocation();
     
     if (!token) {
@@ -13,21 +14,21 @@ const ProtectedRoute = ({ children }) => {
         const payload = JSON.parse(atob(token.split('.')[1]));
         if (payload.exp && payload.exp * 1000 < Date.now()) {
             // Token expired
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('user');
-            localStorage.removeItem('isLogin');
+            Cookies.remove('accessToken');
+            Cookies.remove('user');
+            Cookies.remove('isLogin');
             return <Navigate to="/login" replace />;
         }
     } catch (e) {
         // Invalid token
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('user');
-        localStorage.removeItem('isLogin');
+        Cookies.remove('accessToken');
+        Cookies.remove('user');
+        Cookies.remove('isLogin');
         return <Navigate to="/login" replace />;
     }
 
     // Check user role and onboarding status for seller routes
-    const userStr = localStorage.getItem('user');
+    const userStr = Cookies.get('user');
     if (!userStr) {
         return <Navigate to="/login" replace />;
     }
@@ -36,7 +37,7 @@ const ProtectedRoute = ({ children }) => {
     try {
         user = JSON.parse(userStr);
     } catch (e) {
-        localStorage.removeItem('user');
+        Cookies.remove('user');
         return <Navigate to="/login" replace />;
     }
 

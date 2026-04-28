@@ -21,6 +21,7 @@
  */
 
 import { useContext, useState, useEffect } from "react";
+import Cookies from "js-cookie";
 import { SellerContext } from "../constants/sellerContext";
 
 export const SellerProvider = ({ children }) => {
@@ -48,7 +49,7 @@ export const SellerProvider = ({ children }) => {
   const refreshSellerData = async () => {
     setStatus("loading");
     try {
-      const token = localStorage.getItem("accessToken");
+      const token = Cookies.get("accessToken");
       if (!token) return;
 
       const headers = { Authorization: `Bearer ${token}` };

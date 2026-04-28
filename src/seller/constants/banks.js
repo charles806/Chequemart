@@ -5,7 +5,7 @@ export const BANKS_LIST = [
   { code: "011", name: "First Bank of Nigeria" },
   { code: "058", name: "GTBank" },
   { code: "030", name: "Heritage Bank" },
-  { code: "091", name: "Kuda Bank" },
+  { code: "090267", name: "Kuda Bank" },
   { code: "221", name: "Stanbic IBTC Bank" },
   { code: "068", name: "Standard Chartered Bank" },
   { code: "232", name: "Sterling Bank" },
@@ -14,6 +14,6 @@ export const BANKS_LIST = [
   { code: "215", name: "Unity Bank" },
   { code: "035", name: "Wema Bank" },
   { code: "057", name: "Zenith Bank" },
-  { code: "999", name: "Opay / Digital" },
-  { code: "502", name: "PalmPay" },
+  { code: "999992", name: "OPay" },
+  { code: "100033", name: "PalmPay" },
 ];

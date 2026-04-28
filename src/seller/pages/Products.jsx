@@ -25,6 +25,7 @@
  */
 
 import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 import Icon from "../components/ui/Icon";
 import StatusBadge from "../components/ui/StatusBadge";
 import ProductModal from "../components/ui/ProductModal";
@@ -85,7 +86,7 @@ export default function ProductsPage() {
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem("accessToken");
+            const token = Cookies.get("accessToken");
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my-products`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -127,7 +128,7 @@ export default function ProductsPage() {
     const handleSave = async (payload) => {
         const isEdit = !!modalProduct?._id;
         try {
-            const token = localStorage.getItem("accessToken");
+            const token = Cookies.get("accessToken");
             const url = isEdit
                 ? `${import.meta.env.VITE_API_URL}/api/products/${modalProduct._id}`
                 : `${import.meta.env.VITE_API_URL}/api/products`;
@@ -157,7 +158,7 @@ export default function ProductsPage() {
     // DELETE /api/seller/products/:id
     const handleDelete = async () => {
         try {
-            const token = localStorage.getItem("accessToken");
+            const token = Cookies.get("accessToken");
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${deleteTarget._id}`, {
                 method: "DELETE",
                 headers: { Authorization: `Bearer ${token}` }

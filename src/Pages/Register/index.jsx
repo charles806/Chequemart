@@ -113,7 +113,7 @@ const Register = () => {
                 return;
             }
 
-            // Store token and user in localStorage (via context.login)
+            // Store token and user in Cookies (via context.login)
             if (context.login) {
                 context.login(data.user, data.accessToken);
             }

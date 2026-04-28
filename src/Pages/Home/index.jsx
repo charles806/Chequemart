@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 //Components
 import Slider from '../../Component/Slider/index'
@@ -16,7 +16,6 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import { useRef } from "react";
 //Image
 import subbanner1 from "../../assets/image/sub-banner-2.jpg"
 import subbanner2 from "../../assets/image/sub-banner-4.jpg"
@@ -30,6 +29,30 @@ import { FaLongArrowAltRight } from "react-icons/fa";
 
 const Home = () => {
   const swiperRef = useRef(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [tabValue, setTabValue] = useState(0);
+
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
+        const data = await res.json();
+        if (data.success) {
+          setProducts(data.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   return (
     <main className='lg:mt-15 mb-5'>
@@ -50,6 +73,8 @@ const Home = () => {
             <div className="rightSec w-full lg:w-[60%] mt-3 lg:mt-0">
               <Box className="w-full flex justify-start lg:justify-end">
                 <Tabs
+                  value={tabValue}
+                  onChange={handleTabChange}
                   variant="scrollable"
                   scrollButtons="auto"
                   aria-label="scrollable auto tabs example"
@@ -94,11 +119,28 @@ const Home = () => {
                   }
                 }}
               >
-                {[...Array(8)].map((_, index) => (
-                  <SwiperSlide key={index}>
-                    <ProductItem />
-                  </SwiperSlide>
-                ))}
+                {loading ? (
+                  <div className="flex justify-center items-center py-10 w-full">
+                    <p className="text-gray-400">Loading products...</p>
+                  </div>
+                ) : products.length === 0 ? (
+                  <div className="flex justify-center items-center py-10 w-full">
+                    <p className="text-gray-400">No products available</p>
+                  </div>
+                ) : (
+                  products.map((item) => (
+                    <SwiperSlide key={item._id}>
+                      <ProductItem product={{
+                        id: item._id,
+                        name: item.name,
+                        price: item.price,
+                        oldPrice: item.price * 1.2, // Simulate old price
+                        image: item.images?.[0],
+                        brand: item.seller?.storeName || "Vendor"
+                      }} />
+                    </SwiperSlide>
+                  ))
+                )}
               </Swiper>
             </div>
           </div>
@@ -282,9 +324,16 @@ const Home = () => {
                 }
               }}
             >
-              {[...Array(8)].map((_, index) => (
-                <SwiperSlide key={index}>
-                  <ProductItem />
+              {products.slice(0, 4).map((item) => (
+                <SwiperSlide key={item._id}>
+                  <ProductItem product={{
+                    id: item._id,
+                    name: item.name,
+                    price: item.price,
+                    oldPrice: item.price * 1.2,
+                    image: item.images?.[0],
+                    brand: item.seller?.storeName || "Vendor"
+                  }} />
                 </SwiperSlide>
               ))}
             </Swiper>
@@ -330,9 +379,16 @@ const Home = () => {
                 }
               }}
             >
-              {[...Array(8)].map((_, index) => (
-                <SwiperSlide key={index}>
-                  <ProductItem />
+              {products.slice(0, 4).map((item) => (
+                <SwiperSlide key={item._id}>
+                  <ProductItem product={{
+                    id: item._id,
+                    name: item.name,
+                    price: item.price,
+                    oldPrice: item.price * 1.2,
+                    image: item.images?.[0],
+                    brand: item.seller?.storeName || "Vendor"
+                  }} />
                 </SwiperSlide>
               ))}
             </Swiper>
@@ -378,9 +434,16 @@ const Home = () => {
                 }
               }}
             >
-              {[...Array(8)].map((_, index) => (
-                <SwiperSlide key={index}>
-                  <ProductItem />
+              {products.slice(0, 4).map((item) => (
+                <SwiperSlide key={item._id}>
+                  <ProductItem product={{
+                    id: item._id,
+                    name: item.name,
+                    price: item.price,
+                    oldPrice: item.price * 1.2,
+                    image: item.images?.[0],
+                    brand: item.seller?.storeName || "Vendor"
+                  }} />
                 </SwiperSlide>
               ))}
             </Swiper>
