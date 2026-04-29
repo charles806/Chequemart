@@ -1,23 +1,4 @@
-/**
- * ============================================================
- * FILE: src/api/routes.js
- *
- * Single source of truth for every backend API endpoint.
- * Import from here — never hardcode routes in components.
- *
- * BASE_URL is read from the Vite environment variable.
- * Set VITE_API_BASE_URL in your .env file:
- *   Development:  VITE_API_BASE_URL=http://localhost:5000
- *   Production:   VITE_API_BASE_URL=https://api.chequemart.com
- *
- * USAGE:
- *   import { API } from "../api/routes";
- *   const res = await fetch(API.WALLET.GET);
- *   const res = await fetch(API.PRODUCTS.UPDATE(productId));
- * ============================================================
- */
-
-const BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const API = {
 

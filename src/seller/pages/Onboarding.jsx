@@ -10,7 +10,7 @@
  *   Body: {
  *     personal:  { firstName, lastName, email, phone, password },
  *     store:     { storeName, category, location, description },
- *     bank:      { bankCode, bankName, accountNumber, accountName },
+ *     bank:      { bankCode, bankName, accountNumber, accountName, accountType },
  *     media:     { logo: cloudinaryUrl | null, banner: cloudinaryUrl | null }
  *   }
  *
@@ -421,6 +421,7 @@ const StepBank = ({ data, onChange, errors, onVerify, verified, verifying }) => 
             const bank = BANKS_LIST.find((b) => b.code === e.target.value);
             onChange("bankCode", e.target.value);
             onChange("bankName", bank?.name || "");
+            onChange("accountType", bank?.accountType || "");
           }}
           className={inputCls(!!errors.bankCode) + " cursor-pointer"}
         >
@@ -598,6 +599,7 @@ export default function Onboarding({ onComplete }) {
     bankName: "",
     accountNumber: "",
     accountName: "",
+    accountType: "",
   });
   const [media, setMedia] = useState({
     logoPreview: null,
@@ -724,6 +726,7 @@ export default function Onboarding({ onComplete }) {
           body: JSON.stringify({
             bankCode: bank.bankCode,
             accountNumber: bank.accountNumber,
+            accountType: bank.accountType,
           }),
         }
       );

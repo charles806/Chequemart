@@ -86,18 +86,32 @@ const AddBankModal = ({ onSave, onClose }) => {
     setVerified(false); // reset if inputs change
   };
 
-  // GET /api/seller/bank-accounts/verify?bankCode=&accountNumber=
-  const handleVerify = () => {
+  // POST /api/auth/resolve-account
+  const handleVerify = async () => {
     if (!form.bankCode)                    { setErrors({ bankCode: "Select a bank first" }); return; }
     if (form.accountNumber.length !== 10)  { setErrors({ accountNumber: "Enter a 10-digit account number" }); return; }
+    const bank = BANKS_LIST.find((b) => b.code === form.bankCode);
     setErrors({});
     setVerifying(true);
-    // TODO: replace with real fetch call to verify endpoint
-    setTimeout(() => {
-      setForm((p) => ({ ...p, accountName: "JOHN DOE" }));
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/resolve-account`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bankCode: form.bankCode,
+          accountNumber: form.accountNumber,
+          accountType: bank?.accountType || "",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Verification failed");
+      setForm((p) => ({ ...p, accountName: data.accountName }));
       setVerified(true);
+    } catch (err) {
+      setErrors({ accountNumber: err.message || "Verification failed" });
+    } finally {
       setVerifying(false);
-    }, 1200);
+    }
   };
 
   // POST /api/seller/bank-accounts

@@ -6,6 +6,7 @@ import { Button, CircularProgress } from "@mui/material";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { FcGoogle } from "react-icons/fc";
 import { MyContext } from "../../MyContext";
+import { login } from "../../api";
 
 const Login = () => {
   const [isShowPassword, setIsShowPassword] = useState(false);
@@ -32,22 +33,8 @@ const Login = () => {
 
     setIsLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // sends/receives HTTP-only cookies
-        body: JSON.stringify({
-          identifier: formFields.identifier,
-          password: formFields.password,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        context.openAlertBox?.("error", data.message || "Login failed.");
-        return;
-      }
+      // Use centralized API from api.js
+      const data = await login(formFields.identifier, formFields.password);
 
       if (context.login) {
         context.login(data.user, data.accessToken);
@@ -66,7 +53,7 @@ const Login = () => {
         }
       }
     } catch (err) {
-      context.openAlertBox?.("error", "Network error. Please try again.");
+      context.openAlertBox?.("error", err.response?.data?.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }

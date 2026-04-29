@@ -4,6 +4,7 @@ import { Button, MenuItem, Checkbox, FormControlLabel, CircularProgress } from "
 import { Link, useNavigate } from "react-router-dom";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { MyContext } from "../../MyContext";
+import { registerBuyer, registerSeller } from "../../api";
 
 const businessCategories = [
     "Fashion & Clothing",
@@ -91,26 +92,26 @@ const Register = () => {
 
         setIsLoading(true);
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify(payload),
-            });
+            // Build payload
+            const payload = {
+                name: formFields.name,
+                email: formFields.email || undefined,
+                phone: formFields.phone || undefined,
+                password: formFields.password,
+                role: userType,
+                ...(userType === "seller" && {
+                    storeName: formFields.storeName,
+                    businessCategory: formFields.businessCategory,
+                    businessAddress: formFields.businessAddress,
+                }),
+            };
 
-            const data = await res.json();
-
-            if (!res.ok) {
-                // Handle backend validation errors
-                if (data.errors) {
-                    const backendErrors = {};
-                    data.errors.forEach(err => {
-                        backendErrors[err.field] = err.message;
-                    });
-                    setErrors(backendErrors);
-                }
-                context.openAlertBox?.("error", data.message || "Registration failed.");
-                return;
+            // Use centralized API - select endpoint based on user type
+            let data;
+            if (userType === "seller") {
+                data = await registerSeller(payload);
+            } else {
+                data = await registerBuyer(payload);
             }
 
             // Store token and user in Cookies (via context.login)

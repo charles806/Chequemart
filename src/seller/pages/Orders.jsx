@@ -42,13 +42,12 @@ const fmt = (n) => "₦" + Number(n).toLocaleString();
 
 // Status transitions - what states can each status transition to
 const TRANSITIONS = {
-  Pending: ["Processing", "Cancelled"],
-  Processing: ["Cancelled"], // Admin moves to Confirmed
-  Confirmed: ["Shipped", "Cancelled"],
-  Shipped: ["Delivered"],
-  Delivered: ["Collected"],
-  Collected: [],
-  Cancelled: [],
+  pending: ["confirmed", "cancelled"],
+  confirmed: ["shipped", "cancelled"],
+  shipped: ["delivered"],
+  delivered: [],
+  collected: [],
+  cancelled: [],
 };
 
 // Status transitions requiring payment to be paid first
@@ -70,7 +69,7 @@ const OrderDetail = ({ order, onClose, onUpdateStatus }) => {
       alert("Cannot mark order as " + newStatus + " - payment not received yet");
       return;
     }
-    onUpdateStatus(order._id, newStatus);
+    onUpdateStatus(order.id, newStatus);
     onClose();
   };
 
@@ -256,7 +255,7 @@ export default function OrdersPage() {
     }
   };
 
-  const STATUS_FILTERS = ["All", "Pending", "Processing", "Confirmed", "Shipped", "Delivered", "Collected", "Cancelled"];
+  const STATUS_FILTERS = ["All", "pending", "processing", "confirmed", "shipped", "delivered", "collected", "cancelled"];
   const PAYMENT_FILTERS = ["All", "Pending", "Paid", "Unpaid"];
 
   const filtered = orders.filter((o) => {
@@ -352,7 +351,7 @@ export default function OrdersPage() {
                 ? "bg-primary text-white shadow-md shadow-red-200"
                 : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300"}`}
           >
-            {f}
+            {f === "All" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
       </div>

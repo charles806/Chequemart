@@ -25,7 +25,7 @@ const Sidebar = ({ open, setOpen }) => {
       <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-50
-          w-64 bg-surface border-r border-black/5
+          w-64 bg-[#e8e8e8] border-r border-black/5
           transform transition-transform duration-200 ease-in-out
           lg:translate-x-0
           ${open ? "translate-x-0" : "-translate-x-full"}

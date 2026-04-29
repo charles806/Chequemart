@@ -24,58 +24,6 @@ import { FaWallet } from "react-icons/fa";
 import { FaGift } from "react-icons/fa";
 import { FiShoppingBag } from "react-icons/fi";
 
-const mockOrders = [
-    {
-        id: "ORD-2024-78234",
-        date: "2024-01-15",
-        status: "delivered",
-        items: [
-            { name: "Premium Wireless Headphones", price: 45000, qty: 1, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100" },
-            { name: "Phone Case Premium", price: 3500, qty: 2, image: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=100" }
-        ],
-        total: 52000,
-        shipping: 1500,
-        payment: "Paid",
-        address: "123 Main Street, Lagos, Nigeria"
-    },
-    {
-        id: "ORD-2024-78156",
-        date: "2024-01-10",
-        status: "shipped",
-        items: [
-            { name: "Smart Watch Series 8", price: 120000, qty: 1, image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100" }
-        ],
-        total: 120000,
-        shipping: 2000,
-        payment: "Paid",
-        address: "123 Main Street, Lagos, Nigeria"
-    },
-    {
-        id: "ORD-2024-78089",
-        date: "2024-01-05",
-        status: "processing",
-        items: [
-            { name: "Leather Crossbody Bag", price: 28000, qty: 1, image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=100" },
-            { name: "Leather Belt", price: 5500, qty: 1, image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=100" }
-        ],
-        total: 33500,
-        shipping: 1000,
-        payment: "Pending",
-        address: "456 Oak Avenue, Abuja, Nigeria"
-    },
-    {
-        id: "ORD-2023-76543",
-        date: "2023-12-20",
-        status: "cancelled",
-        items: [
-            { name: "Running Shoes Pro", price: 35000, qty: 1, image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100" }
-        ],
-        total: 35000,
-        shipping: 1500,
-        payment: "Refunded",
-        address: "123 Main Street, Lagos, Nigeria"
-    }
-]
 
 const statusConfig = {
     pending: { label: "Pending", color: "#6b7280", bg: "#f3f4f6", icon: <FaBoxOpen /> },
@@ -129,7 +77,7 @@ const Orders = () => {
     const transformOrder = (order) => ({
         id: order._id,
         date: order.createdAt,
-        status: order.status || 'pending',
+        status: (order.status || 'pending').toLowerCase(),
         items: (order.products || []).map(p => ({
             name: p.name,
             price: p.price,
@@ -142,13 +90,17 @@ const Orders = () => {
         address: order.shippingAddress?.address || 'N/A'
     })
 
+
     const getFilteredOrders = () => {
         const filters = ['all', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']
         const filter = filters[activeTab]
-        let filtered = filter === 'all' ? orders : orders.filter(order => order.status === filter)
+
+        let filtered = filter === 'all'
+            ? orders
+            : orders.filter(order => order.status === filter)
+
         return filtered.map(order => transformOrder(order))
     }
-
     const filteredOrders = getFilteredOrders()
 
     const formatDate = (dateStr) => {
@@ -188,7 +140,7 @@ const Orders = () => {
 
     const handleCancelOrder = async (orderId) => {
         if (!confirm("Are you sure you want to cancel this order?")) return;
-        
+
         try {
             const token = Cookies.get("accessToken");
             const response = await fetch(
@@ -244,51 +196,51 @@ const Orders = () => {
                     </div>
                 ) : (
                     <Box className="mb-6 bg-white rounded-xl shadow-sm p-2">
-                    <Tabs
-                        value={activeTab}
-                        onChange={handleTabChange}
-                        variant="scrollable"
-                        scrollButtons="auto"
-                        className="order-tabs"
-                        TabIndicatorProps={{
-                            style: { backgroundColor: '#ff5252' }
-                        }}
-                    >
-                        <Tab label="All Orders" className={activeTab === 0 ? "text-[#ff5252]!" : "text-gray-600!"} />
-                        <Tab label={
-                            <span className="flex items-center gap-2">
-                                Confirmed
-                                <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs">
-                                    {orders.filter(o => o.status === 'confirmed').length}
+                        <Tabs
+                            value={activeTab}
+                            onChange={handleTabChange}
+                            variant="scrollable"
+                            scrollButtons="auto"
+                            className="order-tabs"
+                            TabIndicatorProps={{
+                                style: { backgroundColor: '#ff5252' }
+                            }}
+                        >
+                            <Tab label="All Orders" className={activeTab === 0 ? "text-[#ff5252]!" : "text-gray-600!"} />
+                            <Tab label={
+                                <span className="flex items-center gap-2">
+                                    Confirmed
+                                    <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs">
+                                        {orders.filter(o => o.status === 'confirmed').length}
+                                    </span>
                                 </span>
-                            </span>
-                        } className={activeTab === 1 ? "text-[#ff5252]!" : "text-gray-600!"} />
-                        <Tab label={
-                            <span className="flex items-center gap-2">
-                                Processing
-                                <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs">
-                                    {orders.filter(o => o.status === 'processing').length}
+                            } className={activeTab === 1 ? "text-[#ff5252]!" : "text-gray-600!"} />
+                            <Tab label={
+                                <span className="flex items-center gap-2">
+                                    Processing
+                                    <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs">
+                                        {orders.filter(o => o.status === 'Processing').length}
+                                    </span>
                                 </span>
-                            </span>
-                        } className={activeTab === 2 ? "text-[#ff5252]!" : "text-gray-600!"} />
-                        <Tab label={
-                            <span className="flex items-center gap-2">
-                                Shipped
-                                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">
-                                    {orders.filter(o => o.status === 'shipped').length}
+                            } className={activeTab === 2 ? "text-[#ff5252]!" : "text-gray-600!"} />
+                            <Tab label={
+                                <span className="flex items-center gap-2">
+                                    Shipped
+                                    <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs">
+                                        {orders.filter(o => o.status === 'shipped').length}
+                                    </span>
                                 </span>
-                            </span>
-                        } className={activeTab === 3 ? "text-[#ff5252]!" : "text-gray-600!"} />
-                        <Tab label={
-                            <span className="flex items-center gap-2">
-                                Delivered
-                                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">
-                                    {orders.filter(o => o.status === 'delivered').length}
+                            } className={activeTab === 3 ? "text-[#ff5252]!" : "text-gray-600!"} />
+                            <Tab label={
+                                <span className="flex items-center gap-2">
+                                    Delivered
+                                    <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">
+                                        {orders.filter(o => o.status === 'delivered').length}
+                                    </span>
                                 </span>
-                            </span>
-                        } className={activeTab === 4 ? "text-[#ff5252]!" : "text-gray-600!"} />
-                        <Tab label="Cancelled" className={activeTab === 5 ? "text-[#ff5252]!" : "text-gray-600!"} />
-                    </Tabs>
+                            } className={activeTab === 4 ? "text-[#ff5252]!" : "text-gray-600!"} />
+                            <Tab label="Cancelled" className={activeTab === 5 ? "text-[#ff5252]!" : "text-gray-600!"} />
+                        </Tabs>
                     </Box>
                 )}
 
@@ -343,11 +295,11 @@ const Orders = () => {
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <Chip
-                                            icon={<span className="ml-2">{statusConfig[order.status].icon}</span>}
-                                            label={statusConfig[order.status].label}
+                                            icon={<span className="ml-2">{(statusConfig[order.status] || statusConfig.pending).icon}</span>}
+                                            label={(statusConfig[order.status] || statusConfig.pending).label}
                                             style={{
-                                                backgroundColor: statusConfig[order.status].bg,
-                                                color: statusConfig[order.status].color,
+                                                backgroundColor: (statusConfig[order.status] || statusConfig.pending).bg,
+                                                color: (statusConfig[order.status] || statusConfig.pending).color,
                                                 fontWeight: 600
                                             }}
                                             className="!rounded-full"
@@ -466,8 +418,8 @@ const Orders = () => {
                                                     <div>
                                                         <p className="text-xs text-gray-500 mb-1">Order Summary</p>
                                                         <p className="text-sm font-medium text-gray-800">
-                                                            Subtotal: ₦{order.total.toLocaleString()}<br/>
-                                                            Shipping: ₦{order.shipping.toLocaleString()}<br/>
+                                                            Subtotal: ₦{order.total.toLocaleString()}<br />
+                                                            Shipping: ₦{order.shipping.toLocaleString()}<br />
                                                             <span className="text-[#ff5252]">Total: ₦{(order.total + order.shipping).toLocaleString()}</span>
                                                         </p>
                                                     </div>
