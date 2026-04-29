@@ -13,6 +13,7 @@ const MyContextProvider = ({ children }) => {
   const [isLogin, setIsLogin] = useState(() => Cookies.get("isLogin") === "true");
   const [cart, setCart] = useState([]);
   const [openCartPanel, setOpenCartPanel] = useState(false);
+  const [isOpenCatPanel, setIsOpenCatPanel] = useState(false);
 
   // Fetch cart from database on load or login
   useEffect(() => {
@@ -170,13 +171,15 @@ const MyContextProvider = ({ children }) => {
     cart,
     openCartPanel,
     setOpenCartPanel,
+    isOpenCatPanel,
+    setIsOpenCatPanel,
     login,
     logout,
     addToCart,
     removeFromCart,
     updateCartQty,
     openAlertBox,
-  }), [user, accessToken, isLogin, cart, openCartPanel, login, logout, addToCart, removeFromCart, updateCartQty, openAlertBox]);
+  }), [user, accessToken, isLogin, cart, openCartPanel, isOpenCatPanel, login, logout, addToCart, removeFromCart, updateCartQty, openAlertBox]);
 
   return <MyContext.Provider value={value}>{children}</MyContext.Provider>;
 };
