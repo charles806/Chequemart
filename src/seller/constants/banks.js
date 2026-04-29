@@ -3,18 +3,20 @@ export const BANKS_LIST = [
   { code: "050", name: "Ecobank Nigeria" },
   { code: "070", name: "Fidelity Bank" },
   { code: "011", name: "First Bank of Nigeria" },
-  { code: "058", name: "Guaranty Trust Bank (GTBank)" },
+  { code: "058", name: "Guaranty Trust Bank" },
   { code: "030", name: "Heritage Bank" },
   { code: "082", name: "Keystone Bank" },
   { code: "221", name: "Stanbic IBTC Bank" },
   { code: "068", name: "Standard Chartered Bank" },
   { code: "232", name: "Sterling Bank" },
   { code: "032", name: "Union Bank of Nigeria" },
-  { code: "033", name: "United Bank for Africa (UBA)" },
+  { code: "033", name: "United Bank for Africa" },
   { code: "215", name: "Unity Bank" },
   { code: "035", name: "Wema Bank" },
   { code: "057", name: "Zenith Bank" },
+
+  // Fintech (these can change, but currently valid)
   { code: "090267", name: "Kuda Bank" },
-  { code: "100004", name: "OPay" },
+  { code: "100004", name: "OPay Digital Services Limited" },
   { code: "999991", name: "PalmPay" },
 ];
