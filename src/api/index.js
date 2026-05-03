@@ -4,8 +4,17 @@ import { toast } from 'sonner';
 
 const getToken = () => Cookies.get('accessToken');
 
+// Optional auth endpoints - don't redirect on 401
+const optionalAuthEndpoints = [
+  '/api/cart',
+  '/api/cart/wishlist',
+  '/api/categories',
+  '/api/products',
+];
+
 const api = async (endpoint, options = {}) => {
   const token = getToken();
+  const isOptionalAuth = optionalAuthEndpoints.some(e => endpoint.startsWith(e));
 
   const headers = {
     'Content-Type': 'application/json',
@@ -18,8 +27,12 @@ const api = async (endpoint, options = {}) => {
     headers,
   });
 
-  // Handle 401 - logout and redirect to login
+  // Handle 401 - logout and redirect for protected endpoints
   if (response.status === 401 || response.status === 403) {
+    if (isOptionalAuth) {
+      // For optional auth endpoints, just return error without redirect
+      return { success: false, data: [] };
+    }
     Cookies.remove('accessToken', { path: '/' });
     Cookies.remove('user', { path: '/' });
     Cookies.remove('isLogin', { path: '/' });

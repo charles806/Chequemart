@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import "../../index.css";
 import { CiSquarePlus } from "react-icons/ci";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
-import { getCategories } from "../../api";
+// import { getCategories } from "../../api";
 
 const CategoryCollapse = () => {
-  const [categories, setCategories] = useState([]);
+  // const [categories, setCategories] = useState([]);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await getCategories();
-        if (data.success && data.data.length > 0) {
-          setCategories(data.data);
-        }
-      } catch (error) {
-        console.error("Failed to load categories:", error);
-      }
-    };
-    fetchCategories();
-  }, []);
+  // useEffect(() => {
+  //   const fetchCategories = async () => {
+  //     try {
+  //       const data = await getCategories();
+  //       if (data.success && data.data.length > 0) {
+  //         setCategories(data.data);
+  //       }
+  //     } catch (error) {
+  //       console.error("Failed to load categories:", error);
+  //     }
+  //   };
+  //   fetchCategories();
+  // }, []);
 
   const defaultCategories = [
     "Fashion",
@@ -33,7 +33,7 @@ const CategoryCollapse = () => {
     "Games"
   ];
 
-  const displayCategories = categories.length > 0 ? categories : defaultCategories;
+  // const displayCategories = categories.length > 0 ? categories : defaultCategories;
 
   return (
     <div>
@@ -41,7 +41,7 @@ const CategoryCollapse = () => {
 
         <div className="overflow-y-auto">
           <ul className="list-none m-0 p-0">
-            {displayCategories.map((cat, index) => {
+            {defaultCategories.map((cat, index) => {
               const catName = typeof cat === 'string' ? cat : cat.name;
               const catId = typeof cat === 'string' ? '' : cat._id;
               return (

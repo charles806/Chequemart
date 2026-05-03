@@ -21,7 +21,7 @@ import { FaRegArrowAltCircleLeft } from "react-icons/fa";
 import { FiShoppingBag } from "react-icons/fi";
 
 const MyList = () => {
-    const { wishlist, removeFromWishlist, addToCart, fetchWishlist } = React.useContext(MyContext);
+    const { wishlist, removeFromWishlist, addToCart } = React.useContext(MyContext);
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
 
@@ -38,7 +38,7 @@ const MyList = () => {
     }
 
     const handleClearAll = async () => {
-        for (const item of wishlistItems) {
+        for (const item of wishlist) {
             await removeFromWishlist(item.id)
         }
         handleClose()
@@ -83,11 +83,11 @@ const MyList = () => {
                                 My Wishlist
                             </h1>
                             <p className="mt-1 text-gray-500">
-                                {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : 'items'} saved
+                                {wishlist.length} {wishlist.length === 1 ? 'item' : 'items'} saved
                             </p>
                         </div>
                         <div className="flex items-center gap-3">
-                            {wishlistItems.length > 0 && (
+                            {wishlist.length > 0 && (
                                 <>
                                     <Button
                                         variant="outlined"
@@ -128,7 +128,7 @@ const MyList = () => {
                 </div>
 
                 {/* Content Section */}
-                {wishlistItems.length === 0 ? (
+                {wishlist.length === 0 ? (
                     /* Empty State */
                     <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-sm">
                         <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
@@ -152,7 +152,7 @@ const MyList = () => {
                 ) : (
                     /* Wishlist Grid */
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {wishlistItems.map((product) => (
+                        {wishlist.map((product) => (
                             <div key={product.id} className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
                                 {/* Remove Button */}
                                 <button
@@ -178,7 +178,7 @@ const MyList = () => {
                 )}
 
                 {/* Clear All Button */}
-                {wishlistItems.length > 0 && (
+                {wishlist.length > 0 && (
                     <div className="mt-8 flex justify-center">
                         <Button
                             variant="text"
