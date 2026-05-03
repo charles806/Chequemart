@@ -18,8 +18,6 @@ const api = async (endpoint, options = {}) => {
     headers,
   });
 
-  const data = await response.json();
-
   // Handle 401 - logout and redirect to login
   if (response.status === 401 || response.status === 403) {
     Cookies.remove('accessToken', { path: '/' });
@@ -27,8 +25,10 @@ const api = async (endpoint, options = {}) => {
     Cookies.remove('isLogin', { path: '/' });
     toast.info("Session expired. Please login again.");
     window.location.href = '/login';
-    throw { response: { status: response.status, data } };
+    throw { response: { status: response.status, data: {} } };
   }
+
+  const data = await response.json();
 
   if (!response.ok) {
     throw { response: { status: response.status, data } };

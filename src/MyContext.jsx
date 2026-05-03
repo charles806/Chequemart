@@ -16,28 +16,6 @@ const MyContextProvider = ({ children }) => {
   const [openCartPanel, setOpenCartPanel] = useState(false);
   const [isOpenCatPanel, setIsOpenCatPanel] = useState(false);
 
-  // Validate token and logout if expired
-  const validateToken = useCallback(async () => {
-    if (!accessToken) return;
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      if (res.status === 401 || res.status === 403) {
-        toast.info("Session expired. Please login again.");
-        logout();
-        window.location.href = "/login";
-      }
-    } catch (error) {
-      console.error("Token validation error:", error);
-    }
-  }, [accessToken, logout]);
-
-  // Validate token on mount
-  useEffect(() => {
-    validateToken();
-  }, []);
-
   // Fetch cart from database on load or login
   useEffect(() => {
     const fetchCart = async () => {
