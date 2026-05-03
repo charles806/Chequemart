@@ -6,6 +6,7 @@ import Rating from "@mui/material/Rating";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import { toast } from "sonner";
+import { SkeletonProductDetail } from "../../Component/Skeleton";
 
 // Components
 import ProductZoom from "../../Component/ProductZoom";
@@ -71,11 +72,7 @@ const ProductDetail = () => {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <CircularProgress size={50} className="text-[#ff5252]" />
-            </div>
-        );
+        return <SkeletonProductDetail />;
     }
 
     if (!product) {

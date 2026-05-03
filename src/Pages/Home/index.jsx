@@ -6,6 +6,7 @@ import CatSlider from '../../Component/catSlider'
 import ProductItem from '../../Component/ProductItem/index'
 import SliderV2 from "../../Component/SliderV2/index"
 import BlogsItems from '../../Component/BlogItem/index'
+import { SkeletonProductGrid, SkeletonBanner } from "../../Component/Skeleton";
 //MUI
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -121,9 +122,7 @@ const Home = () => {
                 }}
               >
                 {loading ? (
-                  <div className="flex justify-center items-center py-10 w-full">
-                    <p className="text-gray-400">Loading products...</p>
-                  </div>
+                  <SkeletonProductGrid count={4} />
                 ) : products.length === 0 ? (
                   <div className="flex justify-center items-center py-10 w-full">
                     <p className="text-gray-400">No products available</p>

@@ -6,6 +6,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ProductItem from "../../Component/ProductItem/index";
 import CircularProgress from "@mui/material/CircularProgress";
+import { SkeletonProductGrid } from "../../Component/Skeleton";
 
 const Products = () => {
     const [products, setProducts] = useState([]);
@@ -168,9 +169,7 @@ const Products = () => {
 
                         {/* Product Grid - Fully Responsive */}
                         {loading ? (
-                            <div className="flex items-center justify-center py-20 w-full">
-                                <CircularProgress size={40} className="text-[#ff5252]" />
-                            </div>
+                            <SkeletonProductGrid count={8} />
                         ) : sortedProducts.length === 0 ? (
                             <div className="text-center py-20 w-full text-gray-400">
                                 <p className="text-lg font-medium">No products found</p>

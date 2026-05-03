@@ -4,6 +4,7 @@ import { Button } from '@mui/material';
 import { FaTrash, FaRegArrowAltCircleLeft, FaShoppingCart } from 'react-icons/fa';
 import { FiShoppingBag } from 'react-icons/fi';
 import ProductItem from '../../Component/ProductItem';
+import { SkeletonProductGrid } from '../../Component/Skeleton';
 import { toast } from 'sonner';
 
 const Compare = () => {
@@ -31,9 +32,12 @@ const Compare = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff5252]"></div>
-      </div>
+      <section className="section py-8 pb-12 bg-gray-50 min-h-screen">
+        <div className="my-container">
+          <div className="h-10 bg-gray-200 rounded w-40 animate-pulse mb-6" />
+          <SkeletonProductGrid count={4} />
+        </div>
+      </section>
     );
   }
 
