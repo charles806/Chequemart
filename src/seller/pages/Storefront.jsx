@@ -64,7 +64,7 @@ const MOCK_PROFILE = {
 // ─────────────────────────────────────────────────────────────
 // SHARED INPUT STYLES
 // ─────────────────────────────────────────────────────────────
-const inputCls = "w-full px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary/50 transition-all";
+const inputCls = "w-full px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff5252]/25 focus:border-[#ff5252]/50 transition-all";
 
 const Field = ({ label, hint, children }) => (
   <div className="flex flex-col gap-1">
@@ -95,8 +95,8 @@ const ImageUploadBtn = ({ label, preview, aspect, onUpload }) => {
       <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">{label}</p>
       <div
         onClick={() => ref.current.click()}
-        className={`relative overflow-hidden rounded-md border-2 border-dashed border-primary/30
-          bg-red-50/40 hover:border-primary/60 hover:bg-red-50 transition cursor-pointer
+        className={`relative overflow-hidden rounded-md border-2 border-dashed border-[#ff5252]/30
+          bg-red-50/40 hover:border-[#ff5252]/60 hover:bg-red-50 transition cursor-pointer
           flex items-center justify-center group
           ${aspect === "banner" ? "h-28 w-full" : "h-24 w-24"}`}
       >
@@ -109,7 +109,7 @@ const ImageUploadBtn = ({ label, preview, aspect, onUpload }) => {
           </>
         ) : (
           <div className="text-center">
-            <Icon d={ICONS.upload} size={18} className="text-primary/40 mx-auto mb-1" />
+            <Icon d={ICONS.upload} size={18} className="text-[#ff5252]/40 mx-auto mb-1" />
             <p className="text-[10px] text-gray-400 font-medium">
               {aspect === "banner" ? "1200 × 300px" : "1:1 ratio"}
             </p>
@@ -127,7 +127,7 @@ const ImageUploadBtn = ({ label, preview, aspect, onUpload }) => {
 const StorePreview = ({ form, stats }) => (
   <div className="bg-gray-100 rounded-md overflow-hidden border border-gray-200">
     {/* Banner */}
-    <div className="h-20 bg-gradient-to-r from-dark to-primary/60 relative overflow-hidden">
+    <div className="h-20 bg-gradient-to-r from-dark to-[#ff5252]/60 relative overflow-hidden">
       {form.bannerPreview && (
         <img src={form.bannerPreview} alt="" className="w-full h-full object-cover" />
       )}
@@ -138,7 +138,7 @@ const StorePreview = ({ form, stats }) => (
     {/* Logo + info */}
     <div className="px-4 pb-4">
       <div className="flex items-end gap-3 -mt-6 mb-3">
-        <div className="w-14 h-14 rounded-md border-2 border-white bg-gradient-to-br from-primary to-red-300 flex items-center justify-center text-white font-black text-lg shadow-md overflow-hidden flex-shrink-0">
+        <div className="w-14 h-14 rounded-md border-2 border-white bg-gradient-to-br from-[#ff5252] to-red-300 flex items-center justify-center text-white font-black text-lg shadow-md overflow-hidden flex-shrink-0">
           {form.logoPreview
             ? <img src={form.logoPreview} alt="" className="w-full h-full object-cover" />
             : form.storeName.charAt(0).toUpperCase()}
@@ -146,7 +146,7 @@ const StorePreview = ({ form, stats }) => (
         <div className="pb-1">
           <div className="flex items-center gap-1.5">
             <p className="text-sm font-black text-gray-900 leading-none">{form.storeName || "Your Store"}</p>
-            {stats.isVerified && <Icon d={ICONS.shieldCheck} size={12} className="text-primary" />}
+            {stats.isVerified && <Icon d={ICONS.shieldCheck} size={12} className="text-[#ff5252]" />}
           </div>
           <div className="flex items-center gap-1 mt-0.5">
             <Icon d={ICONS.star} size={10} className="text-yellow-400 fill-yellow-400" />
@@ -280,7 +280,7 @@ export default function StorefrontPage() {
       <div className="grid grid-cols-3 gap-2.5">
         {[
           [ICONS.star,    `${stats.rating} ★`, "Rating",       "text-yellow-500"],
-          [ICONS.orders,  MOCK_PROFILE.totalOrders, "Orders",   "text-primary"   ],
+          [ICONS.orders,  MOCK_PROFILE.totalOrders, "Orders",   "text-[#ff5252]"   ],
           [ICONS.package, MOCK_PROFILE.totalProducts,"Products","text-blue-500"  ],
         ].map(([icon, val, lbl, c]) => (
           <div key={lbl} className="bg-white rounded-md border border-gray-100 shadow-sm p-3.5 text-center">

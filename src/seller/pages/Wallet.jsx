@@ -59,7 +59,7 @@ const inputCls = (err) => `
   placeholder-gray-400 focus:outline-none focus:ring-2 transition-all
   ${err
     ? "border-red-400 bg-red-50 focus:ring-red-200"
-    : "border-gray-200 focus:ring-primary/25 focus:border-primary/50"}
+    : "border-gray-200 focus:ring-[#ff5252]/25 focus:border-[#ff5252]/50"}
 `;
 
 const Field = ({ label, error, hint, children }) => (
@@ -140,8 +140,8 @@ const AddBankModal = ({ onSave, onClose }) => {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Icon d={ICONS.plus} size={15} className="text-primary" />
+            <div className="w-8 h-8 rounded-xl bg-[#ff5252]/10 flex items-center justify-center">
+              <Icon d={ICONS.plus} size={15} className="text-[#ff5252]" />
             </div>
             <h3 className="font-black text-gray-900 text-sm">Add Bank Account</h3>
           </div>
@@ -171,7 +171,7 @@ const AddBankModal = ({ onSave, onClose }) => {
             <button
               onClick={handleVerify}
               disabled={verifying}
-              className="px-3 py-2 rounded-xl bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
+              className="px-3 py-2 rounded-xl bg-[#ff5252]/10 text-[#ff5252] text-xs font-bold hover:bg-[#ff5252]/20 transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
             >
               {verifying ? "Checking…" : "Verify"}
             </button>
@@ -200,7 +200,7 @@ const AddBankModal = ({ onSave, onClose }) => {
           <button onClick={onClose} className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition cursor-pointer">
             Cancel
           </button>
-          <button onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-hover transition shadow-md shadow-red-200 cursor-pointer">
+          <button onClick={handleSave} className="flex-1 py-2.5 rounded-xl bg-[#ff5252] text-white text-sm font-bold hover:bg-[#ff5252]-hover transition shadow-md shadow-red-200 cursor-pointer">
             Save Account
           </button>
         </div>
@@ -279,12 +279,12 @@ const WithdrawModal = ({ wallet, bankAccounts, onSuccess, onClose, onAddBank }) 
           ))}
         </div>
         <div className="flex gap-2 bg-yellow-50 border border-yellow-100 rounded-xl p-3">
-          <Icon d={ICONS.clock} size={14} className="text-yellow-500 flex-shrink-0 mt-0.5" />
+          <Icon d={ICONS.clock} size={14} className="text-yellow-500 shrink-0 mt-0.5" />
           <p className="text-[11px] text-gray-500 leading-relaxed">
             Paystack webhook will confirm the transfer status automatically.
           </p>
         </div>
-        <button onClick={onClose} className="w-full py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-hover transition cursor-pointer">
+        <button onClick={onClose} className="w-full py-2.5 rounded-xl bg-[#ff5252] text-white font-bold text-sm hover:bg-[#ff5252]-hover transition cursor-pointer">
           Done
         </button>
       </div>
@@ -302,8 +302,8 @@ const WithdrawModal = ({ wallet, bankAccounts, onSuccess, onClose, onAddBank }) 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Icon d={ICONS.send} size={14} className="text-primary" />
+            <div className="w-8 h-8 rounded-xl bg-[#ff5252]/10 flex items-center justify-center">
+              <Icon d={ICONS.send} size={14} className="text-[#ff5252]" />
             </div>
             <div>
               <h2 className="font-black text-gray-900 text-base leading-none">
@@ -323,7 +323,7 @@ const WithdrawModal = ({ wallet, bankAccounts, onSuccess, onClose, onAddBank }) 
           {step === 1 ? (
             <>
               {/* Balance card */}
-              <div className="bg-primary/8 border border-primary/15 rounded-2xl p-4">
+              <div className="bg-[#ff5252]/8 border border-[#ff5252]/15 rounded-2xl p-4">
                 <p className="text-xs text-gray-500 font-medium mb-0.5">Available Balance</p>
                 <p className="text-3xl font-black text-gray-900">{fmt(wallet.availableBalance)}</p>
                 <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
@@ -340,22 +340,22 @@ const WithdrawModal = ({ wallet, bankAccounts, onSuccess, onClose, onAddBank }) 
                       key={acc.id}
                       onClick={() => setSelectedBank(acc.id)}
                       className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl border-2 transition-all cursor-pointer text-left
-                        ${selectedBank === acc.id ? "border-primary bg-red-50" : "border-gray-100 bg-gray-50 hover:border-gray-200"}`}
+                        ${selectedBank === acc.id ? "border-[#ff5252] bg-red-50" : "border-gray-100 bg-gray-50 hover:border-gray-200"}`}
                     >
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${selectedBank === acc.id ? "bg-primary" : "bg-gray-200"}`}>
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${selectedBank === acc.id ? "bg-[#ff5252]" : "bg-gray-200"}`}>
                         <Icon d={ICONS.bank} size={16} className={selectedBank === acc.id ? "text-white" : "text-gray-500"} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-gray-900">{acc.bankName}</p>
                         <p className="text-xs text-gray-500">{acc.accountNumber} · {acc.accountName}</p>
                       </div>
-                      {acc.isDefault && <span className="text-[9px] font-bold text-primary bg-red-100 px-2 py-0.5 rounded-full">DEFAULT</span>}
-                      {selectedBank === acc.id && <Icon d={ICONS.check} size={15} className="text-primary stroke-[3] flex-shrink-0" />}
+                      {acc.isDefault && <span className="text-[9px] font-bold text-[#ff5252] bg-red-100 px-2 py-0.5 rounded-full">DEFAULT</span>}
+                      {selectedBank === acc.id && <Icon d={ICONS.check} size={15} className="text-[#ff5252] stroke-[3] flex-shrink-0" />}
                     </button>
                   ))}
                   <button
                     onClick={onAddBank}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 border-dashed border-gray-200 text-gray-400 hover:border-primary/40 hover:text-primary hover:bg-red-50 transition cursor-pointer text-sm font-semibold"
+                    className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 border-dashed border-gray-200 text-gray-400 hover:border-[#ff5252]/40 hover:text-[#ff5252] hover:bg-red-50 transition cursor-pointer text-sm font-semibold"
                   >
                     <Icon d={ICONS.plus} size={15} /> Add New Bank Account
                   </button>
@@ -375,12 +375,12 @@ const WithdrawModal = ({ wallet, bankAccounts, onSuccess, onClose, onAddBank }) 
                 <div className="flex flex-wrap gap-2">
                   {quickAmounts.map((a) => (
                     <button key={a} onClick={() => setAmount(String(a))}
-                      className="px-3 py-1.5 rounded-xl bg-gray-100 text-xs font-bold text-gray-600 hover:bg-primary/10 hover:text-primary transition cursor-pointer">
+                      className="px-3 py-1.5 rounded-xl bg-gray-100 text-xs font-bold text-gray-600 hover:bg-[#ff5252]/10 hover:text-[#ff5252] transition cursor-pointer">
                       {fmt(a)}
                     </button>
                   ))}
                   <button onClick={() => setAmount(String(wallet.availableBalance))}
-                    className="px-3 py-1.5 rounded-xl bg-gray-100 text-xs font-bold text-gray-600 hover:bg-primary/10 hover:text-primary transition cursor-pointer">
+                    className="px-3 py-1.5 rounded-xl bg-gray-100 text-xs font-bold text-gray-600 hover:bg-[#ff5252]/10 hover:text-[#ff5252] transition cursor-pointer">
                     All
                   </button>
                 </div>
@@ -403,9 +403,9 @@ const WithdrawModal = ({ wallet, bankAccounts, onSuccess, onClose, onAddBank }) 
             </>
           ) : (
             <>
-              <div className="bg-primary/8 border border-primary/15 rounded-2xl p-5 text-center space-y-1">
+              <div className="bg-[#ff5252]/8 border border-[#ff5252]/15 rounded-2xl p-5 text-center space-y-1">
                 <p className="text-xs text-gray-400 uppercase tracking-wider font-bold">You are withdrawing</p>
-                <p className="text-4xl font-black text-primary">{fmt(numAmount)}</p>
+                <p className="text-4xl font-black text-[#ff5252]">{fmt(numAmount)}</p>
                 <p className="text-xs text-gray-500">to {selectedAcc?.bankName} · {selectedAcc?.accountNumber}</p>
               </div>
 
@@ -445,7 +445,7 @@ const WithdrawModal = ({ wallet, bankAccounts, onSuccess, onClose, onAddBank }) 
           <button
             onClick={step === 1 ? handleContinue : handleSubmit}
             disabled={loading}
-            className="flex-1 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary-hover transition shadow-md shadow-red-200 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+            className="flex-1 py-2.5 rounded-xl bg-[#ff5252] text-white text-sm font-bold hover:bg-[#ff5252]-hover transition shadow-md shadow-red-200 cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
           >
             {loading
               ? <><span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" /> Processing…</>
@@ -545,7 +545,7 @@ export default function WalletPage() {
       </div>
 
       {/* Balance card */}
-      <div className="bg-gradient-to-br from-dark to-dark-2 rounded-3xl p-5 shadow-xl shadow-black/20">
+      <div className="bg-linear-to-br from-dark to-dark-2 rounded-3xl p-5 shadow-xl shadow-black/20">
         <p className="text-xs text-white/50 font-semibold uppercase tracking-wider mb-1">Available Balance</p>
         <p className="text-4xl font-black text-white mb-4">{fmt(wallet.availableBalance)}</p>
         <div className="grid grid-cols-3 gap-2 mb-4">
@@ -564,7 +564,7 @@ export default function WalletPage() {
           <button
             onClick={() => setWithdraw(true)}
             disabled={wallet.availableBalance < MIN_WITHDRAWAL}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:bg-primary-hover transition shadow-lg shadow-red-900/40 cursor-pointer disabled:opacity-40"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#ff5252] text-white font-bold text-sm hover:bg-[#ff5252]-hover transition shadow-lg shadow-red-900/40 cursor-pointer disabled:opacity-40"
           >
             <Icon d={ICONS.send} size={14} /> Withdraw
           </button>
@@ -599,7 +599,7 @@ export default function WalletPage() {
             <div key={tx.id} className="px-5 py-3.5 flex items-center gap-3 hover:bg-gray-50/50 transition">
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${tx.type === "credit" ? "bg-green-100" : "bg-red-100"}`}>
                 <Icon d={tx.type === "credit" ? ICONS.arrowDown : ICONS.send} size={15}
-                  className={tx.type === "credit" ? "text-green-600 rotate-180" : "text-primary"} />
+                  className={tx.type === "credit" ? "text-green-600 rotate-180" : "text-[#ff5252]"} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-800 truncate">{tx.description}</p>
@@ -608,7 +608,7 @@ export default function WalletPage() {
                   <StatusBadge status={tx.status} />
                 </div>
               </div>
-              <p className={`text-sm font-black flex-shrink-0 ${tx.type === "credit" ? "text-green-600" : "text-primary"}`}>
+              <p className={`text-sm font-black flex-shrink-0 ${tx.type === "credit" ? "text-green-600" : "text-[#ff5252]"}`}>
                 {tx.type === "credit" ? "+" : "-"}{fmt(tx.amount)}
               </p>
             </div>
@@ -629,7 +629,7 @@ export default function WalletPage() {
             <h2 className="font-black text-gray-900 text-sm">Saved Accounts</h2>
             <p className="text-[10px] text-gray-400">Your registered payout accounts</p>
           </div>
-          <button onClick={() => setAddBank(true)} className="text-xs text-primary font-bold hover:underline cursor-pointer flex items-center gap-1">
+          <button onClick={() => setAddBank(true)} className="text-xs text-[#ff5252] font-bold hover:underline cursor-pointer flex items-center gap-1">
             <Icon d={ICONS.plus} size={12} /> Add
           </button>
         </div>
@@ -644,7 +644,7 @@ export default function WalletPage() {
                 <p className="text-xs text-gray-400">{acc.accountNumber} · {acc.accountName}</p>
               </div>
               {acc.isDefault && (
-                <span className="text-[9px] font-bold text-primary bg-red-50 border border-red-100 px-2 py-0.5 rounded-full">
+                <span className="text-[9px] font-bold text-[#ff5252] bg-red-50 border border-red-100 px-2 py-0.5 rounded-full">
                   DEFAULT
                 </span>
               )}

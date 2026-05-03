@@ -313,6 +313,13 @@ const Header = () => {
           </Button>
         </Link>
 
+        <Link to="/compare">
+          <Button className="flex flex-col w-15! min-w-15! capitalize! text-black!">
+            <DiGitCompare className="text-black text-[22px] font-bold" />
+            <span className="text-[12px]">Compare</span>
+          </Button>
+        </Link>
+
         <Link to="/cart">
           <Button className="flex flex-col w-15! min-w-15! capitalize! text-black!">
             <MdOutlineShoppingCart className="text-black text-[22px] font-bold" />

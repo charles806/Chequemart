@@ -84,8 +84,8 @@ const OrderDetail = ({ order, onClose, onUpdateStatus }) => {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Icon d={ICONS.orders} size={15} className="text-primary" />
+            <div className="w-8 h-8 rounded-xl bg-[#ff5252]/10 flex items-center justify-center">
+              <Icon d={ICONS.orders} size={15} className="text-[#ff5252]" />
             </div>
             <div>
               <h3 className="font-black text-gray-900 text-sm leading-none uppercase">#{order._id.slice(-6)}</h3>
@@ -183,7 +183,7 @@ const OrderDetail = ({ order, onClose, onUpdateStatus }) => {
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : s === "Cancelled"
                             ? "border-2 border-red-200 text-red-500 hover:bg-red-50"
-                            : "bg-primary text-white hover:bg-primary-hover shadow-md shadow-red-200"
+                            : "bg-[#ff5252] text-white hover:bg-[#ff5252]-hover shadow-md shadow-red-200"
                         }`}
                     >
                       {s === "Cancelled" ? "Cancel" : "Mark as " + s}
@@ -334,7 +334,7 @@ export default function OrdersPage() {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by order ID, product or customer"
           className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm
-            focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition"
+            focus:outline-none focus:ring-2 focus:ring-[#ff5252]/20 focus:border-[#ff5252]/40 transition"
         />
       </div>
 
@@ -348,7 +348,7 @@ export default function OrdersPage() {
             className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0
               transition cursor-pointer
               ${statusFilter === f
-                ? "bg-primary text-white shadow-md shadow-red-200"
+                ? "bg-[#ff5252] text-white shadow-md shadow-red-200"
                 : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300"}`}
           >
             {f === "All" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
@@ -366,7 +366,7 @@ export default function OrdersPage() {
             className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0
               transition cursor-pointer
               ${paymentFilter === f
-                ? f === "Paid" ? "bg-green-500 text-white shadow-md" : f === "Unpaid" ? "bg-red-500 text-white shadow-md" : "bg-primary text-white shadow-md"
+                ? f === "Paid" ? "bg-green-500 text-white shadow-md" : f === "Unpaid" ? "bg-red-500 text-white shadow-md" : "bg-[#ff5252] text-white shadow-md"
                 : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300"}`}
           >
             {f}
@@ -396,8 +396,8 @@ export default function OrdersPage() {
                 onClick={() => setSelected(order)}
                 className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 hover:shadow-md hover:border-gray-200 transition-all cursor-pointer"
               >
-                <div className="w-10 h-10 rounded-xl bg-primary/8 flex items-center justify-center flex-shrink-0">
-                  <Icon d={ICONS.truck} size={18} className="text-primary" />
+                <div className="w-10 h-10 rounded-xl bg-[#ff5252]/8 flex items-center justify-center flex-shrink-0">
+                  <Icon d={ICONS.truck} size={18} className="text-[#ff5252]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-0.5">

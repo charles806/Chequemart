@@ -25,6 +25,7 @@ import phone from "../../assets/image/sub-banner-3.jpg"
 //Icons
 import { FaShippingFast } from "react-icons/fa";
 import { FaLongArrowAltRight } from "react-icons/fa";
+import { blogs } from "../../data/blogs";
 
 
 const Home = () => {
@@ -480,9 +481,9 @@ const Home = () => {
                 }
               }}
             >
-              {[...Array(6)].map((_, index) => (
-                <SwiperSlide key={index}>
-                  <BlogsItems />
+              {blogs.map((blog) => (
+                <SwiperSlide key={blog.id}>
+                  <BlogsItems blog={blog} />
                 </SwiperSlide>
               ))}
             </Swiper>

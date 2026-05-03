@@ -46,6 +46,11 @@ export const login = async (identifier, password) => {
   return data;
 };
 
+export const googleLogin = () => {
+  const GOOGLE_AUTH_URL = `${API_BASE_URL}/api/auth/google`;
+  window.location.href = GOOGLE_AUTH_URL;
+};
+
 export const registerBuyer = async (userData) => {
   const data = await api('/api/auth/register', {
     method: 'POST',

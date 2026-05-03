@@ -29,7 +29,7 @@ import Icon from "../components/ui/Icon";
 import { ICONS } from "../components/ui/icons";
 import CircularProgress from "@mui/material/CircularProgress";
 
-const fmt  = (n) => "₦" + Number(n).toLocaleString();
+const fmt = (n) => "₦" + Number(n).toLocaleString();
 const fmtK = (n) => n >= 1000000 ? `₦${(n / 1000000).toFixed(1)}M` : n >= 1000 ? `₦${(n / 1000).toFixed(0)}k` : `₦${n}`;
 
 // ─────────────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ const RevenueChart = ({ data }) => {
   return (
     <div className="flex items-end gap-1 h-32 w-full">
       {data.map((d, i) => {
-        const h   = Math.max((d.revenue / max) * 100, 3);
+        const h = Math.max((d.revenue / max) * 100, 3);
         const isH = hovered === i;
         return (
           <div
@@ -82,10 +82,10 @@ const RevenueChart = ({ data }) => {
             <div
               className="w-full rounded-t-lg transition-all duration-200"
               style={{
-                height:     `${h}%`,
+                height: `${h}%`,
                 background: isH
-                  ? "linear-gradient(to top, var(--primary-color), var(--accent-color))"
-                  : "linear-gradient(to top, color-mix(in srgb, var(--primary-color) 33%, transparent), color-mix(in srgb, var(--primary-color) 66%, transparent))",
+                  ? "linear-gradient(to top, #ff5252, #3f51b5)"
+                  : "linear-gradient(to top, rgba(255, 82, 82, 0.33), rgba(255, 82, 82, 0.66))",
               }}
             />
             <span className="text-[9px] text-gray-400 font-semibold truncate w-full text-center">
@@ -108,7 +108,7 @@ const OrdersChart = ({ data }) => {
   return (
     <div className="flex items-end gap-1 h-20 w-full">
       {data.map((d, i) => {
-        const h   = Math.max((d.orders / max) * 100, 3);
+        const h = Math.max((d.orders / max) * 100, 3);
         const isH = hovered === i;
         return (
           <div
@@ -125,7 +125,7 @@ const OrdersChart = ({ data }) => {
             <div
               className="w-full rounded-t-md transition-all duration-200"
               style={{
-                height:     `${h}%`,
+                height: `${h}%`,
                 background: isH ? "var(--accent-color)" : "color-mix(in srgb, var(--accent-color) 20%, transparent)",
               }}
             />
@@ -149,7 +149,7 @@ const DonutChart = ({ data }) => {
     const prevOffset = data.slice(0, i).reduce((sum, item) => sum + item.count / total, 0);
     return {
       ...d,
-      strokeDasharray:  `${pct * circumference} ${circumference}`,
+      strokeDasharray: `${pct * circumference} ${circumference}`,
       strokeDashoffset: -prevOffset * circumference,
     };
   });
@@ -188,7 +188,7 @@ const DonutChart = ({ data }) => {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-14 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full rounded-full" style={{ width:`${d.pct}%`, backgroundColor: d.color }} />
+                <div className="h-full rounded-full" style={{ width: `${d.pct}%`, backgroundColor: d.color }} />
               </div>
               <span className="text-xs font-bold text-gray-500 w-8 text-right">{d.pct}%</span>
             </div>
@@ -243,15 +243,15 @@ const TopProducts = ({ products }) => {
 // ─────────────────────────────────────────────────────────────
 const ActivityFeed = ({ items }) => {
   const iconMap = {
-    order:         ICONS.orders,
-    payout:        ICONS.send,
-    review:        ICONS.star,
+    order: ICONS.orders,
+    payout: ICONS.send,
+    review: ICONS.star,
     restock_alert: ICONS.warning,
   };
   const colorMap = {
-    order:         "bg-green-100 text-green-600",
-    payout:        "bg-blue-100 text-blue-500",
-    review:        "bg-yellow-100 text-yellow-500",
+    order: "bg-green-100 text-green-600",
+    payout: "bg-blue-100 text-blue-500",
+    review: "bg-yellow-100 text-yellow-500",
     restock_alert: "bg-orange-100 text-orange-500",
   };
 
@@ -308,8 +308,8 @@ export default function AnalyticsPage() {
         ],
         revenue: revenueData.revenue || [],
         orderBreakdown: [
-          { status: "Pending",   count: 12, pct: 25, color: "#94a3b8" },
-          { status: "Shipped",   count: 18, pct: 38, color: "#6366f1" },
+          { status: "Pending", count: 12, pct: 25, color: "#94a3b8" },
+          { status: "Shipped", count: 18, pct: 38, color: "#6366f1" },
           { status: "Delivered", count: 18, pct: 37, color: "#10b981" },
         ],
         activity: [
@@ -337,8 +337,8 @@ export default function AnalyticsPage() {
   }
 
   const chartData = data.revenue;
-  const totalRev  = chartData.reduce((s, d) => s + d.revenue, 0);
-  const totalOrd  = chartData.reduce((s, d) => s + d.orders, 0);
+  const totalRev = chartData.reduce((s, d) => s + d.revenue, 0);
+  const totalOrd = chartData.reduce((s, d) => s + d.orders, 0);
 
   return (
     <div className="space-y-4">
@@ -412,5 +412,5 @@ export default function AnalyticsPage() {
 
     </div>
   );
-            }
-      
+}
+

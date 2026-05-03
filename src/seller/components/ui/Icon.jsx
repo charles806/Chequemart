@@ -9,7 +9,6 @@
  *   import Icon from "../components/ui/Icon";
  *   import { ICONS } from "../components/ui/icons";
  *
- *   <Icon d={ICONS.wallet} size={20} className="text-primary" />
  */
 
 const Icon = ({ d, size = 18, className = "" }) => (

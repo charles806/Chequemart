@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { Link } from 'react-router-dom'
 //Components
 import ProductItem from '../../Component/ProductItem/index'
+//Context
+import { MyContext } from '../../MyContext'
 //MUI
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -18,71 +20,8 @@ import { FaTimes } from "react-icons/fa";
 import { FaRegArrowAltCircleLeft } from "react-icons/fa";
 import { FiShoppingBag } from "react-icons/fi";
 
-const mockWishlist = [
-    {
-        id: 1,
-        name: "Premium Wireless Headphones",
-        brand: "Sony",
-        price: 45000,
-        oldPrice: 65000,
-        rating: 4,
-        discount: 30,
-        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400"
-    },
-    {
-        id: 2,
-        name: "Smart Watch Series 8",
-        brand: "Apple",
-        price: 120000,
-        oldPrice: 150000,
-        rating: 5,
-        discount: 20,
-        image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"
-    },
-    {
-        id: 3,
-        name: "Leather Crossbody Bag",
-        brand: "Coach",
-        price: 28000,
-        oldPrice: 40000,
-        rating: 4,
-        discount: 30,
-        image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400"
-    },
-    {
-        id: 4,
-        name: "Running Shoes Pro",
-        brand: "Nike",
-        price: 35000,
-        oldPrice: 50000,
-        rating: 4,
-        discount: 30,
-        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400"
-    },
-    {
-        id: 5,
-        name: "Vintage Sunglasses",
-        brand: "Ray-Ban",
-        price: 18000,
-        oldPrice: 25000,
-        rating: 4,
-        discount: 28,
-        image: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400"
-    },
-    {
-        id: 6,
-        name: "Minimalist Desk Lamp",
-        brand: "Philips",
-        price: 15000,
-        oldPrice: 22000,
-        rating: 4,
-        discount: 32,
-        image: "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400"
-    }
-]
-
 const MyList = () => {
-    const [wishlistItems, setWishlistItems] = useState(mockWishlist)
+    const { wishlist, removeFromWishlist, addToCart, fetchWishlist } = React.useContext(MyContext);
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
 
@@ -95,16 +34,18 @@ const MyList = () => {
     };
 
     const handleRemoveItem = (id) => {
-        setWishlistItems(wishlistItems.filter(item => item.id !== id))
+        removeFromWishlist(id)
     }
 
-    const handleClearAll = () => {
-        setWishlistItems([])
+    const handleClearAll = async () => {
+        for (const item of wishlistItems) {
+            await removeFromWishlist(item.id)
+        }
         handleClose()
     }
 
-    const handleAddToCart = (id) => {
-        console.log("Added to cart:", id)
+    const handleAddToCart = (product) => {
+        addToCart(product)
     }
 
     // const handleShare = () => {
@@ -222,7 +163,14 @@ const MyList = () => {
                                 </button>
 
                                 {/* Product Card */}
-                                <ProductItem product={product} />
+                                <ProductItem product={{
+                                    id: product.id,
+                                    name: product.name,
+                                    price: product.price,
+                                    oldPrice: product.oldPrice || product.price * 1.2,
+                                    image: product.image,
+                                    brand: product.brand
+                                }} />
 
                             </div>
                         ))}

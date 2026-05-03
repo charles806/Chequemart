@@ -8,7 +8,12 @@ import Products from "./Pages/Products";
 import ProductDetail from "./Pages/ProductDetail";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
+import AuthCallback from "./Pages/AuthCallback";
 import ForgotPassword from "./Pages/ForgotPassword";
+import BlogList from "./Pages/Blog";
+import Compare from "./Pages/Compare";
+import VerifyResetCode from "./Pages/VerifyResetCode";
+import NewPassword from "./Pages/NewPassword";
 import ResetPassword from "./Pages/ResetPassword";
 import Verify from "./Pages/Verify";
 import Cart from "./Pages/Cart/index"
@@ -83,9 +88,14 @@ const AppContent = () => {
           <Route path="/products" element={<Products />} />
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/blog" element={<BlogList />} />
+          <Route path="/compare" element={<Compare />} />
+          <Route path="/verify-reset-code" element={<VerifyResetCode />} />
+          <Route path="/new-password" element={<NewPassword />} />
           <Route path="/verify-email" element={<Verify />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />

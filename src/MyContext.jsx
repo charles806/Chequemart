@@ -12,6 +12,7 @@ const MyContextProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(() => Cookies.get("accessToken"));
   const [isLogin, setIsLogin] = useState(() => Cookies.get("isLogin") === "true");
   const [cart, setCart] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
   const [openCartPanel, setOpenCartPanel] = useState(false);
   const [isOpenCatPanel, setIsOpenCatPanel] = useState(false);
 
@@ -48,6 +49,7 @@ const MyContextProvider = ({ children }) => {
     };
 
     fetchCart();
+    fetchWishlist();
   }, [accessToken]);
 
   const login = useCallback((userData, token) => {
@@ -158,6 +160,88 @@ const MyContextProvider = ({ children }) => {
     }
   }, [accessToken]);
 
+  const emptyCart = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/clear`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = await res.json();
+      if (data.success) {
+        setCart([]);
+      }
+    } catch (error) {
+      console.error("Failed to clear cart:", error);
+    }
+  }, [accessToken]);
+
+  // Fetch wishlist from database
+  const fetchWishlist = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/wishlist`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        const items = data.data.map(item => ({
+          id: item._id,
+          name: item.name,
+          price: item.price,
+          oldPrice: item.price * 1.2,
+          image: item.images?.[0],
+          brand: item.seller?.storeName || item.brand,
+        }));
+        setWishlist(items);
+      }
+    } catch (error) {
+      console.error("Failed to fetch wishlist:", error);
+    }
+  }, [accessToken]);
+
+  const addToWishlist = useCallback(async (productId) => {
+    if (!accessToken) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/wishlist/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ productId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Added to wishlist");
+        fetchWishlist();
+      } else if (data.message === "Product already in wishlist") {
+        toast.info("Already in wishlist");
+      }
+    } catch (error) {
+      toast.error("Failed to add to wishlist");
+    }
+  }, [accessToken, fetchWishlist]);
+
+  const removeFromWishlist = useCallback(async (productId) => {
+    if (!accessToken) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/wishlist/remove/${productId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Removed from wishlist");
+        setWishlist(prev => prev.filter(item => item.id !== productId));
+      }
+    } catch (error) {
+      toast.error("Failed to remove from wishlist");
+    }
+  }, [accessToken]);
+
   const openAlertBox = useCallback((type, message) => {
     if (type === "success") toast.success(message);
     else if (type === "error") toast.error(message);
@@ -169,6 +253,7 @@ const MyContextProvider = ({ children }) => {
     accessToken,
     isLogin,
     cart,
+    wishlist,
     openCartPanel,
     setOpenCartPanel,
     isOpenCatPanel,
@@ -178,8 +263,12 @@ const MyContextProvider = ({ children }) => {
     addToCart,
     removeFromCart,
     updateCartQty,
+    emptyCart,
+    addToWishlist,
+    removeFromWishlist,
+    fetchWishlist,
     openAlertBox,
-  }), [user, accessToken, isLogin, cart, openCartPanel, isOpenCatPanel, login, logout, addToCart, removeFromCart, updateCartQty, openAlertBox]);
+  }), [user, accessToken, isLogin, cart, wishlist, openCartPanel, isOpenCatPanel, login, logout, addToCart, removeFromCart, updateCartQty, emptyCart, addToWishlist, removeFromWishlist, fetchWishlist, openAlertBox]);
 
   return <MyContext.Provider value={value}>{children}</MyContext.Provider>;
 };

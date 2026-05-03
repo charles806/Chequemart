@@ -200,7 +200,7 @@ export default function ProductsPage() {
           ["Total",     total,    "text-gray-900"   ],
           ["Active",    active,   "text-green-600"  ],
           ["Low Stock", lowStock, "text-orange-500" ],
-          ["Out",       out,      "text-primary"    ],
+          ["Out",       out,      "text-[#ff5252]"    ],
         ].map(([l, v, c]) => (
           <div key={l} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 text-center">
             <p className={`text-xl font-black ${c}`}>{v}</p>
@@ -217,7 +217,7 @@ export default function ProductsPage() {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name, category or SKU…"
           className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm
-            focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition"
+            focus:outline-none focus:ring-2 focus:ring-[#ff5252]/20 focus:border-[#ff5252]/40 transition"
         />
       </div>
 

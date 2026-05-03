@@ -6,7 +6,7 @@ import { Button, CircularProgress } from "@mui/material";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { FcGoogle } from "react-icons/fc";
 import { MyContext } from "../../MyContext";
-import { login } from "../../api";
+import { login, googleLogin } from "../../api";
 
 const Login = () => {
   const [isShowPassword, setIsShowPassword] = useState(false);
@@ -149,10 +149,10 @@ const Login = () => {
               <div className="flex-1 h-px bg-gray-200" />
             </div>
 
-            {/* GOOGLE — Phase 2 */}
+            {/* GOOGLE */}
             <Button
               type="button"
-              disabled
+              onClick={googleLogin}
               className="w-full! flex! items-center! justify-center! gap-3! bg-gray-50! text-black! border! border-gray-300! py-3! rounded-md! normal-case! text-[15px]! font-medium!"
             >
               <FcGoogle className="text-[20px]" />

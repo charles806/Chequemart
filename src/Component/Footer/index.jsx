@@ -26,48 +26,48 @@ const Footer = () => {
             <footer className='py-6 bg-[#fafafa]'>
                 <div className="my-container">
                     <div className="flex items-center justify-center gap-2 py-3 lg:py-8 pb-0 lg:pb-8 px-0 lg:px-5 flex-row overflow-x-scroll overflow-y-hidden">
-                        <div className="col flex items-center justify-center flex-col group min-w-37.5 shrink-0 lg:min-w-0 lg:w-[15%]">
-                            <FaShippingFast className='text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
-                            <h3 className="text-[16px] font-semibold mt-3">
+                        <div className="col flex items-center justify-center flex-col group min-w-[120px] sm:min-w-[150px] shrink-0 lg:w-[15%] px-2">
+                            <FaShippingFast className='text-[32px] sm:text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
+                            <h3 className="text-[14px] sm:text-[16px] font-semibold mt-3 text-center">
                                 Free Shipping
                             </h3>
-                            <p className="text-[12px] font-medium">
+                            <p className="text-[12px] font-medium text-center px-1">
                                 For all Orders
                             </p>
                         </div>
-                        <div className="col flex items-center justify-center flex-col group min-w-37.5 shrink-0 lg:min-w-0 lg:w-[15%]">
-                            <PiKeyReturn className='text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
-                            <h3 className="text-[16px] font-semibold mt-3">
+                        <div className="col flex items-center justify-center flex-col group min-w-[120px] sm:min-w-[150px] shrink-0 lg:w-[15%] px-2">
+                            <PiKeyReturn className='text-[32px] sm:text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
+                            <h3 className="text-[14px] sm:text-[16px] font-semibold mt-3 text-center">
                                 30 Days Returns
                             </h3>
-                            <p className="text-[12px] font-medium">
+                            <p className="text-[12px] font-medium text-center px-1">
                                 For an Exchange Product
                             </p>
                         </div>
-                        <div className="col flex items-center justify-center flex-col group min-w-[150px] shrink-0 lg:min-w-0 lg:w-[15%]">
-                            <BsWallet2 className='text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
-                            <h3 className="text-[16px] font-semibold mt-3">
+                        <div className="col flex items-center justify-center flex-col group min-w-[120px] sm:min-w-[150px] shrink-0 lg:w-[15%] px-2">
+                            <BsWallet2 className='text-[32px] sm:text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
+                            <h3 className="text-[14px] sm:text-[16px] font-semibold mt-3 text-center">
                                 Secured Payment
                             </h3>
-                            <p className="text-[12px] font-medium">
+                            <p className="text-[12px] font-medium text-center px-1">
                                 Payment Cards Accepted
                             </p>
                         </div>
-                        <div className="col flex items-center justify-center flex-col group min-w-[150px] shrink-0 lg:min-w-0 lg:w-[15%]">
-                            <CiGift className='text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
-                            <h3 className="text-[16px] font-semibold mt-3">
+                        <div className="col flex items-center justify-center flex-col group min-w-[120px] sm:min-w-[150px] shrink-0 lg:w-[15%] px-2">
+                            <CiGift className='text-[32px] sm:text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
+                            <h3 className="text-[14px] sm:text-[16px] font-semibold mt-3 text-center">
                                 Special Gifts
                             </h3>
-                            <p className="text-[12px] font-medium">
+                            <p className="text-[12px] font-medium text-center px-1">
                                 Our First Product Order
                             </p>
                         </div>
-                        <div className="col flex items-center justify-center flex-col group min-w-[150px] shrink-0 lg:min-w-0 lg:w-[15%]">
-                            <BiSupport className='text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
-                            <h3 className="text-[16px] font-semibold mt-3">
+                        <div className="col flex items-center justify-center flex-col group min-w-[120px] sm:min-w-[150px] shrink-0 lg:w-[15%] px-2">
+                            <BiSupport className='text-[32px] sm:text-[40px] transition-all duration-300 group-hover:text-[#ff5252] group-hover:-translate-y-1' />
+                            <h3 className="text-[14px] sm:text-[16px] font-semibold mt-3 text-center">
                                 Support 24/7
                             </h3>
-                            <p className="text-[12px] font-medium">
+                            <p className="text-[12px] font-medium text-center px-1">
                                 Contact us Anytime
                             </p>
                         </div>
@@ -102,17 +102,17 @@ const Footer = () => {
                             <div className="part2_col1 w-[50%]">
                                 <h2 className="text-[18px] font-semibold mb-4">Products</h2>
                                 <ul className="list">
-                                    <li className='list-none text-[14px] w-full mb-2'>
-                                        <Link to="/" className='link'>Prices drop</Link>
+                                    <li className="list-none text-[14px] w-full mb-2">
+                                        <Link to="/products?sort=price&order=asc" className='link'>Prices drop</Link>
                                     </li>
-                                    <li className='list-none text-[14px] w-full mb-2'>
+                                    <li className="list-none text-[14px] w-full mb-2">
                                         <Link to="/products" className='link'>New Products</Link>
                                     </li>
-                                    <li className='list-none text-[14px] w-full mb-2'>
-                                        <Link to="/products" className='link'>Best Sales</Link>
+                                    <li className="list-none text-[14px] w-full mb-2">
+                                        <Link to="/products?sort=sales&order=desc" className='link'>Best Sales</Link>
                                     </li>
-                                    <li className='list-none text-[14px] w-full mb-2'>
-                                        <Link to="/" className='link'>Contact Us</Link>
+                                    <li className="list-none text-[14px] w-full mb-2">
+                                        <Link to="https://wa.me/2348000000000" className='link' target='_blank'>Contact Us</Link>
                                     </li>
                                 </ul>
                             </div>
@@ -180,23 +180,23 @@ const Footer = () => {
                 <div className="my-container flex items-center justify-between flex-col lg:flex-row gap-4 lg:gap-0">
                     <ul className="flex items-center gap-2">
                         <li className="list-none">
-                            <Link className='w-8.75 h-8.75 rounded-full border border-[rgba(0,0,0,0.1)] flex items-center justify-center group hover:bg-[#ff5252] transition-all' to="/" target='_blank'>
+                            <Link className='w-8.75 h-8.75 rounded-full border border-[rgba(0,0,0,0.1)] flex items-center justify-center group hover:bg-[#ff5252] transition-all' to="https://facebook.com/chequemart" target='_blank'>
                                 <FaFacebookF className='text-[17px] group-hover:text-white' />
 
                             </Link>
                         </li>
                         <li className="list-none">
-                            <Link className='w-8.75 h-8.75 rounded-full border border-[rgba(0,0,0,0.1)] flex items-center justify-center group hover:bg-[#ff5252] transition-all' to="/" target='_blank'>
+                            <Link className='w-8.75 h-8.75 rounded-full border border-[rgba(0,0,0,0.1)] flex items-center justify-center group hover:bg-[#ff5252] transition-all' to="https://instagram.com/chequemart" target='_blank'>
                                 <FaInstagram className='text-[17px] group-hover:text-white' />
                             </Link>
                         </li>
                         <li className="list-none">
-                            <Link className='w-8.75 h-8.75 rounded-full border border-[rgba(0,0,0,0.1)] flex items-center justify-center group hover:bg-[#ff5252] transition-all' to="/" target='_blank'>
+                            <Link className='w-8.75 h-8.75 rounded-full border border-[rgba(0,0,0,0.1)] flex items-center justify-center group hover:bg-[#ff5252] transition-all' to="https://x.com/chequemart" target='_blank'>
                                 <FaXTwitter className='text-[17px] group-hover:text-white' />
                             </Link>
                         </li>
                         <li className="list-none">
-                            <Link className='w-8.75 h-8.75 rounded-full border border-[rgba(0,0,0,0.1)] flex items-center justify-center group hover:bg-[#ff5252] transition-all' to="/" target='_blank'>
+                            <Link className='w-8.75 h-8.75 rounded-full border border-[rgba(0,0,0,0.1)] flex items-center justify-center group hover:bg-[#ff5252] transition-all' to="https://tiktok.com/@chequemart" target='_blank'>
                                 <FaTiktok className='text-[17px] group-hover:text-white' />
                             </Link>
                         </li>

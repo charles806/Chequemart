@@ -16,7 +16,7 @@ import { nigeriaStates } from "../../data/nigeriaStates.js";
 import { MyContext } from "../../MyContext";
 
 const Checkout = () => {
-    const { cart, user } = React.useContext(MyContext);
+    const { cart, user, emptyCart } = React.useContext(MyContext);
     const [state, setState] = useState("");
     const [city, setCity] = useState("");
     const [loading, setLoading] = useState(false);
@@ -101,6 +101,7 @@ const Checkout = () => {
             const paymentData = await paymentResponse.json();
 
             if (paymentData.success && paymentData.data?.authorization_url) {
+                await emptyCart();
                 window.location.href = paymentData.data.authorization_url;
             } else {
                 alert("Payment initialization failed");

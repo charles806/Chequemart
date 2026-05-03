@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 //UI
 import Button from '@mui/material/Button';
@@ -6,6 +6,7 @@ import Rating from '@mui/material/Rating';
 //Icons
 import { DiGitCompare } from "react-icons/di";
 import { FaRegHeart } from "react-icons/fa";
+import { FaHeart } from "react-icons/fa";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import productImg1 from '../../assets/image/product1.jpg';
 
@@ -13,7 +14,7 @@ import { MyContext } from '../../MyContext';
 import { toast } from "sonner";
 
 const ProductItem = ({ product }) => {
-    const { addToCart, setOpenCartPanel, user } = React.useContext(MyContext);
+    const { addToCart, setOpenCartPanel, user, addToWishlist, removeFromWishlist, wishlist } = useContext(MyContext);
     // Destructure product data with fallback values
     const {
         id,
@@ -26,7 +27,21 @@ const ProductItem = ({ product }) => {
         discount = 0
     } = product || {};
 
-    const [value, setValue] = React.useState(rating);
+    const [value, setValue] = useState(rating);
+    const [isInWishlist, setIsInWishlist] = useState(false);
+    const [compareItems, setCompareItems] = useState([]);
+
+    useEffect(() => {
+        const checkWishlist = wishlist.some(item => item.id === id);
+        setIsInWishlist(checkWishlist);
+    }, [wishlist, id]);
+
+    useEffect(() => {
+        const saved = localStorage.getItem('compareItems');
+        if (saved) {
+            setCompareItems(JSON.parse(saved));
+        }
+    }, []);
 
     const handleAddToCart = (e) => {
         e.preventDefault();
@@ -57,6 +72,52 @@ const ProductItem = ({ product }) => {
         setOpenCartPanel(true);
     };
 
+    const handleWishlist = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!user) {
+            toast.error("Please login to add to wishlist!", {
+                icon: '⚠️',
+                style: {
+                    background: '#eab308',
+                    color: '#fff',
+                }
+            });
+            return;
+        }
+
+        if (isInWishlist) {
+            removeFromWishlist(id);
+        } else {
+            addToWishlist(id);
+        }
+    };
+
+    const handleCompare = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const current = JSON.parse(localStorage.getItem('compareItems') || '[]');
+        const exists = current.find(p => p.id === id);
+
+        if (exists) {
+            const updated = current.filter(p => p.id !== id);
+            localStorage.setItem('compareItems', JSON.stringify(updated));
+            toast.info("Removed from compare");
+        } else {
+            if (current.length >= 4) {
+                toast.error("Compare max 4 products");
+                return;
+            }
+            const updated = [...current, { id, name, price, image, brand }];
+            localStorage.setItem('compareItems', JSON.stringify(updated));
+            toast.success("Added to compare");
+        }
+    };
+
+    const isInCompare = compareItems.some(p => p.id === id);
+
     return (
         <div className='productItem shadow-md hover:shadow-2xl rounded-xl overflow-hidden border border-gray-100 transition-all duration-300 hover:-translate-y-1 bg-white'>
             <div className="group imgWrapper w-full overflow-hidden rounded-t-xl relative">
@@ -71,11 +132,11 @@ const ProductItem = ({ product }) => {
                     </span>
                 )}
                 <div className="actions absolute -top-5 right-2 z-50 flex items-center gap-2 flex-col w-12.5 transition-all duration-300 group-hover:top-3 opacity-0 group-hover:opacity-100">
-                    <Button className='w-9! h-9! min-w-9! rounded-full! bg-white! text-black hover:bg-[#ff5252]! hover:text-white! transition-all! duration-300! shadow-lg! group/btn'>
+                    <Button onClick={handleCompare} className={`w-9! h-9! min-w-9! rounded-full! bg-white! text-black hover:bg-[#ff5252]! hover:text-white! transition-all! duration-300! shadow-lg! group/btn ${isInCompare ? '!bg-[#ff5252] !text-white' : ''}`}>
                         <DiGitCompare className='text-[18px] text-black! group-hover/btn:text-white!' />
                     </Button>
-                    <Button className='w-9! h-9! min-w-9! rounded-full! bg-white! text-black hover:bg-[#ff5252]! hover:text-white! transition-all! duration-300! shadow-lg! group/btn'>
-                        <FaRegHeart className='text-[18px] text-black! group-hover/btn:text-white!' />
+                    <Button onClick={handleWishlist} className={`w-9! h-9! min-w-9! rounded-full! bg-white! text-black hover:bg-[#ff5252]! hover:text-white! transition-all! duration-300! shadow-lg! group/btn ${isInWishlist ? '!bg-[#ff5252] !text-white' : ''}`}>
+                        {isInWishlist ? <FaHeart className='text-[18px] text-white!' /> : <FaRegHeart className='text-[18px] text-black! group-hover/btn:text-white!' />}
                     </Button>
                 </div>
             </div>
