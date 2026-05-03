@@ -1,6 +1,8 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL;
+import Cookies from 'js-cookie';
+import { toast } from 'sonner';
 
-const getToken = () => localStorage.getItem('token');
+const getToken = () => Cookies.get('accessToken');
 
 const api = async (endpoint, options = {}) => {
   const token = getToken();
@@ -16,14 +18,17 @@ const api = async (endpoint, options = {}) => {
     headers,
   });
 
-  // Handle 401 - redirect to login
-  if (response.status === 401) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '/login';
-  }
-
   const data = await response.json();
+
+  // Handle 401 - logout and redirect to login
+  if (response.status === 401 || response.status === 403) {
+    Cookies.remove('accessToken', { path: '/' });
+    Cookies.remove('user', { path: '/' });
+    Cookies.remove('isLogin', { path: '/' });
+    toast.info("Session expired. Please login again.");
+    window.location.href = '/login';
+    throw { response: { status: response.status, data } };
+  }
 
   if (!response.ok) {
     throw { response: { status: response.status, data } };
