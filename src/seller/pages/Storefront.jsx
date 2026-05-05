@@ -43,23 +43,7 @@ const CATEGORIES = [
 // MOCK PROFILE DATA
 // Replace with: GET /api/seller/profile
 // ─────────────────────────────────────────────────────────────
-const MOCK_PROFILE = {
-  storeName:    "John's Store",
-  description:  "We sell premium quality electronics, fashion and accessories at unbeatable prices. Fast delivery across Nigeria. Customer satisfaction is our priority.",
-  location:     "Lagos, Nigeria",
-  category:     "Electronics",
-  logo:         null,
-  banner:       null,
-  rating:       4.8,
-  totalOrders:  348,
-  totalProducts: 5,
-  isVerified:   true,
-  socialLinks: {
-    instagram: "@johnsstore",
-    twitter:   "@johnsstore",
-    whatsapp:  "08012345678",
-  },
-};
+// NOTE: Now using real API data from context
 
 // ─────────────────────────────────────────────────────────────
 // SHARED INPUT STYLES
@@ -249,9 +233,10 @@ export default function StorefrontPage() {
   };
 
   const stats = {
-    rating:        MOCK_PROFILE.rating,
-    totalOrders:   MOCK_PROFILE.totalOrders,
-    isVerified:    MOCK_PROFILE.isVerified,
+    rating: seller?.sellerInfo?.rating || 0,
+    totalOrders: seller?.sellerInfo?.totalOrders || 0,
+    totalProducts: seller?.sellerInfo?.totalProducts || 0,
+    isVerified: seller?.sellerInfo?.isVerified || false,
   };
 
   return (
@@ -280,8 +265,8 @@ export default function StorefrontPage() {
       <div className="grid grid-cols-3 gap-2.5">
         {[
           [ICONS.star,    `${stats.rating} ★`, "Rating",       "text-yellow-500"],
-          [ICONS.orders,  MOCK_PROFILE.totalOrders, "Orders",   "text-[#ff5252]"   ],
-          [ICONS.package, MOCK_PROFILE.totalProducts,"Products","text-blue-500"  ],
+          [ICONS.orders,  stats.totalOrders, "Orders",   "text-[#ff5252]"   ],
+          [ICONS.package, stats.totalProducts,"Products","text-blue-500"  ],
         ].map(([icon, val, lbl, c]) => (
           <div key={lbl} className="bg-white rounded-md border border-gray-100 shadow-sm p-3.5 text-center">
             <Icon d={icon} size={16} className={`${c} mx-auto mb-1`} />

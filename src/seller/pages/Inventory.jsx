@@ -48,7 +48,7 @@ const RestockModal = ({ product, onSave, onClose }) => {
     const n = Number(qty);
     if (isNaN(n) || n < 0) return;
     setSaved(true);
-    setTimeout(() => { onSave(product.id, n); onClose(); }, 700);
+    setTimeout(() => { onSave(product._id, n); onClose(); }, 700);
   };
 
   const newStatus   = autoStatus(Number(qty));
@@ -206,15 +206,29 @@ export default function InventoryPage() {
   };
 
   const FILTERS   = ["All", "Active", "Low Stock", "Out"];
-  const outCount  = products.filter((p) => p.status === "Out").length;
-  const lowCount  = products.filter((p) => p.status === "Low Stock").length;
-  const goodCount = products.filter((p) => p.status === "Active").length;
+  
+  // Compute status from stock
+  const getStatus = (product) => {
+    if (product.stock === 0) return "Out";
+    if (product.stock <= 5) return "Low Stock";
+    return "Active";
+  };
 
-  const filtered = products.filter((p) => {
+  // Add computed status to products
+  const productsWithStatus = products.map(p => ({
+    ...p,
+    status: getStatus(p)
+  }));
+
+  const outCount  = productsWithStatus.filter((p) => p.status === "Out").length;
+  const lowCount  = productsWithStatus.filter((p) => p.status === "Low Stock").length;
+  const goodCount = productsWithStatus.filter((p) => p.status === "Active").length;
+
+  const filtered = productsWithStatus.filter((p) => {
     const matchFilter = filter === "All" || p.status === filter;
     const q           = search.toLowerCase();
     const matchSearch = p.name.toLowerCase().includes(q) ||
-                        p.sku.toLowerCase().includes(q)  ||
+                        (p.sku && p.sku.toLowerCase().includes(q))  ||
                         p.category.toLowerCase().includes(q);
     return matchFilter && matchSearch;
   });

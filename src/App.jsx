@@ -11,6 +11,7 @@ import Register from "./Pages/Register";
 import AuthCallback from "./Pages/AuthCallback";
 import ForgotPassword from "./Pages/ForgotPassword";
 import BlogList from "./Pages/Blog";
+import BlogPost from "./Pages/BlogPost";
 import Compare from "./Pages/Compare";
 import VerifyResetCode from "./Pages/VerifyResetCode";
 import NewPassword from "./Pages/NewPassword";
@@ -93,6 +94,7 @@ const AppContent = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/blog" element={<BlogList />} />
+          <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/compare" element={<Compare />} />
           <Route path="/verify-reset-code" element={<VerifyResetCode />} />
           <Route path="/new-password" element={<NewPassword />} />
