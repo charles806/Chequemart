@@ -73,32 +73,35 @@ const Products = () => {
     }, [products, sortOption]);
 
     return (
-        <section className="min-h-screen pb-8">
-            <div className="bg-white p-2">
-                <div className="my-container flex gap-3">
-                    <div className="sidebarWrapper fixed -bottom-full left-0 w-full lg:h-full lg:static lg:w-[20%] bg-white z-102 lg:z-100 p-3 lg:p-0 transition-all lg:opacity-100 opacity-0">
+        <section className="min-h-screen pb-20 lg:pb-3 mt-6">
+            <div className="bg-white">
+                <div className="my-container flex gap-0 lg:gap-3">
+                    {/* Sidebar - Slide-in drawer on mobile/tablet */}
+                    <div className="sidebarWrapper fixed inset-0 lg:static lg:w-[20%] bg-white z-102 lg:z-100 p-3 lg:p-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 lg:opacity-100 opacity-0 pointer-events-none lg:pointer-events-auto">
                         <SideBar />
                     </div>
-                    <div className="rightContent w-full lg:w-[80%] py-3">
+                    <div className="rightContent w-full lg:w-[80%] py-3 px-2 sm:px-3">
                         {/* Sort By Header - Sticky with backdrop blur */}
-                        <div className="bg-white/90 backdrop-blur-md p-3 px-4 w-full mb-6 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between sticky top-33.75 z-50 shadow-md border border-gray-200 gap-3 sm:gap-0">
-                            <div className="text-sm text-gray-600">
-                                Showing <span className="font-semibold text-gray-900">{sortedProducts.length}</span> products
+                        <div className="bg-white/95 backdrop-blur-md px-3 sm:px-4 w-full mb-4 mt-14 lg:mt-0 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between sticky top-14.5 lg:top-0 z-50 shadow-sm border border-gray-100 gap-3 sm:gap-0">
+                            <div className="text-xs sm:text-sm text-gray-600">
+                                <span className="font-semibold text-gray-900">{sortedProducts.length}</span> products
                                 {searchQuery && (
                                     <span> for "<span className="font-semibold text-gray-900">{searchQuery}</span>"</span>
                                 )}
                             </div>
-                            <div className="flex items-center gap-3 self-end sm:self-auto">
-                                <span className="text-[14px] font-medium text-gray-700 hidden sm:block">Sort By:</span>
+                            <div className="flex items-center gap-2 sm:gap-3 self-end sm:self-auto">
+                                <span className="text-xs sm:text-[14px] font-medium text-gray-700 hidden sm:block">Sort:</span>
                                 <Button
-                                    className="bg-white! border-2! border-[#ff5252]! text-[13px]! text-black! hover:bg-[#ff5252]! hover:text-white! transition-all! font-medium! px-4! py-1.5! rounded-lg! shadow-sm!"
+                                    className="bg-white! border! border-[#ff5252]! text-xs! sm:text-[13px]! text-black! font-medium! px-2! sm:px-4! py-1! sm:py-1.5! rounded-md! shadow-sm! min-w-0! sm:min-w-auto!"
                                     id="basic-button"
                                     aria-controls={open ? 'basic-menu' : undefined}
                                     aria-haspopup="true"
                                     aria-expanded={open ? 'true' : undefined}
                                     onClick={handleClick}
+                                    disableTouchRipple
                                 >
-                                    {sortLabel}
+                                    <span className="hidden md:inline">{sortLabel}</span>
+                                    <span className="md:hidden text-lg">☰</span>
                                 </Button>
 
                                 <Menu
@@ -106,6 +109,14 @@ const Products = () => {
                                     anchorEl={anchorEl}
                                     open={open}
                                     onClose={handleClose}
+                                    anchorOrigin={{
+                                        vertical: 'bottom',
+                                        horizontal: 'right',
+                                    }}
+                                    transformOrigin={{
+                                        vertical: 'top',
+                                        horizontal: 'right',
+                                    }}
                                     slotProps={{
                                         list: {
                                             'aria-labelledby': 'basic-button',
@@ -116,52 +127,37 @@ const Products = () => {
                                             borderRadius: '8px',
                                             boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
                                             marginTop: '8px',
+                                            minWidth: '160px',
                                         }
                                     }}
                                 >
                                     <MenuItem
-                                        onClick={() => handleSort("name-asc", "Name, A to Z")}
+                                        onClick={() => handleSort("name-asc", "A-Z")}
                                         selected={sortOption === "name-asc"}
-                                        style={{
-                                            backgroundColor: sortOption === "name-asc" ? '#fff5f5' : 'transparent',
-                                            color: sortOption === "name-asc" ? '#ff5252' : 'inherit',
-                                            fontWeight: sortOption === "name-asc" ? 600 : 400
-                                        }}
+                                        className={`text-sm! ${sortOption === "name-asc" ? "bg-red-50! text-[#ff5252]!" : ""}`}
                                     >
                                         Name, A to Z
                                     </MenuItem>
                                     <MenuItem
-                                        onClick={() => handleSort("name-desc", "Name, Z to A")}
+                                        onClick={() => handleSort("name-desc", "Z-A")}
                                         selected={sortOption === "name-desc"}
-                                        style={{
-                                            backgroundColor: sortOption === "name-desc" ? '#fff5f5' : 'transparent',
-                                            color: sortOption === "name-desc" ? '#ff5252' : 'inherit',
-                                            fontWeight: sortOption === "name-desc" ? 600 : 400
-                                        }}
+                                        className={`text-sm! ${sortOption === "name-desc" ? "bg-red-50! text-[#ff5252]!" : ""}`}
                                     >
                                         Name, Z to A
                                     </MenuItem>
                                     <MenuItem
-                                        onClick={() => handleSort("price-asc", "Price, Low to High")}
+                                        onClick={() => handleSort("price-asc", "Low-High")}
                                         selected={sortOption === "price-asc"}
-                                        style={{
-                                            backgroundColor: sortOption === "price-asc" ? '#fff5f5' : 'transparent',
-                                            color: sortOption === "price-asc" ? '#ff5252' : 'inherit',
-                                            fontWeight: sortOption === "price-asc" ? 600 : 400
-                                        }}
+                                        className={`text-sm! ${sortOption === "price-asc" ? "bg-red-50! text-[#ff5252]!" : ""}`}
                                     >
-                                        Price, Low to High
+                                        Price: Low to High
                                     </MenuItem>
                                     <MenuItem
-                                        onClick={() => handleSort("price-desc", "Price, High to Low")}
+                                        onClick={() => handleSort("price-desc", "High-Low")}
                                         selected={sortOption === "price-desc"}
-                                        style={{
-                                            backgroundColor: sortOption === "price-desc" ? '#fff5f5' : 'transparent',
-                                            color: sortOption === "price-desc" ? '#ff5252' : 'inherit',
-                                            fontWeight: sortOption === "price-desc" ? 600 : 400
-                                        }}
+                                        className={`text-sm! ${sortOption === "price-desc" ? "bg-red-50! text-[#ff5252]!" : ""}`}
                                     >
-                                        Price, High to Low
+                                        Price: High to Low
                                     </MenuItem>
                                 </Menu>
                             </div>
@@ -169,13 +165,18 @@ const Products = () => {
 
                         {/* Product Grid - Fully Responsive */}
                         {loading ? (
-                            <SkeletonProductGrid count={8} />
+                            <SkeletonProductGrid count={4} />
                         ) : sortedProducts.length === 0 ? (
-                            <div className="text-center py-20 w-full text-gray-400">
-                                <p className="text-lg font-medium">No products found</p>
+                            <div className="flex justify-center items-center py-16 sm:py-20 w-full">
+                                <div className="text-center">
+                                    <p className="text-lg sm:text-xl font-medium text-gray-500 mb-2">No products found</p>
+                                    {searchQuery && (
+                                        <p className="text-sm text-gray-400">Try a different search term</p>
+                                    )}
+                                </div>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 animate-fadeIn">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 animate-fadeIn">
                                 {sortedProducts.map((product) => (
                                     <ProductItem
                                         key={product._id}

@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* ── Custom easing curves (same as main app) ── */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-fast: 160ms;
+  --duration-normal: 200ms;
+  --duration-slow: 400ms;
+  --accent-color: #ff5252;
+}
+
 /* ── Global resets ─────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -16,6 +27,17 @@ body {
   font-family: var(--font-family);
 }
 
+/* ── Respect user preference for reduced motion ───────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* ── Hide scrollbar (utility) ──────────────────────────────── */
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar {
@@ -25,7 +47,7 @@ body {
 
 /* ── Fix transparent select dropdowns ─────────────────────── */
 select {
-  background-color: #f9fafb; /* matches bg-gray-50 */
+  background-color: #f9fafb;
   color: #1f2937;
 }
 
@@ -39,3 +61,35 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 input[type="number"] { -moz-appearance: textfield; }
+
+/* ── Button press feedback (seller dashboard) ─────────── */
+button,
+[role="button"] {
+  transition: transform var(--duration-fast) var(--ease-out), background-color var(--duration-fast) ease-out, box-shadow var(--duration-fast) var(--ease-out);
+}
+
+button:active,
+[role="button"]:active {
+  transform: scale(0.97);
+}
+
+/* ── Focus visible for accessibility ──────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* Touch device hover state handling */
+@media (hover: hover) and (pointer: fine) {
+  button:hover,
+  [role="button"]:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+
+@media (hover: none) {
+  button:active,
+  [role="button"]:active {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+}

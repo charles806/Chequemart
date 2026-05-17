@@ -1,11 +1,12 @@
 import React from 'react';
+import '../../index.css';
 
 const SkeletonCard = () => (
-  <div className="bg-white rounded-xl shadow-sm p-3 animate-pulse">
-    <div className="h-48 bg-gray-200 rounded-lg mb-3" />
-    <div className="h-3 bg-gray-200 rounded w-1/3 mb-2" />
-    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-    <div className="h-4 bg-gray-200 rounded w-1/2" />
+  <div className="bg-white rounded-xl p-3" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+    <div className="h-48 bg-gray-200 rounded-lg mb-3 skeleton-shimmer" />
+    <div className="h-3 bg-gray-200 rounded w-1/3 mb-2 skeleton-shimmer" />
+    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2 skeleton-shimmer" />
+    <div className="h-4 bg-gray-200 rounded w-1/2 skeleton-shimmer" />
   </div>
 );
 

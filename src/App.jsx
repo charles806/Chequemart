@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link, useLocation, Outlet } from "react-router-dom";
 import { Toaster, toast } from "sonner";
 
@@ -20,8 +20,8 @@ import Verify from "./Pages/Verify";
 import Cart from "./Pages/Cart/index"
 import Checkout from "./Pages/Checkout";
 import Account from "./Pages/Account/index";
-import MyList from  "./Pages/MyList"
-import Orders from  "./Pages/Orders"
+import MyList from "./Pages/MyList"
+import Orders from "./Pages/Orders"
 
 // Seller Dashboard
 import SellerApp from "./seller/SellerApp";
@@ -50,7 +50,7 @@ const MarketplaceLayout = () => {
   return (
     <>
       <Header />
-      <main className="pt-22.5 pb-17.5 lg:pt-0 lg:pb-0">
+      <main className="pt-18 pb-12 lg:pt-0 lg:pb-0">
         <Outlet />
       </main>
       <Footer />
@@ -106,9 +106,9 @@ const AppContent = () => {
           <Route path="/orders" element={<Orders />} />
         </Route>
       </Routes>
-      <Toaster 
-        position="top-center" 
-        richColors 
+      <Toaster
+        position="top-center"
+        richColors
         closeButton
         expand={false}
       />
@@ -184,8 +184,8 @@ const AppContent = () => {
                   </div>
                 </div>
 
-                <IoCloseSharp 
-                  className="text-lg text-gray-400 cursor-pointer hover:text-red-500 transition" 
+                <IoCloseSharp
+                  className="text-lg text-gray-400 cursor-pointer hover:text-red-500 transition"
                   onClick={() => removeFromCart(item.id)}
                 />
               </div>

@@ -145,22 +145,30 @@ const Register = () => {
                 {/* USER TYPE TOGGLE */}
                 <div className="flex gap-2 bg-gray-100 p-1 rounded-md mb-8">
                     <Button
-
                         onClick={() => setUserType("buyer")}
-                        className={`flex-1! py-2! rounded! text-sm! font-medium! transition! ${userType === "buyer"
-                                ? "bg-[#FF5252]! text-white! shadow!"
-                                : "text-gray-600! hover:bg-black/5!"
+                        onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.97)'}
+                        onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        disableRipple
+                        className={`flex-1! py-2! rounded! text-sm! font-medium! ${userType === "buyer"
+                                ? "bg-[#FF5252]! text-white!"
+                                : "text-gray-600!"
                             }`}
+                        style={{ transition: 'transform 0.16s ease-out, background-color 0.2s ease-out' }}
                     >
                         Buyer
                     </Button>
                     <Button
-                        disableRipple
                         onClick={() => setUserType("seller")}
-                        className={`flex-1! py-2! rounded! text-sm! font-medium! transition! ${userType === "seller"
-                                ? "bg-[#FF5252]! text-white! shadow!"
-                                : "text-gray-600! hover:bg-black/5!"
+                        onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.97)'}
+                        onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        disableRipple
+                        className={`flex-1! py-2! rounded! text-sm! font-medium! ${userType === "seller"
+                                ? "bg-[#FF5252]! text-white!"
+                                : "text-gray-600!"
                             }`}
+                        style={{ transition: 'transform 0.16s ease-out, background-color 0.2s ease-out' }}
                     >
                         Seller
                     </Button>

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 //Images
@@ -288,53 +288,49 @@ const Header = () => {
         <Navigation />
       </div>
 
-      {/* Bottom Nav */}
-
-      <div className="mobileNav lg:hidden bg-white p-1 px-3 w-full flex items-center justify-between fixed bottom-0 left-0 gap-0 z-51">
-        <Link to="/">
-          <Button className="flex flex-col w-15! min-w-15! capitalize! text-black!">
-            <IoIosHome className="text-black! text-[22px] font-bold" />
-            <span className="text-[14px] font-medium text-black!">Home</span>
-          </Button>
+      {/* Bottom Nav - Fixed mobile bottom navigation */}
+      <div className="mobileNav lg:hidden" style={{ backgroundColor: 'white', padding: '0.5rem 0.25rem max(0.5rem, env(safe-area-inset-bottom, 0.5rem))', width: '100%', display: 'flex', justifyContent: 'space-between', position: 'fixed', bottom: 0, left: 0, zIndex: 51, boxShadow: '0 -1px 3px rgba(0,0,0,0.08)' }}>
+        <Link to="/" style={{ flex: 1 }}>
+          <button type="button" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0.375rem 0.25rem', border: 'none', background: 'none', cursor: 'pointer' }}>
+            <IoIosHome style={{ fontSize: 22, color: '#000' }} />
+            <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>Home</span>
+          </button>
         </Link>
 
-        <Button
-          className="flex-col w-15! min-w-15! capitalize! text-black!"
-          onClick={toggleSearch}
-        >
-          <CiSearch className="text-black! text-[22px] font-bold" />
-          <span className="text-[14px] font-medium text-black!">Search</span>
-        </Button>
+        <button type="button" className="nav-btn" onClick={toggleSearch} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.375rem 0.25rem', border: 'none', background: 'none', cursor: 'pointer' }}>
+          <CiSearch style={{ fontSize: 22, color: '#000' }} />
+          <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>Search</span>
+        </button>
 
-        <Link to="/my-list">
-          <Button className="flex flex-col w-15! min-w-15! capitalize! text-black!">
-            <FaRegHeart className="text-black text-[22px] font-bold" />
-            <span className="text-[12px]">My List</span>
-          </Button>
+        <Link to="/my-list" style={{ flex: 1 }}>
+          <button type="button" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0.375rem 0.25rem', border: 'none', background: 'none', cursor: 'pointer' }}>
+            <FaRegHeart style={{ fontSize: 22, color: '#000' }} />
+            <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>List</span>
+          </button>
         </Link>
 
-        <Link to="/compare">
-          <Button className="flex flex-col w-15! min-w-15! capitalize! text-black!">
-            <DiGitCompare className="text-black text-[22px] font-bold" />
-            <span className="text-[12px]">Compare</span>
-          </Button>
+        <Link to="/cart" style={{ flex: 1 }}>
+          <button type="button" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0.375rem 0.25rem', border: 'none', background: 'none', cursor: 'pointer', position: 'relative' }}>
+            <MdOutlineShoppingCart style={{ fontSize: 22, color: '#000' }} />
+            {context.cart.length > 0 && (
+              <span style={{ position: 'absolute', top: -2, right: 'calc(50% - 14px)', backgroundColor: '#ff5252', color: 'white', fontSize: 9, fontWeight: 700, width: 16, height: 16, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {context.cart.length > 9 ? '9+' : context.cart.length}
+              </span>
+            )}
+            <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>Cart</span>
+          </button>
         </Link>
 
-        <Link to="/cart">
-          <Button className="flex flex-col w-15! min-w-15! capitalize! text-black!">
-            <MdOutlineShoppingCart className="text-black text-[22px] font-bold" />
-            <span className="text-[14px] font-medium text-black">Cart</span>
-          </Button>
-        </Link>
-
-        <Link to="/account">
-          <Button className="flex flex-col w-15! min-w-15! capitalize! text-black!">
-            <FaRegUser className="text-black text-[22px] font-bold" />
-            <span className="text-[12px]">Account</span>
-          </Button>
+        <Link to="/account" style={{ flex: 1 }}>
+          <button type="button" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0.375rem 0.25rem', border: 'none', background: 'none', cursor: 'pointer' }}>
+            <FaRegUser style={{ fontSize: 22, color: '#000' }} />
+            <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>Account</span>
+          </button>
         </Link>
       </div>
-    </header>
+
+
+    </header >
   );
 };
 

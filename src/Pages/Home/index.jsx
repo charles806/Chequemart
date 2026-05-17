@@ -57,7 +57,7 @@ const Home = () => {
   }, []);
 
   return (
-    <main className='lg:mt-15 mb-5'>
+    <main className='mt-0'>
       <Slider />
       <CatSlider />
 
