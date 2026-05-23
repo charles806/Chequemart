@@ -70,7 +70,7 @@ const OrderDetail = ({ order, onClose, onUpdateStatus }) => {
       alert("Cannot mark order as " + newStatus + " - payment not received yet");
       return;
     }
-    onUpdateStatus(order.id, newStatus);
+    onUpdateStatus(order._id, newStatus);
     onClose();
   };
 
