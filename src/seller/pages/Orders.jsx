@@ -43,6 +43,7 @@ const fmt = (n) => "₦" + Number(n).toLocaleString();
 // Status transitions - what states can each status transition to
 const TRANSITIONS = {
   pending: ["confirmed", "cancelled"],
+  processing: ["confirmed", "cancelled"],
   confirmed: ["shipped", "cancelled"],
   shipped: ["delivered"],
   delivered: [],

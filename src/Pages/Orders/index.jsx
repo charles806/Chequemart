@@ -219,7 +219,7 @@ const Orders = () => {
                                 <span className="flex items-center gap-2">
                                     Processing
                                     <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-xs">
-                                        {orders.filter(o => o.status === 'Processing').length}
+                                        {orders.filter(o => o.status === 'processing').length}
                                     </span>
                                 </span>
                             } className={activeTab === 2 ? "text-[#ff5252]!" : "text-gray-600!"} />
