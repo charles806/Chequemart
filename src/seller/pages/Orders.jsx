@@ -59,7 +59,7 @@ const REQUIRES_PAID = ["Processing", "Confirmed", "Shipped", "Delivered", "Colle
 // ─────────────────────────────────────────────────────────────
 const OrderDetail = ({ order, onClose, onUpdateStatus }) => {
   const transitions = TRANSITIONS[order.status] || [];
-  const paymentStatus = order.paymentStatus || order.isPaid ? "Paid" : "Unpaid";
+  const paymentStatus = order.paymentStatus === "paid" || order.isPaid ? "Paid" : "Unpaid";
   const isPaid = paymentStatus === "Paid";
   const hasTracking = !!order.trackingNumber;
 
@@ -272,7 +272,7 @@ export default function OrdersPage() {
     return statusMatch && paymentMatch && searchMatch;
   });
 
-  const getPaymentStatus = (order) => order.paymentStatus || (order.isPaid ? "Paid" : "Unpaid");
+  const getPaymentStatus = (order) => (order.paymentStatus === "paid" || order.isPaid) ? "Paid" : "Unpaid";
 
   return (
     <div className="space-y-4">
