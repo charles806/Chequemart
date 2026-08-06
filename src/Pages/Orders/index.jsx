@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Cookies from 'js-cookie'
+import { authFetch } from '../../api'
 //MUI
 import Button from '@mui/material/Button';
 import Tabs from '@mui/material/Tabs';
@@ -23,6 +24,10 @@ import { FaMapMarkerAlt } from "react-icons/fa";
 import { FaWallet } from "react-icons/fa";
 import { FaGift } from "react-icons/fa";
 import { FiShoppingBag } from "react-icons/fi";
+import { toast } from 'sonner';
+import ErrorMessage from "../../components/ErrorMessage";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import EmptyState from "../../components/EmptyState";
 
 
 const statusConfig = {
@@ -40,31 +45,46 @@ const Orders = () => {
     const [expandedOrder, setExpandedOrder] = useState(null)
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
 
     useEffect(() => {
-        fetchOrders()
+        const verifyAfterRedirect = async () => {
+            const reference = searchParams.get('reference');
+            if (reference) {
+                try {
+                    const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/orders/verify/${reference}`);
+                    const data = await res.json();
+                    if (data.success && !data.alreadyPaid) {
+                        toast.success(`Payment confirmed — ${data.orders?.length || 0} order(s) updated`);
+                    } else if (data.alreadyPaid) {
+                        toast.info('Payment already confirmed');
+                    }
+                } catch (err) {
+                    console.error('Payment verification failed:', err);
+                }
+                const url = new URL(window.location);
+                url.searchParams.delete('reference');
+                url.searchParams.delete('trxref');
+                window.history.replaceState({}, '', url);
+            }
+        };
+        verifyAfterRedirect().finally(fetchOrders);
     }, [])
 
     const fetchOrders = async () => {
+        setLoading(true);
+        setError(null);
         try {
-            const token = Cookies.get("accessToken");
-            const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/orders`,
-                {
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...(token && { Authorization: `Bearer ${token}` })
-                    }
-                }
-            );
+            const response = await authFetch(`${import.meta.env.VITE_API_URL}/api/orders`);
             const { success, orders } = await response.json();
             if (success) {
                 setOrders(orders);
             }
         } catch (error) {
             console.error("Failed to fetch orders:", error);
+            setError(error.message);
         } finally {
             setLoading(false);
         }
@@ -112,19 +132,11 @@ const Orders = () => {
         console.log("Reorder:", orderId)
     }
 
-    const handleMarkAsReceived = async (orderId) => {
+    const handleMarkAsCollected = async (orderId) => {
         try {
-            const token = Cookies.get("accessToken");
-            const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/orders/${orderId}/receive`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...(token && { Authorization: `Bearer ${token}` })
-                    },
-                    credentials: "include"
-                }
+            const response = await authFetch(
+                `${import.meta.env.VITE_API_URL}/api/orders/${orderId}/collect`,
+                { method: "PATCH" }
             );
             const data = await response.json();
             if (data.success) {
@@ -133,8 +145,8 @@ const Orders = () => {
                 alert(data.message);
             }
         } catch (error) {
-            console.error("Mark as received error:", error);
-            alert("Failed to mark order as received");
+            console.error("Mark as collected error:", error);
+            alert("Failed to mark order as collected");
         }
     };
 
@@ -142,17 +154,9 @@ const Orders = () => {
         if (!confirm("Are you sure you want to cancel this order?")) return;
 
         try {
-            const token = Cookies.get("accessToken");
-            const response = await fetch(
+            const response = await authFetch(
                 `${import.meta.env.VITE_API_URL}/api/orders/${orderId}/cancel`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...(token && { Authorization: `Bearer ${token}` })
-                    },
-                    credentials: "include"
-                }
+                { method: "PATCH" }
             );
             const data = await response.json();
             if (data.success) {
@@ -189,11 +193,12 @@ const Orders = () => {
                     </div>
                 </div>
 
+                {/* Error */}
+                {error && <ErrorMessage message={error} onRetry={fetchOrders} />}
+
                 {/* Tabs */}
                 {loading ? (
-                    <div className="flex justify-center py-20">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff5252]"></div>
-                    </div>
+                    <LoadingSpinner />
                 ) : (
                     <Box className="mb-6 bg-white rounded-xl shadow-sm p-2">
                         <Tabs
@@ -246,28 +251,16 @@ const Orders = () => {
 
                 {/* Orders List */}
                 {filteredOrders.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-sm">
-                        <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-                            <FiShoppingBag className="text-4xl text-gray-400" />
-                        </div>
-                        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                            No orders found
-                        </h2>
-                        <p className="text-gray-500 text-center max-w-md mb-6">
-                            {activeTab === 0
-                                ? "You haven't placed any orders yet. Start shopping to see your orders here."
-                                : `You don't have any ${statusConfig[Object.keys(statusConfig)[activeTab - 1]]?.label || ''} orders.`
-                            }
-                        </p>
-                        <Button
-                            variant="contained"
-                            className="bg-gradient-to-r from-[#ff5252] to-[#ff7b7b] hover:from-[#e04848] hover:to-[#ff5252] text-white px-8 py-2.5 rounded-lg"
-                        >
-                            <Link to="/products" className="text-white">
-                                Start Shopping
-                            </Link>
-                        </Button>
-                    </div>
+                    <EmptyState
+                        icon={FiShoppingBag}
+                        title="No orders found"
+                        description={activeTab === 0
+                            ? "You haven't placed any orders yet. Start shopping to see your orders here."
+                            : `You don't have any ${statusConfig[Object.keys(statusConfig)[activeTab - 1]]?.label || ''} orders.`
+                        }
+                        actionLabel="Start Shopping"
+                        actionLink="/products"
+                    />
                 ) : (
                     <div className="flex flex-col gap-4">
                         {filteredOrders.map((order) => (
@@ -330,14 +323,14 @@ const Orders = () => {
 
                                     {/* Order Actions */}
                                     <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-100">
-                                        {order.status === 'shipped' && (
+                                        {order.status === 'delivered' && (
                                             <Button
                                                 variant="contained"
                                                 size="small"
-                                                onClick={() => handleMarkAsReceived(order.id)}
+                                                onClick={() => handleMarkAsCollected(order.id)}
                                                 className="bg-green-600 hover:bg-green-700!"
                                             >
-                                                Mark as Received
+                                                Mark as Collected
                                             </Button>
                                         )}
                                         {['pending', 'confirmed'].includes(order.status) && (

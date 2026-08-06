@@ -21,7 +21,7 @@
  */
 
 import { useContext, useState, useEffect } from "react";
-import Cookies from "js-cookie";
+import { authFetch } from "../../api";
 import { SellerContext } from "../constants/sellerContext";
 
 export const SellerProvider = ({ children }) => {
@@ -49,13 +49,9 @@ export const SellerProvider = ({ children }) => {
   const refreshSellerData = async () => {
     setStatus("loading");
     try {
-      const token = Cookies.get("accessToken");
-      if (!token) return;
-
-      const headers = { Authorization: `Bearer ${token}` };
       const [profileRes, walletRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL}/api/users/profile`, { headers }),
-        fetch(`${import.meta.env.VITE_API_URL}/api/seller/wallet`, { headers }),
+        authFetch(`${import.meta.env.VITE_API_URL}/api/users/profile`),
+        authFetch(`${import.meta.env.VITE_API_URL}/api/seller/wallet`),
       ]);
 
       const profileData = await profileRes.json();
@@ -78,10 +74,10 @@ export const SellerProvider = ({ children }) => {
 
       if (walletData.success) {
         setWallet({
-          availableBalance: Number(walletData.wallet.available_balance),
-          escrowBalance: Number(walletData.wallet.pending_balance), // Assuming pending is escrow
-          totalEarned: Number(walletData.wallet.total_earned),
-          totalWithdrawn: 0, // In a real app, sum successful withdrawals
+          availableBalance: Number(walletData.wallet.availableBalance) || 0,
+          escrowBalance: Number(walletData.wallet.escrowBalance) || 0,
+          totalEarned: Number(walletData.wallet.totalEarned) || 0,
+          totalWithdrawn: 0,
         });
       }
       setStatus("success");

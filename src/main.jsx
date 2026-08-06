@@ -1,13 +1,52 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import "./seller/Index.css"; // Import seller dashboard styles
+import "./seller/Index.css";
 import App from "./App.jsx";
 import { Analytics } from "@vercel/analytics/react"
+import * as Sentry from "@sentry/react";
+
+const DSN = import.meta.env.VITE_SENTRY_DSN;
+if (DSN) {
+  Sentry.init({
+    dsn: DSN,
+    environment: import.meta.env.VITE_NODE_ENV || "development",
+    tracesSampleRate: 0.25,
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+    integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
+  });
+}
+
+const required = ["VITE_API_URL", "VITE_PAYSTACK_PUBLIC_KEY"];
+const missing = required.filter((key) => !import.meta.env[key]);
+if (missing.length > 0) {
+  console.error(`Missing required env vars: ${missing.join(", ")}`);
+}
+
+window.onerror = (message, source, lineno, colno, error) => {
+  console.error("[Global Error]", { message, source, lineno, colno, error });
+  if (DSN && error) Sentry.captureException(error);
+};
+
+window.onunhandledrejection = (event) => {
+  console.error("[Unhandled Promise Rejection]", event.reason);
+  if (DSN) Sentry.captureException(event.reason);
+};
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <Sentry.ErrorBoundary fallback={<div className="flex items-center justify-center min-h-screen p-8 text-center">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h1>
+        <p className="text-gray-500 mb-4">Please try refreshing the page.</p>
+        <button onClick={() => window.location.reload()} className="px-6 py-2 bg-black text-white rounded-xl hover:opacity-80 transition cursor-pointer">
+          Refresh Page
+        </button>
+      </div>
+    </div>}>
+      <App />
+    </Sentry.ErrorBoundary>
     <Analytics />
   </StrictMode>,
 )

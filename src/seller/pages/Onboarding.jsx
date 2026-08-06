@@ -36,7 +36,6 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Cookies from "js-cookie";
 import Icon from "../components/ui/Icon";
 import { ICONS } from "../components/ui/icons";
-import { BANKS_LIST } from "../constants/banks";
 import img from "../../assets/image/logo1.png";
 
 // ─────────────────────────────────────────────────────────────
@@ -159,7 +158,7 @@ const ProgressBar = ({ step }) => (
 // ─────────────────────────────────────────────────────────────
 const MAX_IMAGE_SIZE_MB = 5;
 
-const ImageUpload = ({ label, preview, aspect, onUpload }) => {
+const ImageUpload = ({ label, preview, aspect, onUpload, uploading }) => {
   const ref = useRef();
   const [uploadError, setUploadError] = useState("");
 
@@ -179,7 +178,7 @@ const ImageUpload = ({ label, preview, aspect, onUpload }) => {
       return;
     }
 
-    onUpload(URL.createObjectURL(file));
+    onUpload(file, URL.createObjectURL(file));
     e.target.value = "";
   };
 
@@ -192,11 +191,12 @@ const ImageUpload = ({ label, preview, aspect, onUpload }) => {
         role="button"
         tabIndex={0}
         aria-label={`Upload ${label}`}
-        onClick={() => ref.current.click()}
-        onKeyDown={(e) => e.key === "Enter" && ref.current.click()}
+        onClick={() => !uploading && ref.current.click()}
+        onKeyDown={(e) => e.key === "Enter" && !uploading && ref.current.click()}
         className={`relative overflow-hidden rounded-2xl border-2 border-dashed border-[#ff5252]/30
-          bg-red-50/30 hover:border-[#ff5252]/60 hover:bg-red-50 transition cursor-pointer
+          bg-red-50/30 hover:border-[#ff5252]/60 hover:bg-red-50 transition
           flex items-center justify-center group
+          ${uploading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
           ${aspect === "banner" ? "h-24 w-full" : "h-20 w-20"}`}
       >
         {preview ? (
@@ -277,7 +277,7 @@ const StepWelcome = ({ onNext }) => (
 );
 
 // STEP 2 — Personal info
-const StepPersonal = ({ data, onChange, errors }) => (
+const StepPersonal = ({ data, onChange, errors, onBlurField }) => (
   <div className="space-y-4">
     <div className="grid grid-cols-2 gap-3">
       <Field label="First Name" error={errors.firstName} htmlFor="firstName">
@@ -285,6 +285,7 @@ const StepPersonal = ({ data, onChange, errors }) => (
           id="firstName"
           value={data.firstName}
           onChange={(e) => onChange("firstName", e.target.value)}
+          onBlur={() => onBlurField?.("personal", "firstName", data.firstName)}
           placeholder="John"
           autoComplete="given-name"
           className={inputCls(!!errors.firstName)}
@@ -295,6 +296,7 @@ const StepPersonal = ({ data, onChange, errors }) => (
           id="lastName"
           value={data.lastName}
           onChange={(e) => onChange("lastName", e.target.value)}
+          onBlur={() => onBlurField?.("personal", "lastName", data.lastName)}
           placeholder="Doe"
           autoComplete="family-name"
           className={inputCls(!!errors.lastName)}
@@ -307,6 +309,7 @@ const StepPersonal = ({ data, onChange, errors }) => (
         type="email"
         value={data.email}
         onChange={(e) => onChange("email", e.target.value)}
+        onBlur={() => onBlurField?.("personal", "email", data.email)}
         placeholder="you@example.com"
         autoComplete="email"
         className={inputCls(!!errors.email)}
@@ -323,6 +326,7 @@ const StepPersonal = ({ data, onChange, errors }) => (
         type="tel"
         value={data.phone}
         onChange={(e) => onChange("phone", e.target.value)}
+        onBlur={() => onBlurField?.("personal", "phone", data.phone)}
         placeholder="080XXXXXXXX"
         autoComplete="tel"
         inputMode="tel"
@@ -334,7 +338,7 @@ const StepPersonal = ({ data, onChange, errors }) => (
 );
 
 // STEP 3 — Store setup
-const StepStore = ({ data, onChange, errors }) => (
+const StepStore = ({ data, onChange, errors, onBlurField }) => (
   <div className="space-y-4">
     <Field
       label="Store Name"
@@ -346,6 +350,7 @@ const StepStore = ({ data, onChange, errors }) => (
         id="storeName"
         value={data.storeName}
         onChange={(e) => onChange("storeName", e.target.value)}
+        onBlur={() => onBlurField?.("store", "storeName", data.storeName)}
         placeholder="e.g. John's Electronics"
         maxLength={50}
         className={inputCls(!!errors.storeName)}
@@ -356,6 +361,7 @@ const StepStore = ({ data, onChange, errors }) => (
         id="category"
         value={data.category}
         onChange={(e) => onChange("category", e.target.value)}
+        onBlur={() => onBlurField?.("store", "category", data.category)}
         className={inputCls(!!errors.category) + " cursor-pointer"}
       >
         <option value="">Select a category…</option>
@@ -382,6 +388,7 @@ const StepStore = ({ data, onChange, errors }) => (
           id="location"
           value={data.location}
           onChange={(e) => onChange("location", e.target.value)}
+          onBlur={() => onBlurField?.("store", "location", data.location)}
           placeholder="Lagos, Nigeria"
           className={inputCls(!!errors.location) + " pl-9"}
         />
@@ -397,6 +404,7 @@ const StepStore = ({ data, onChange, errors }) => (
         id="description"
         value={data.description}
         onChange={(e) => onChange("description", e.target.value)}
+        onBlur={() => onBlurField?.("store", "description", data.description)}
         rows={3}
         placeholder="Tell buyers what your store is about…"
         className={inputCls(!!errors.description) + " resize-none"}
@@ -406,7 +414,7 @@ const StepStore = ({ data, onChange, errors }) => (
 );
 
 // STEP 4 — Bank account
-const StepBank = ({ data, onChange, errors, onVerify, verified, verifying }) => {
+const StepBank = ({ data, onChange, errors, onVerify, verified, verifying, onBlurField, banksList = [], banksLoading }) => {
   // Only show verify button when both bank + 10-digit account are filled
   const canVerify =
     data.bankCode && /^\d{10}$/.test(data.accountNumber) && !verified;
@@ -418,15 +426,17 @@ const StepBank = ({ data, onChange, errors, onVerify, verified, verifying }) => 
           id="bankCode"
           value={data.bankCode}
           onChange={(e) => {
-            const bank = BANKS_LIST.find((b) => b.code === e.target.value);
+            const bank = banksList.find((b) => b.code === e.target.value);
             onChange("bankCode", e.target.value);
             onChange("bankName", bank?.name || "");
             onChange("accountType", bank?.accountType || "");
           }}
+          onBlur={() => onBlurField?.("bank", "bankCode", data.bankCode)}
           className={inputCls(!!errors.bankCode) + " cursor-pointer"}
+          disabled={banksLoading}
         >
-          <option value="">Select bank…</option>
-          {BANKS_LIST.map((b) => (
+          <option value="">{banksLoading ? "Loading banks…" : "Select bank…"}</option>
+          {banksList.map((b) => (
             <option key={b.code} value={b.code}>
               {b.name}
             </option>
@@ -445,6 +455,7 @@ const StepBank = ({ data, onChange, errors, onVerify, verified, verifying }) => 
               const val = e.target.value.replace(/\D/g, "");
               onChange("accountNumber", val);
             }}
+            onBlur={() => onBlurField?.("bank", "accountNumber", data.accountNumber)}
             placeholder="10-digit account number"
             inputMode="numeric"
             className={inputCls(!!errors.accountNumber) + " flex-1"}
@@ -486,7 +497,7 @@ const StepBank = ({ data, onChange, errors, onVerify, verified, verifying }) => 
 };
 
 // STEP 5 — Media upload
-const StepMedia = ({ data, onChange }) => (
+const StepMedia = ({ data, onChange, uploading }) => (
   <div className="space-y-5">
     <div className="flex gap-2 bg-gray-50 border border-gray-100 rounded-xl p-3">
       <Icon d={ICONS.info} size={14} className="text-gray-400 shrink-0 mt-0.5" />
@@ -498,13 +509,21 @@ const StepMedia = ({ data, onChange }) => (
       label="Store Banner"
       preview={data.bannerPreview}
       aspect="banner"
-      onUpload={(url) => onChange("bannerPreview", url)}
+      uploading={uploading}
+      onUpload={(file, previewUrl) => {
+        onChange("bannerFile", file);
+        onChange("bannerPreview", previewUrl);
+      }}
     />
     <ImageUpload
       label="Store Logo"
       preview={data.logoPreview}
       aspect="logo"
-      onUpload={(url) => onChange("logoPreview", url)}
+      uploading={uploading}
+      onUpload={(file, previewUrl) => {
+        onChange("logoFile", file);
+        onChange("logoPreview", previewUrl);
+      }}
     />
   </div>
 );
@@ -581,6 +600,12 @@ export default function Onboarding({ onComplete }) {
   const [bankVerified, setBankVerified] = useState(false);
   const [bankVerifying, setBankVerifying] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [savedStatus, setSavedStatus] = useState("");
+  const [isDirty, setIsDirty] = useState(false);
+  const savedStatusTimeout = useRef(null);
+  const initialRestoreDone = useRef(false);
+  const [banksList, setBanksList] = useState([]);
+  const [banksLoading, setBanksLoading] = useState(true);
 
   const [personal, setPersonal] = useState({
     firstName: "",
@@ -602,9 +627,12 @@ export default function Onboarding({ onComplete }) {
     accountType: "",
   });
   const [media, setMedia] = useState({
+    logoFile: null,
+    bannerFile: null,
     logoPreview: null,
     bannerPreview: null,
   });
+  const [mediaUploading, setMediaUploading] = useState(false);
 
   // Cleared errors on each field change
   const updatePersonal = useCallback((k, v) => {
@@ -691,6 +719,70 @@ export default function Onboarding({ onComplete }) {
     fetchUserData();
   }, []);
 
+  // ── Restore draft from localStorage ──────────────────────
+  useEffect(() => {
+    const saved = localStorage.getItem("onboarding_draft");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.personal) setPersonal(parsed.personal);
+        if (parsed.store) setStore(parsed.store);
+        if (parsed.bank) setBank(parsed.bank);
+        if (parsed.media) setMedia((prev) => ({ ...prev, ...parsed.media }));
+        if (parsed.step && parsed.step >= 1 && parsed.step <= TOTAL_STEPS) setStep(parsed.step);
+      } catch (e) {
+        console.warn("Failed to restore onboarding draft");
+      }
+    }
+    initialRestoreDone.current = true;
+  }, []);
+
+  // ── Fetch banks from Paystack ────────────────────────────
+  useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/banks`);
+        if (res.ok) {
+          const data = await res.json();
+          setBanksList(data.banks || []);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch banks:", err.message);
+      } finally {
+        setBanksLoading(false);
+      }
+    };
+    fetchBanks();
+  }, []);
+
+  // ── Autosave to localStorage ─────────────────────────────
+  useEffect(() => {
+    if (!initialRestoreDone.current) return;
+    const draft = {
+      personal,
+      store,
+      bank,
+      media: { logoPreview: media.logoPreview, bannerPreview: media.bannerPreview },
+      step,
+    };
+    localStorage.setItem("onboarding_draft", JSON.stringify(draft));
+    setIsDirty(true);
+    setSavedStatus("Saved");
+    clearTimeout(savedStatusTimeout.current);
+    savedStatusTimeout.current = setTimeout(() => setSavedStatus(""), 2000);
+  }, [personal, store, bank, media, step]);
+
+  // ── beforeunload warning ─────────────────────────────────
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
+
   // ── Validation ────────────────────────────────────────────
   const validate = useCallback(() => {
     let e = {};
@@ -700,6 +792,33 @@ export default function Onboarding({ onComplete }) {
     setErrors(e);
     return Object.keys(e).length === 0;
   }, [step, personal, store, bank, bankVerified]);
+
+  const validateField = useCallback((section, field, value) => {
+    let error;
+    if (section === "personal") {
+      if (field === "firstName" && !value.trim()) error = "Required";
+      if (field === "lastName" && !value.trim()) error = "Required";
+      if (field === "email" && !EMAIL_RE.test(value))
+        error = "Enter a valid email address";
+      if (field === "phone" && !PHONE_RE.test(value.replace(/\s/g, "")))
+        error = "Enter a valid Nigerian phone number";
+    } else if (section === "store") {
+      if (field === "storeName") {
+        if (!value.trim()) error = "Store name is required";
+        else if (value.trim().length > 50)
+          error = "Store name must be 50 characters or less";
+      }
+      if (field === "category" && !value) error = "Select a category";
+      if (field === "location" && !value.trim()) error = "Enter your location";
+      if (field === "description" && value.trim().length < 30)
+        error = "Description must be at least 30 characters";
+    } else if (section === "bank") {
+      if (field === "bankCode" && !value) error = "Select a bank";
+      if (field === "accountNumber" && !/^\d{10}$/.test(value))
+        error = "Enter a valid 10-digit account number";
+    }
+    setErrors((prev) => ({ ...prev, [field]: error }));
+  }, []);
 
   // ── Bank verification ─────────────────────────────────────
   const handleVerifyBank = useCallback(async () => {
@@ -737,7 +856,7 @@ export default function Onboarding({ onComplete }) {
         throw new Error(data.message || "Verification failed");
       }
 
-      updateBank("accountName", data.accountName);
+      updateBank("accountName", data.data?.accountName);
       setBankVerified(true);
     } catch (err) {
       setErrors({ accountNumber: err.message || "Verification failed. Please try again." });
@@ -763,14 +882,45 @@ export default function Onboarding({ onComplete }) {
     setStep((s) => s - 1);
   };
 
+  // ── Upload file to Cloudinary ───────────────────────────
+  const uploadFile = async (file, token) => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/upload/product-image`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || "Image upload failed");
+    return data.url;
+  };
+
   // ── Final submit ──────────────────────────────────────────
   const handleSubmit = async () => {
-    setSubmitting(true);
     setSubmitError("");
+    let uploadedLogo = null;
+    let uploadedBanner = null;
 
     try {
       const token = Cookies.get("accessToken");
       if (!token) throw new Error("Session expired. Please log in again.");
+
+      // Upload media to Cloudinary first (if files selected)
+      if (media.logoFile || media.bannerFile) {
+        setMediaUploading(true);
+        const results = await Promise.allSettled([
+          media.logoFile ? uploadFile(media.logoFile, token) : Promise.resolve(null),
+          media.bannerFile ? uploadFile(media.bannerFile, token) : Promise.resolve(null),
+        ]);
+        if (results[0].status === "fulfilled") uploadedLogo = results[0].value;
+        else throw new Error(results[0].reason?.message || "Logo upload failed");
+        if (results[1].status === "fulfilled") uploadedBanner = results[1].value;
+        else throw new Error(results[1].reason?.message || "Banner upload failed");
+        setMediaUploading(false);
+      }
+
+      setSubmitting(true);
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/auth/complete-onboarding`,
@@ -780,7 +930,15 @@ export default function Onboarding({ onComplete }) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ personal, store, bank }),
+          body: JSON.stringify({
+            personal,
+            store,
+            bank,
+            media: {
+              ...(uploadedLogo ? { logo: uploadedLogo } : {}),
+              ...(uploadedBanner ? { banner: uploadedBanner } : {}),
+            },
+          }),
         }
       );
 
@@ -794,11 +952,13 @@ export default function Onboarding({ onComplete }) {
         Cookies.set("user", JSON.stringify(data.user), { expires: 7 });
       }
 
+      localStorage.removeItem("onboarding_draft");
       onComplete();
     } catch (error) {
       setSubmitError(error.message);
     } finally {
       setSubmitting(false);
+      setMediaUploading(false);
     }
   };
 
@@ -847,8 +1007,13 @@ export default function Onboarding({ onComplete }) {
               </p>
             </div>
             {step > 1 && (
-              <span className="ml-auto text-xs text-gray-400 font-semibold shrink-0">
-                {step - 1} / {TOTAL_STEPS - 1}
+              <span className="ml-auto flex items-center gap-2 shrink-0">
+                {savedStatus && (
+                  <span className="text-[10px] text-green-500 font-medium">{savedStatus}</span>
+                )}
+                <span className="text-xs text-gray-400 font-semibold">
+                  {step - 1} / {TOTAL_STEPS - 1}
+                </span>
               </span>
             )}
           </div>
@@ -862,10 +1027,16 @@ export default function Onboarding({ onComplete }) {
               data={personal}
               onChange={updatePersonal}
               errors={errors}
+              onBlurField={validateField}
             />
           )}
           {step === 3 && (
-            <StepStore data={store} onChange={updateStore} errors={errors} />
+            <StepStore
+              data={store}
+              onChange={updateStore}
+              errors={errors}
+              onBlurField={validateField}
+            />
           )}
           {step === 4 && (
             <StepBank
@@ -875,9 +1046,12 @@ export default function Onboarding({ onComplete }) {
               onVerify={handleVerifyBank}
               verified={bankVerified}
               verifying={bankVerifying}
+              onBlurField={validateField}
+              banksList={banksList}
+              banksLoading={banksLoading}
             />
           )}
-          {step === 5 && <StepMedia data={media} onChange={updateMedia} />}
+          {step === 5 && <StepMedia data={media} onChange={updateMedia} uploading={mediaUploading} />}
           {step === 6 && (
             <StepReview personal={personal} store={store} bank={bank} />
           )}
@@ -902,10 +1076,15 @@ export default function Onboarding({ onComplete }) {
               ) : (
                 <button
                   onClick={handleSubmit}
-                  disabled={submitting}
+                  disabled={submitting || mediaUploading}
                   className="px-5 py-2.5 rounded-xl bg-[#ff5252] text-white font-semibold text-sm hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer flex items-center gap-2"
                 >
-                  {submitting ? (
+                  {mediaUploading ? (
+                    <>
+                      <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                      Uploading media…
+                    </>
+                  ) : submitting ? (
                     <>
                       <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
                       Creating…

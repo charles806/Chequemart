@@ -5,8 +5,8 @@ import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import ProductItem from "../../Component/ProductItem/index";
-import CircularProgress from "@mui/material/CircularProgress";
 import { SkeletonProductGrid } from "../../Component/Skeleton";
+import ErrorMessage from "../../components/ErrorMessage";
 
 const Products = () => {
     const [products, setProducts] = useState([]);
@@ -14,31 +14,47 @@ const Products = () => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [sortOption, setSortOption] = useState("name-asc");
     const [sortLabel, setSortLabel] = useState("Name, A to Z");
+    const [error, setError] = useState(null);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const open = Boolean(anchorEl);
+    const limit = 20;
 
     const [searchParams] = useSearchParams();
     const searchQuery = searchParams.get("search");
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                let url = `${import.meta.env.VITE_API_URL}/api/products`;
-                if (searchQuery) {
-                    url += `?search=${encodeURIComponent(searchQuery)}`;
+    const fetchProducts = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const params = new URLSearchParams();
+            if (searchQuery) params.set("search", searchQuery);
+            params.set("page", String(page));
+            params.set("limit", String(limit));
+            const url = `${import.meta.env.VITE_API_URL}/api/products?${params.toString()}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.success) {
+                setProducts(data.data || []);
+                if (data.pagination) {
+                    setTotalPages(data.pagination.totalPages || 1);
                 }
-                const res = await fetch(url);
-                const data = await res.json();
-                if (data.success) {
-                    setProducts(data.data || []);
-                }
-            } catch (error) {
-                console.error("Failed to fetch products:", error);
-            } finally {
-                setLoading(false);
             }
-        };
-        fetchProducts();
+        } catch (error) {
+            console.error("Failed to fetch products:", error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        setPage(1);
     }, [searchQuery]);
+
+    useEffect(() => {
+        fetchProducts();
+    }, [searchQuery, page]);
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -164,7 +180,9 @@ const Products = () => {
                         </div>
 
                         {/* Product Grid - Fully Responsive */}
-                        {loading ? (
+                        {error ? (
+                            <ErrorMessage message={error} onRetry={fetchProducts} />
+                        ) : loading ? (
                             <SkeletonProductGrid count={4} />
                         ) : sortedProducts.length === 0 ? (
                             <div className="flex justify-center items-center py-16 sm:py-20 w-full">
@@ -176,21 +194,60 @@ const Products = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 animate-fadeIn">
-                                {sortedProducts.map((product) => (
-                                    <ProductItem
-                                        key={product._id}
-                                        product={{
-                                            id: product._id,
-                                            name: product.name,
-                                            price: product.price,
-                                            oldPrice: product.price * 1.2,
-                                            image: product.images?.[0],
-                                            brand: product.seller?.storeName || "Vendor"
-                                        }}
-                                    />
-                                ))}
-                            </div>
+                            <>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 animate-fadeIn">
+                                    {sortedProducts.map((product) => (
+                                        <ProductItem
+                                            key={product._id}
+                                            product={{
+                                                id: product._id,
+                                                name: product.name,
+                                                price: product.price,
+                                                oldPrice: product.price * 1.2,
+                                                image: product.images?.[0],
+                                                brand: product.seller?.storeName || "Vendor"
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                                {totalPages > 1 && (
+                                    <div className="flex items-center justify-center gap-2 mt-8">
+                                        <button
+                                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                            disabled={page === 1}
+                                            className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                        >
+                                            Previous
+                                        </button>
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                            .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                                            .map((p, idx, arr) => (
+                                                <React.Fragment key={p}>
+                                                    {idx > 0 && arr[idx - 1] !== p - 1 && (
+                                                        <span className="text-gray-400">...</span>
+                                                    )}
+                                                    <button
+                                                        onClick={() => setPage(p)}
+                                                        className={`w-10 h-10 rounded-xl text-sm font-bold transition cursor-pointer ${
+                                                            p === page
+                                                                ? "bg-[#ff5252] text-white"
+                                                                : "border border-gray-200 text-gray-600 hover:bg-gray-50"
+                                                        }`}
+                                                    >
+                                                        {p}
+                                                    </button>
+                                                </React.Fragment>
+                                            ))}
+                                        <button
+                                            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                            disabled={page === totalPages}
+                                            className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </div>

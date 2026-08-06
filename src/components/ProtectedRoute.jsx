@@ -1,43 +1,73 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { MyContext } from '../MyContext';
+import { useContext, useEffect, useState, useRef } from 'react';
 
 const ProtectedRoute = ({ children }) => {
     const token = Cookies.get('accessToken');
     const location = useLocation();
+    const context = useContext(MyContext);
+    // Lazy initialization - function is only called once
+    const currentDateRef = useRef(() => Date.now());
+    const [authChecked, setAuthChecked] = useState(false);
+    const [tokenExpired, setTokenExpired] = useState(false);
     
-    if (!token) {
-        return <Navigate to="/login" replace />;
+    // Update current date on each render (in useEffect to avoid purity rule)
+    useEffect(() => {
+        currentDateRef.current = Date.now();
+    });
+    
+    // Wait for auth to be ready
+    useEffect(() => {
+        if (context.authReady) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setAuthChecked(true);
+        }
+    }, [context.authReady]);
+    
+    // Check token expiration when token changes
+    useEffect(() => {
+        if (token) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                if (payload.exp && payload.exp * 1000 < currentDateRef.current) {
+                    // eslint-disable-next-line react-hooks/set-state-in-effect
+                    setTokenExpired(true);
+                }
+            } catch (e) {
+                console.log(e);
+                // eslint-disable-next-line react-hooks/set-state-in-effect
+                setTokenExpired(true);
+            }
+        }
+    }, [token]);
+
+    if (!authChecked) {
+        return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
     }
 
-    // Optional: decode token to check expiration
-    try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        if (payload.exp && payload.exp * 1000 < Date.now()) {
-            // Token expired
-            Cookies.remove('accessToken');
-            Cookies.remove('user');
-            Cookies.remove('isLogin');
-            return <Navigate to="/login" replace />;
-        }
-    } catch (e) {
-        // Invalid token
-        Cookies.remove('accessToken');
-        Cookies.remove('user');
-        Cookies.remove('isLogin');
+    // Check both cookie and context for auth state
+    const isAuthenticated = token || context.isLogin || context.accessToken;
+    
+    if (!isAuthenticated || tokenExpired) {
         return <Navigate to="/login" replace />;
     }
 
     // Check user role and onboarding status for seller routes
-    const userStr = Cookies.get('user');
-    if (!userStr) {
-        return <Navigate to="/login" replace />;
-    }
-
-    let user;
-    try {
-        user = JSON.parse(userStr);
-    } catch (e) {
-        Cookies.remove('user');
+    // Use context user if available, fallback to cookie
+    const user = context.user || (() => {
+        const userStr = Cookies.get('user');
+        if (!userStr) return null;
+        try {
+            return JSON.parse(userStr);
+        } catch (e) {
+            console.log(e)
+            Cookies.remove('user');
+            return null;
+        }
+    })();
+    
+    if (!user) {
         return <Navigate to="/login" replace />;
     }
 

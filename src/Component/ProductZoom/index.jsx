@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -7,6 +7,15 @@ import "swiper/css/thumbs";
 import { Navigation, Thumbs, FreeMode } from "swiper/modules";
 
 
+const getOptimizedImage = (url, width) => {
+    if (url?.includes("cloudinary")) {
+        const parts = url.split("/image/upload/");
+        if (parts.length === 2) {
+            return `${parts[0]}/image/upload/f_auto,q_auto,w_${width}/${parts[1]}`;
+        }
+    }
+    return url;
+};
 
 const ProductZoom = ({images}) => {
     const [zoomed, setZoomed] = useState(false);
@@ -19,6 +28,15 @@ const ProductZoom = ({images}) => {
         const y = ((e.clientY - top) / height) * 100;
         setPosition({ x, y });
     };
+
+    // Cleanup thumbsSwiper on unmount
+    useEffect(() => {
+        return () => {
+            if (thumbsSwiper && !thumbsSwiper.destroyed) {
+                thumbsSwiper.destroy();
+            }
+        };
+    }, [thumbsSwiper]);
 
     return (
         <div className="flex flex-col-reverse md:flex-row gap-3 w-full">
@@ -45,8 +63,12 @@ const ProductZoom = ({images}) => {
                         <SwiperSlide key={i}>
                             <div className="border-2 border-transparent in-[.swiper-slide-thumb-active]:border-red-400 rounded-md overflow-hidden cursor-pointer transition-all duration-200 w-full aspect-square">
                                 <img
-                                    src={img}
+                                    src={getOptimizedImage(img, 150)}
                                     alt={`Thumbnail ${i + 1}`}
+                                    loading="lazy"
+                                    decoding="async"
+                                    width={150}
+                                    height={150}
                                     className="w-full h-full object-cover"
                                 />
                             </div>
@@ -73,8 +95,12 @@ const ProductZoom = ({images}) => {
                                 onMouseMove={handleMouseMove}
                             >
                                 <img
-                                    src={img}
+                                    src={getOptimizedImage(img, 600)}
                                     alt={`Product ${i + 1}`}
+                                    loading="lazy"
+                                    decoding="async"
+                                    width={600}
+                                    height={600}
                                     className="w-full h-full object-cover"
                                     style={{
                                         transformOrigin: `${position.x}% ${position.y}%`,

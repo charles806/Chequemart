@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --accent-color: #ff5252;
   --background: #f5f0f0;
@@ -51,8 +53,22 @@ h6 {
 }
 
 .my-container {
-  width: 90%;
-  margin: auto;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .my-container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .my-container {
+    padding: 0 2rem;
+  }
 }
 
 header .top-strip {

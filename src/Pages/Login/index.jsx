@@ -11,6 +11,7 @@ import { login, googleLogin } from "../../api";
 const Login = () => {
   const [isShowPassword, setIsShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [validErrors, setValidErrors] = useState({});
   const [formFields, setFormFields] = useState({
     identifier: "",
     password: "",
@@ -21,6 +22,31 @@ const Login = () => {
 
   const handleChange = (e) => {
     setFormFields((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setValidErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+  };
+
+  const validateField = (name, value) => {
+    let error = "";
+    if (name === "identifier") {
+      if (!value.trim()) {
+        error = "Email or phone number is required";
+      } else if (value.includes("@")) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          error = "Enter a valid email address";
+        }
+      } else {
+        if (!/^(\+234|0)[789][01]\d{8}$/.test(value.replace(/\s/g, ""))) {
+          error = "Enter a valid phone number";
+        }
+      }
+    } else if (name === "password") {
+      if (!value) {
+        error = "Password is required";
+      } else if (value.length < 8) {
+        error = "Password must be at least 8 characters";
+      }
+    }
+    setValidErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async (e) => {
@@ -53,7 +79,8 @@ const Login = () => {
         }
       }
     } catch (err) {
-      context.openAlertBox?.("error", err.response?.data?.message || "Login failed. Please try again.");
+      const msg = err.response?.data?.message || err.message || "Login failed. Please try again.";
+      context.openAlertBox?.("error", msg);
     } finally {
       setIsLoading(false);
     }
@@ -79,6 +106,9 @@ const Login = () => {
                 className="w-full"
                 value={formFields.identifier}
                 onChange={handleChange}
+                onBlur={() => validateField("identifier", formFields.identifier)}
+                error={!!validErrors.identifier}
+                helperText={validErrors.identifier}
               />
             </div>
 
@@ -93,6 +123,9 @@ const Login = () => {
                 className="w-full pr-10"
                 value={formFields.password}
                 onChange={handleChange}
+                onBlur={() => validateField("password", formFields.password)}
+                error={!!validErrors.password}
+                helperText={validErrors.password}
               />
               <Button
                 type="button"

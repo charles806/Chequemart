@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link, useLocation, Outlet } from "react-router-dom";
-import { Toaster, toast } from "sonner";
+import { Toaster } from "sonner";
 
 // Pages
 import Home from "./Pages/Home";
@@ -30,6 +30,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Components
 import Header from "./Component/Header";
 import { Footer } from "./Component/Footer";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { useHotkey } from "./hooks/useHotkey";
 
 // Context
 import MyContextProvider, { MyContext } from "./MyContext";
@@ -49,8 +51,11 @@ const ScrollToTop = () => {
 const MarketplaceLayout = () => {
   return (
     <>
-      <Header />
-      <main className="pt-18 pb-12 lg:pt-0 lg:pb-0">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+      <div role="banner"><Header /></div>
+      <main id="main-content" className="pt-18 pb-12 lg:pt-0 lg:pb-0" role="main">
         <Outlet />
       </main>
       <Footer />
@@ -63,14 +68,18 @@ const App = () => {
     <BrowserRouter>
       <ScrollToTop />
       <MyContextProvider>
-        <AppContent />
+        <ErrorBoundary>
+          <AppContent />
+        </ErrorBoundary>
       </MyContextProvider>
     </BrowserRouter>
   );
 };
 
 const AppContent = () => {
-  const { cart, removeFromCart, updateCartQty, openAlertBox, openCartPanel, setOpenCartPanel } = React.useContext(MyContext);
+  const { cart, removeFromCart, updateCartQty, openCartPanel, setOpenCartPanel } = React.useContext(MyContext);
+  useHotkey("Escape", () => setOpenCartPanel(false));
+  useHotkey("?", () => alert("Keyboard Shortcuts:\n\nEsc - Close panels\nCtrl+K - Search (when focused)"));
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   const toggleCartPanel = (newOpen) => {
@@ -130,6 +139,7 @@ const AppContent = () => {
           <IoCloseSharp
             className="text-2xl cursor-pointer text-gray-500 hover:text-[#ff5252] transition"
             onClick={() => toggleCartPanel(false)}
+            aria-label="Close cart"
           />
         </div>
 
@@ -150,6 +160,8 @@ const AppContent = () => {
                   <img
                     src={item.image}
                     alt={item.name}
+                    width={80}
+                    height={80}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -165,8 +177,9 @@ const AppContent = () => {
 
                   <div className="flex items-center gap-2 mt-1">
                     <button
-                      className="w-6 h-6 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-[#ff5252] hover:text-[#ff5252] hover:bg-[#fff5f2] transition"
+                      className="w-11 h-11 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-[#ff5252] hover:text-[#ff5252] hover:bg-[#fff5f2] transition"
                       onClick={() => updateCartQty(item.id, Math.max(1, item.qty - 1))}
+                      aria-label={`Decrease quantity of ${item.name}`}
                     >
                       -
                     </button>
@@ -176,18 +189,22 @@ const AppContent = () => {
                     </span>
 
                     <button
-                      className="w-6 h-6 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-[#ff5252] hover:text-[#ff5252] hover:bg-[#fff5f2] transition"
+                      className="w-11 h-11 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-[#ff5252] hover:text-[#ff5252] hover:bg-[#fff5f2] transition"
                       onClick={() => updateCartQty(item.id, item.qty + 1)}
+                      aria-label={`Increase quantity of ${item.name}`}
                     >
                       +
                     </button>
                   </div>
                 </div>
 
-                <IoCloseSharp
+                <button
                   className="text-lg text-gray-400 cursor-pointer hover:text-red-500 transition"
                   onClick={() => removeFromCart(item.id)}
-                />
+                  aria-label={`Remove ${item.name} from cart`}
+                >
+                  <IoCloseSharp />
+                </button>
               </div>
             ))
           )}
@@ -203,16 +220,20 @@ const AppContent = () => {
           </div>
 
           <div className="flex flex-col gap-3">
-            <Link to="/checkout" onClick={() => toggleCartPanel(false)}>
-              <button className="w-full py-3 rounded-md font-semibold text-white bg-[#ff5252] hover:bg-accent hover:-translate-y-px hover:shadow-lg hover:shadow-orange-400/30 transition cursor-pointer">
-                Checkout
-              </button>
+            <Link
+              to="/checkout"
+              onClick={() => toggleCartPanel(false)}
+              className="w-full py-3 rounded-md font-semibold text-white bg-[#ff5252] hover:bg-accent hover:-translate-y-px hover:shadow-lg hover:shadow-orange-400/30 transition text-center"
+            >
+              Checkout
             </Link>
 
-            <Link to="/cart" onClick={() => toggleCartPanel(false)}>
-              <button className="w-full py-3 rounded-md font-semibold text-[#ff5252] border-2 border-[#ff5252] hover:bg-[#fff5f2] transition cursor-pointer">
-                View Cart
-              </button>
+            <Link
+              to="/cart"
+              onClick={() => toggleCartPanel(false)}
+              className="w-full py-3 rounded-md font-semibold text-[#ff5252] border-2 border-[#ff5252] hover:bg-[#fff5f2] transition text-center"
+            >
+              View Cart
             </Link>
           </div>
         </div>

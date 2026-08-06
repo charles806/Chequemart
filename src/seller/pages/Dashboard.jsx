@@ -21,7 +21,7 @@
  */
 
 import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
+import { authFetch } from "../../api";
 import Icon from "../components/ui/Icon";
 import StatusBadge from "../components/ui/StatusBadge";
 import { ICONS } from "../components/ui/icons";
@@ -32,7 +32,10 @@ import { Link } from "react-router-dom";
 // ─────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────
-const fmt = (n) => "₦" + Number(n).toLocaleString();
+const fmt = (n, fallback = 0) => {
+  const num = Number(n);
+  return "₦" + (isNaN(num) ? Number(fallback) : num).toLocaleString();
+};
 const fmtK = (n) => n >= 1000 ? `₦${(n / 1000).toFixed(0)}k` : `₦${n}`;
 
 // ─────────────────────────────────────────────────────────────
@@ -142,13 +145,10 @@ export default function DashboardPage() {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        const token = Cookies.get("accessToken");
-        const headers = { Authorization: `Bearer ${token}` };
-
         const [summaryRes, revenueRes, ordersRes] = await Promise.all([
-          fetch(`${import.meta.env.VITE_API_URL}/api/seller/analytics/summary`, { headers }),
-          fetch(`${import.meta.env.VITE_API_URL}/api/seller/analytics/revenue`, { headers }),
-          fetch(`${import.meta.env.VITE_API_URL}/api/seller/orders?limit=5`, { headers })
+          authFetch(`${import.meta.env.VITE_API_URL}/api/seller/analytics/summary`),
+          authFetch(`${import.meta.env.VITE_API_URL}/api/seller/analytics/revenue`),
+          authFetch(`${import.meta.env.VITE_API_URL}/api/seller/orders?limit=5`)
         ]);
 
         const [summaryData, revenueData, ordersData] = await Promise.all([

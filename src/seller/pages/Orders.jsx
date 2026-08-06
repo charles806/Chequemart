@@ -26,17 +26,18 @@
  * PAYMENT STATUS:
  *   - Unpaid: Cannot fulfill order
  *   - Paid: Can proceed with fulfillment
- *   ─────────────────────────────────────────────────────────────
+ * ─────────────────────────────────────────────────────────────
+ * TODO: For 1000+ orders, consider virtualizing with @tanstack/react-virtual
  */
 
 import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
+import { authFetch } from "../../api";
 import Icon from "../components/ui/Icon";
 import StatusBadge from "../components/ui/StatusBadge";
 import Toast, { useToast } from "../components/ui/Toast";
 import { ICONS } from "../components/ui/icons";
 import CircularProgress from "@mui/material/CircularProgress";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 const fmt = (n) => "₦" + Number(n).toLocaleString();
 
@@ -46,18 +47,18 @@ const TRANSITIONS = {
   processing: ["confirmed", "cancelled"],
   confirmed: ["shipped", "cancelled"],
   shipped: ["delivered"],
-  delivered: [],
+  delivered: ["collected"],
   collected: [],
   cancelled: [],
 };
 
 // Status transitions requiring payment to be paid first
-const REQUIRES_PAID = ["Processing", "Confirmed", "Shipped", "Delivered", "Collected"];
+const REQUIRES_PAID = ["confirmed", "shipped", "delivered", "collected"];
 
 // ─────────────────────────────────────────────────────────────
 // ORDER DETAIL DRAWER
 // ─────────────────────────────────────────────────────────────
-const OrderDetail = ({ order, onClose, onUpdateStatus }) => {
+const OrderDetail = ({ order, onClose, onUpdateStatus, onReleaseEscrow }) => {
   const transitions = TRANSITIONS[order.status] || [];
   const paymentStatus = order.paymentStatus === "paid" || order.isPaid ? "Paid" : "Unpaid";
   const isPaid = paymentStatus === "Paid";
@@ -155,13 +156,21 @@ const OrderDetail = ({ order, onClose, onUpdateStatus }) => {
             </div>
           </div>
 
-          {/* Collected — escrow note */}
+          {/* Collected — escrow release */}
           {order.status === "Collected" && (
             <div className="flex gap-2.5 bg-green-50 border border-green-100 rounded-xl p-3">
               <Icon d={ICONS.check} size={15} className="text-green-500 flex-shrink-0 mt-0.5 stroke-[3]" />
-              <p className="text-xs text-gray-500 leading-relaxed">
-                Order collected. Escrow funds release within 7 days or automatically.
-              </p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  Order collected. Funds should be released to your wallet automatically.
+                </p>
+                <button
+                  onClick={() => { onReleaseEscrow(order._id); onClose(); }}
+                  className="mt-2 px-3 py-1.5 rounded-lg bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition cursor-pointer"
+                >
+                  Release Escrow Now
+                </button>
+              </div>
             </div>
           )}
 
@@ -207,8 +216,10 @@ const OrderDetail = ({ order, onClose, onUpdateStatus }) => {
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [searchParams, setSearchParams] = useSearchParams();
   const [paymentFilter, setPaymentFilter] = useState("All");
+  const statusFilter = searchParams.get("status") || "All";
+  const page = parseInt(searchParams.get("page") || "1", 10);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
   const { toast, showToast } = useToast();
@@ -216,10 +227,7 @@ export default function OrdersPage() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const token = Cookies.get("accessToken");
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/seller/orders?status=all&limit=50`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/seller/orders?status=all&limit=50`);
       const data = await res.json();
       if (data.success) {
         setOrders(data.orders);
@@ -237,13 +245,8 @@ export default function OrdersPage() {
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
-      const token = Cookies.get("accessToken");
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/seller/orders/${orderId}/status`, {
+      const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/seller/orders/${orderId}/status`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
         body: JSON.stringify({ status: newStatus })
       });
 
@@ -253,6 +256,23 @@ export default function OrdersPage() {
       }
     } catch (error) {
       showToast("Failed to update status");
+    }
+  };
+
+  const handleReleaseEscrow = async (orderId) => {
+    try {
+      const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/seller/orders/${orderId}/release-escrow`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast("✅ Escrow released — funds added to available balance");
+        fetchOrders();
+      } else {
+        showToast("❌ " + (data.message || "Failed to release escrow"));
+      }
+    } catch (error) {
+      showToast("❌ " + (error.message || "Failed to release escrow"));
     }
   };
 
@@ -278,9 +298,25 @@ export default function OrdersPage() {
     <div className="space-y-4">
 
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-black text-gray-900">Orders</h1>
-        <p className="text-xs text-gray-400">{orders.length} total orders</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-black text-gray-900">Orders</h1>
+          <p className="text-xs text-gray-400">{orders.length} total orders</p>
+        </div>
+        <button
+          onClick={() => window.print()}
+          className="print:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition cursor-pointer"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print
+        </button>
+      </div>
+
+      {/* Print-only header */}
+      <div className="hidden print:block mb-6 pb-4 border-b-2 border-gray-300">
+        <h2 className="text-2xl font-bold text-gray-900">ChequeMart</h2>
+        <p className="text-sm text-gray-500">Seller Orders Report</p>
+        <p className="text-xs text-gray-400">{new Date().toLocaleDateString()}</p>
       </div>
 
       {/* Stats strip */}
@@ -345,7 +381,12 @@ export default function OrdersPage() {
         {STATUS_FILTERS.map((f) => (
           <button
             key={f}
-            onClick={() => setStatusFilter(f)}
+            onClick={() => {
+              const next = new URLSearchParams(searchParams);
+              if (f === "All") next.delete("status");
+              else next.set("status", f);
+              setSearchParams(next, { replace: true });
+            }}
             className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0
               transition cursor-pointer
               ${statusFilter === f
@@ -376,57 +417,59 @@ export default function OrdersPage() {
       </div>
 
       {/* Orders list */}
-      <div className="space-y-2 min-h-[300px]">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <CircularProgress size={30} className="text-[#ff5252]" />
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-14 bg-white rounded-2xl border border-gray-100 text-gray-400">
-            <Icon d={ICONS.orders} size={36} className="mx-auto mb-2 opacity-20" />
-            <p className="text-sm font-semibold">No orders found</p>
-          </div>
-        ) : (
-          filtered.map((order) => {
-            const paymentStatus = getPaymentStatus(order);
-            const isPaid = paymentStatus === "Paid";
+      <div className="overflow-x-auto">
+        <div className="space-y-2 min-h-[300px]">
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <CircularProgress size={30} className="text-[#ff5252]" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-14 bg-white rounded-2xl border border-gray-100 text-gray-400">
+              <Icon d={ICONS.orders} size={36} className="mx-auto mb-2 opacity-20" />
+              <p className="text-sm font-semibold">No orders found</p>
+            </div>
+          ) : (
+            filtered.map((order) => {
+              const paymentStatus = getPaymentStatus(order);
+              const isPaid = paymentStatus === "Paid";
 
-            return (
-              <div
-                key={order._id}
-                onClick={() => setSelected(order)}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 hover:shadow-md hover:border-gray-200 transition-all cursor-pointer"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[#ff5252]/8 flex items-center justify-center flex-shrink-0">
-                  <Icon d={ICONS.truck} size={18} className="text-[#ff5252]" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                    <p className="text-sm font-bold text-gray-900 truncate">
-                      {order.products.map(p => p.name).join(", ")}
-                    </p>
-                    <StatusBadge status={order.status} />
-                    <StatusBadge status={paymentStatus} category="payment" />
+              return (
+                <div
+                  key={order._id}
+                  onClick={() => setSelected(order)}
+                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 hover:shadow-md hover:border-gray-200 transition-all cursor-pointer"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-[#ff5252]/8 flex items-center justify-center flex-shrink-0">
+                    <Icon d={ICONS.truck} size={18} className="text-[#ff5252]" />
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-400">
-                    <span className="font-mono uppercase tracking-tighter">#{order._id.slice(-6)}</span>
-                    <span>{order.buyer?.name || "Customer"}</span>
-                    <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <p className="text-sm font-bold text-gray-900 truncate">
+                        {order.products.map(p => p.name).join(", ")}
+                      </p>
+                      <StatusBadge status={order.status} />
+                      <StatusBadge status={paymentStatus} category="payment" />
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-gray-400">
+                      <span className="font-mono uppercase tracking-tighter">#{order._id.slice(-6)}</span>
+                      <span>{order.buyer?.name || "Customer"}</span>
+                      <span>{new Date(order.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-black text-gray-900">{fmt(order.totalAmount || order.amount)}</p>
+                    {order.trackingNumber && (
+                      <p className="text-[10px] text-blue-400 font-medium mt-0.5">{order.trackingNumber}</p>
+                    )}
+                    {!isPaid && (
+                      <p className="text-[10px] text-red-400 font-medium mt-0.5">Unpaid</p>
+                    )}
                   </div>
                 </div>
-                <div className="text-right flex-shrink-0">
-                  <p className="text-sm font-black text-gray-900">{fmt(order.totalAmount || order.amount)}</p>
-                  {order.trackingNumber && (
-                    <p className="text-[10px] text-blue-400 font-medium mt-0.5">{order.trackingNumber}</p>
-                  )}
-                  {!isPaid && (
-                    <p className="text-[10px] text-red-400 font-medium mt-0.5">Unpaid</p>
-                  )}
-                </div>
-              </div>
-            );
-          })
-        )}
+              );
+            })
+          )}
+        </div>
       </div>
 
       {selected && (
@@ -434,6 +477,7 @@ export default function OrdersPage() {
           order={selected}
           onClose={() => setSelected(null)}
           onUpdateStatus={handleUpdateStatus}
+          onReleaseEscrow={handleReleaseEscrow}
         />
       )}
 

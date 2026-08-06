@@ -30,7 +30,6 @@ const STYLES = {
   // Payment Status
   Paid:       "bg-green-100  text-green-700  border-green-200",
   Unpaid:     "bg-red-100    text-red-600    border-red-200",
-  Pending:    "bg-yellow-100 text-yellow-700 border-yellow-200",
 
   // Products
   Active:      "bg-green-100  text-green-700  border-green-200",
@@ -50,6 +49,12 @@ const STYLES = {
   failed:     "bg-red-100    text-red-600    border-red-200",
 };
 
+const PAYMENT_ICONS = {
+  Paid:    "✓",
+  Unpaid:  "✕",
+  Pending: "◷",
+};
+
 // Human-readable labels
 const LABELS = {
   Collected:  "Collected",
@@ -59,7 +64,6 @@ const LABELS = {
   refunded:   "Refunded",
 };
 
-// Status categories for proper display
 const CATEGORY = {
   // Order statuses
   Pending:    "order",
@@ -72,7 +76,6 @@ const CATEGORY = {
   // Payment statuses
   Paid:      "payment",
   Unpaid:    "payment",
-  Pending:   "payment",
   // Products
   Active:    "product",
   "Low Stock": "product",
@@ -93,13 +96,7 @@ const StatusBadge = ({ status, category }) => {
   const style = STYLES[status] || "bg-gray-100 text-gray-500 border-gray-200";
   const label = LABELS[status] || status;
   const inferredCategory = category || CATEGORY[status] || "default";
-
-  // For payment status, show a small icon indicator
-  const paymentIcon = {
-    Paid:    "✓",
-    Unpaid:  "✕",
-    Pending: "◷",
-  }[status];
+  const paymentIcon = PAYMENT_ICONS[status];
 
   return (
     <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${style}`}>

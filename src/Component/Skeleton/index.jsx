@@ -35,7 +35,7 @@ const SkeletonBanner = () => (
 const SkeletonText = ({ lines = 2 }) => (
   <div className="space-y-2">
     {[...Array(lines)].map((_, i) => (
-      <div key={i} className="h-3 bg-gray-200 rounded" style={{ width: `${Math.random() * 40 + 60}%` }} />
+      <div key={i} className="h-3 bg-gray-200 rounded" style={{ width: `${60 + (i * 17) % 40}%` }} />
     ))}
   </div>
 );

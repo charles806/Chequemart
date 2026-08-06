@@ -16,30 +16,45 @@ import { QtyBox } from "../../Component/QtyBox";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import { FaRegHeart } from "react-icons/fa";
 import { IoGitCompareOutline } from "react-icons/io5";
+import ErrorMessage from "../../components/ErrorMessage";
 const ProductDetail = () => {
     const { id } = useParams();
-    const { addToCart, setOpenCartPanel, user } = useContext(MyContext);
+    const { addToCart, setOpenCartPanel, user, addToWishlist, removeFromWishlist, wishlist } = useContext(MyContext);
     
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [qty, setQty] = useState(1);
     const [productActionIndex, setProductActionIndex] = useState(null);
     const [activeTab, setActiveTab] = useState(0);
+    const [error, setError] = useState(null);
+    const [compareItems, setCompareItems] = useState([]);
 
     useEffect(() => {
-        const fetchProduct = async () => {
-            try {
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`);
-                const data = await res.json();
-                if (data.success) {
-                    setProduct(data.data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch product:", error);
-            } finally {
-                setLoading(false);
+        const saved = localStorage.getItem('compareItems');
+        if (saved) setCompareItems(JSON.parse(saved));
+    }, []);
+
+    const isInCompare = compareItems.some(p => p.id === product?._id);
+    const isInWishlist = wishlist.some(item => item.id === product?._id);
+
+    const fetchProduct = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`);
+            const data = await res.json();
+            if (data.success) {
+                setProduct(data.data);
             }
-        };
+        } catch (error) {
+            console.error("Failed to fetch product:", error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchProduct();
     }, [id]);
 
@@ -71,8 +86,49 @@ const ProductDetail = () => {
         setOpenCartPanel(true);
     };
 
+    const handleCompare = () => {
+        if (!product) return;
+        const current = JSON.parse(localStorage.getItem('compareItems') || '[]');
+        const exists = current.find(p => p.id === product._id);
+        if (exists) {
+            const updated = current.filter(p => p.id !== product._id);
+            localStorage.setItem('compareItems', JSON.stringify(updated));
+            setCompareItems(updated);
+            toast.info("Removed from compare");
+        } else {
+            if (current.length >= 4) {
+                toast.error("Compare max 4 products");
+                return;
+            }
+            const updated = [...current, { id: product._id, name: product.name, price: product.price, image: product.images?.[0], brand: product.seller?.storeName || 'Vendor' }];
+            localStorage.setItem('compareItems', JSON.stringify(updated));
+            setCompareItems(updated);
+            toast.success("Added to compare");
+        }
+    };
+
+    const handleWishlist = () => {
+        if (!product) return;
+        if (!user) {
+            toast.error("Please login to add to wishlist!", {
+                icon: '⚠️',
+                style: { background: '#eab308', color: '#fff' }
+            });
+            return;
+        }
+        if (isInWishlist) {
+            removeFromWishlist(product._id);
+        } else {
+            addToWishlist(product._id);
+        }
+    };
+
     if (loading) {
         return <SkeletonProductDetail />;
+    }
+
+    if (error) {
+        return <ErrorMessage message={error} onRetry={fetchProduct} fullPage />;
     }
 
     if (!product) {
@@ -122,19 +178,19 @@ const ProductDetail = () => {
                         {product.description}
                     </p>
 
-                    {/* SIZE (Optional) */}
+{/* SIZE (Optional) */}
                     {product.category === "Fashion" && (
                         <div className="flex flex-wrap items-center gap-3">
                             <span className="text-[15px]">Size:</span>
                             <div className="flex flex-wrap items-center gap-2 actions">
-                                {["S", "M", "L"].map((size, i) => (
+                                {["S", "M", "L"].map((size) => (
                                     <Button
-                                        key={i}
-                                        className={`${productActionIndex === i
+                                        key={size}
+                                        className={`${productActionIndex === size
                                             ? 'bg-[#ff5252]! text-white!'
                                             : 'min-w-7.5! border! border-[rgba(0,0,0,0.1)]! text-black! bg-white!'
                                             }`}
-                                        onClick={() => setProductActionIndex(i)}
+                                        onClick={() => setProductActionIndex(size)}
                                     >
                                         {size}
                                     </Button>
@@ -160,11 +216,17 @@ const ProductDetail = () => {
 
                     {/* WISHLIST */}
                     <div className="flex flex-wrap items-center gap-4 mt-5">
-                        <span className="text-[15px] flex items-center gap-2 link cursor-pointer text-gray-500 hover:text-[#ff5252] transition">
-                            Add to Wishlist <FaRegHeart />
+                        <span
+                            onClick={handleWishlist}
+                            className={`text-[15px] flex items-center gap-2 link cursor-pointer transition ${isInWishlist ? 'text-[#ff5252]' : 'text-gray-500 hover:text-[#ff5252]'}`}
+                        >
+                            {isInWishlist ? 'Remove from Wishlist' : 'Add to Wishlist'} <FaRegHeart className={isInWishlist ? 'text-[#ff5252]' : ''} />
                         </span>
-                        <span className="text-[15px] flex items-center gap-2 link cursor-pointer text-gray-500 hover:text-[#ff5252] transition">
-                            Add to Compare <IoGitCompareOutline />
+                        <span
+                            onClick={handleCompare}
+                            className={`text-[15px] flex items-center gap-2 link cursor-pointer transition ${isInCompare ? 'text-[#ff5252]' : 'text-gray-500 hover:text-[#ff5252]'}`}
+                        >
+                            {isInCompare ? 'Remove from Compare' : 'Add to Compare'} <IoGitCompareOutline className={isInCompare ? 'text-[#ff5252]' : ''} />
                         </span>
                     </div>
                 </div>

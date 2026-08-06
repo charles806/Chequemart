@@ -1,4 +1,6 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
+import { useDebounce } from "../../hooks/useDebounce";
+import CircularProgress from "@mui/material/CircularProgress";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 //Images
@@ -64,17 +66,29 @@ const Header = () => {
   };
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
+  const debouncedSearch = useDebounce(searchInput, 300);
+
+  // Search effect - only navigate, don't set loading here
+  useEffect(() => {
+    if (debouncedSearch.trim().length >= 2) {
+      navigate(`/products?search=${encodeURIComponent(debouncedSearch.trim())}`);
+      // Navigate away - search panel will close on unmount/route change
+    }
+  }, [debouncedSearch, navigate]);
 
   const handleSearch = (e) => {
     if (e.key === "Enter" || e.type === "click") {
-      if (searchQuery.trim()) {
-        navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      if (searchInput.trim()) {
+        setSearchLoading(true);
+        navigate(`/products?search=${encodeURIComponent(searchInput.trim())}`);
         setIsSearchOpen(false);
+        // Reset loading after navigation
+        setTimeout(() => setSearchLoading(false), 300);
       }
     }
   };
-
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
@@ -127,19 +141,22 @@ const Header = () => {
             </Link>
           </div>
 
-          <div className="col2 hidden lg:block lg:w-[30%] lg:shrink-0!">
+<div className="col2 hidden lg:block lg:w-[30%] lg:shrink-0!">
             <div className="searchBox w-full h-12.5 bg-[#e5e5e5] rounded-[5px] relative p-2">
+              <label htmlFor="header-search" className="sr-only">Search products</label>
               <input
+                id="header-search"
                 type="text"
                 placeholder="Search for products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={handleSearch}
                 className="w-full h-8.75 focus:outline-none bg-inherit p-2 text-[15px]"
+                aria-label="Search products"
               />
 
-              <Button onClick={handleSearch} className="absolute! top-2 right-1.25 z-50 w-9.25! min-w-9.25! h-9.25 rounded-full! text-black!">
-                <CiSearch className="text-[#000000] text-[22px] font-bold" />
+              <Button onClick={handleSearch} className="absolute! top-2 right-1.25 z-50 w-9.25! min-w-9.25! h-9.25 rounded-full! text-black!" aria-label="Search">
+                {searchLoading ? <CircularProgress size={18} /> : <CiSearch className="text-[#000000] text-[22px] font-bold" />}
               </Button>
             </div>
           </div>
@@ -246,7 +263,7 @@ const Header = () => {
               </li>
 
               <li className="list-none hidden lg:block">
-                <IconButton aria-label="cart">
+                <IconButton aria-label="compare products">
                   <StyledBadge badgeContent={4} color="secondary">
                     <DiGitCompare className="text-[22px] lg:text-[26px] text-black" />
                   </StyledBadge>
@@ -254,7 +271,7 @@ const Header = () => {
               </li>
 
               <li className="list-none hidden lg:block">
-                <IconButton aria-label="cart">
+                <IconButton aria-label="wishlist">
                   <StyledBadge badgeContent={4} color="secondary">
                     <FaRegHeart className="text-[22px] lg:text-[26px] text-black" />
                   </StyledBadge>
@@ -269,63 +286,79 @@ const Header = () => {
       {isSearchOpen && (
         <div className="lg:hidden p-3 bg-white border-b border-black/10">
           <div className="searchBox w-full h-11 bg-[#f0f0f0] rounded-md relative flex items-center px-3">
+            <label htmlFor="mobile-search" className="sr-only">Search products</label>
             <input
+              id="mobile-search"
               type="text"
               placeholder="Search for products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={handleSearch}
               className="w-full h-full focus:outline-none bg-inherit text-[14px]"
+              aria-label="Search products"
             />
-            <Button onClick={handleSearch} className="min-w-10! w-10! h-10! rounded-full! text-black!">
-              <CiSearch className="text-[20px]" />
+            <Button onClick={handleSearch} className="min-w-10! w-10! h-10! rounded-full! text-black!" aria-label="Submit search">
+              {searchLoading ? <CircularProgress size={18} /> : <CiSearch className="text-[20px]" />}
             </Button>
           </div>
         </div>
       )}
 
-      <div className="hidden lg:block border-b border-black/10">
+      <div className="hidden md:block border-b border-black/10">
         <Navigation />
       </div>
 
       {/* Bottom Nav - Fixed mobile bottom navigation */}
-      <div className="mobileNav lg:hidden" style={{ backgroundColor: 'white', padding: '0.5rem 0.25rem max(0.5rem, env(safe-area-inset-bottom, 0.5rem))', width: '100%', display: 'flex', justifyContent: 'space-between', position: 'fixed', bottom: 0, left: 0, zIndex: 51, boxShadow: '0 -1px 3px rgba(0,0,0,0.08)' }}>
-        <Link to="/" style={{ flex: 1 }}>
-          <button type="button" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0.375rem 0.25rem', border: 'none', background: 'none', cursor: 'pointer' }}>
-            <IoIosHome style={{ fontSize: 22, color: '#000' }} />
-            <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>Home</span>
-          </button>
+      <div className="mobileNav flex lg:hidden" aria-label="Main navigation" style={{ backgroundColor: 'white', padding: '0.5rem 0.25rem max(0.5rem, env(safe-area-inset-bottom, 0.5rem))', width: '100%', justifyContent: 'space-between', position: 'fixed', bottom: 0, left: 0, zIndex: 51, boxShadow: '0 -1px 3px rgba(0,0,0,0.08)' }}>
+        <Link
+          to="/"
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.375rem 0.25rem', textDecoration: 'none', color: '#000' }}
+          aria-label="Home"
+        >
+          <IoIosHome style={{ fontSize: 22, color: '#000' }} aria-hidden="true" />
+          <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>Home</span>
         </Link>
 
-        <button type="button" className="nav-btn" onClick={toggleSearch} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.375rem 0.25rem', border: 'none', background: 'none', cursor: 'pointer' }}>
-          <CiSearch style={{ fontSize: 22, color: '#000' }} />
+        <button
+          type="button"
+          onClick={toggleSearch}
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.375rem 0.25rem', border: 'none', background: 'none', cursor: 'pointer' }}
+          aria-label="Search"
+        >
+          <CiSearch style={{ fontSize: 22, color: '#000' }} aria-hidden="true" />
           <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>Search</span>
         </button>
 
-        <Link to="/my-list" style={{ flex: 1 }}>
-          <button type="button" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0.375rem 0.25rem', border: 'none', background: 'none', cursor: 'pointer' }}>
-            <FaRegHeart style={{ fontSize: 22, color: '#000' }} />
-            <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>List</span>
-          </button>
+        <Link
+          to="/my-list"
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.375rem 0.25rem', textDecoration: 'none', color: '#000' }}
+          aria-label="My List"
+        >
+          <FaRegHeart style={{ fontSize: 22, color: '#000' }} aria-hidden="true" />
+          <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>List</span>
         </Link>
 
-        <Link to="/cart" style={{ flex: 1 }}>
-          <button type="button" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0.375rem 0.25rem', border: 'none', background: 'none', cursor: 'pointer', position: 'relative' }}>
-            <MdOutlineShoppingCart style={{ fontSize: 22, color: '#000' }} />
-            {context.cart.length > 0 && (
-              <span style={{ position: 'absolute', top: -2, right: 'calc(50% - 14px)', backgroundColor: '#ff5252', color: 'white', fontSize: 9, fontWeight: 700, width: 16, height: 16, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {context.cart.length > 9 ? '9+' : context.cart.length}
-              </span>
-            )}
-            <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>Cart</span>
-          </button>
+        <Link
+          to="/cart"
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.375rem 0.25rem', textDecoration: 'none', color: '#000', position: 'relative' }}
+          aria-label="Shopping Cart"
+        >
+          <MdOutlineShoppingCart style={{ fontSize: 22, color: '#000' }} aria-hidden="true" />
+          {context.cart.length > 0 && (
+            <span style={{ position: 'absolute', top: -2, right: 'calc(50% - 14px)', backgroundColor: '#ff5252', color: 'white', fontSize: 9, fontWeight: 700, width: 16, height: 16, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {context.cart.length > 9 ? '9+' : context.cart.length}
+            </span>
+          )}
+          <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>Cart</span>
         </Link>
 
-        <Link to="/account" style={{ flex: 1 }}>
-          <button type="button" className="nav-btn" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0.375rem 0.25rem', border: 'none', background: 'none', cursor: 'pointer' }}>
-            <FaRegUser style={{ fontSize: 22, color: '#000' }} />
-            <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>Account</span>
-          </button>
+        <Link
+          to="/account"
+          style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0.375rem 0.25rem', textDecoration: 'none', color: '#000' }}
+          aria-label="Account"
+        >
+          <FaRegUser style={{ fontSize: 22, color: '#000' }} aria-hidden="true" />
+          <span style={{ fontSize: 10, marginTop: 2, color: '#000', fontWeight: 500 }}>Account</span>
         </Link>
       </div>
 

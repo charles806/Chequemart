@@ -1,14 +1,14 @@
-import React, { useState, useContext, useEffect } from 'react'
+import React, { useState, useContext, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 //UI
 import Button from '@mui/material/Button';
 import Rating from '@mui/material/Rating';
+import CircularProgress from '@mui/material/CircularProgress';
 //Icons
 import { DiGitCompare } from "react-icons/di";
 import { FaRegHeart } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa";
 import { MdOutlineShoppingCart } from "react-icons/md";
-import productImg1 from '../../assets/image/product1.jpg';
 
 import { MyContext } from '../../MyContext';
 import { toast } from "sonner";
@@ -30,11 +30,13 @@ const ProductItem = ({ product }) => {
     const [value, setValue] = useState(rating);
     const [isInWishlist, setIsInWishlist] = useState(false);
     const [compareItems, setCompareItems] = useState([]);
+    const [isAddingToCart, setIsAddingToCart] = useState(false);
 
+    // Use useMemo for derived state to avoid useEffect
+    const wishlistCheck = useMemo(() => wishlist.some(item => item.id === id), [wishlist, id]);
     useEffect(() => {
-        const checkWishlist = wishlist.some(item => item.id === id);
-        setIsInWishlist(checkWishlist);
-    }, [wishlist, id]);
+        setIsInWishlist(wishlistCheck);
+    }, [wishlistCheck]);
 
     useEffect(() => {
         const saved = localStorage.getItem('compareItems');
@@ -58,6 +60,7 @@ const ProductItem = ({ product }) => {
             return;
         }
 
+        setIsAddingToCart(true);
         addToCart({
             id,
             name,
@@ -70,6 +73,9 @@ const ProductItem = ({ product }) => {
         });
         toast.success(`${name} added to cart!`);
         setOpenCartPanel(true);
+        
+        // Reset loading state after a short delay
+        setTimeout(() => setIsAddingToCart(false), 500);
     };
 
     const handleWishlist = (e) => {
@@ -104,6 +110,7 @@ const ProductItem = ({ product }) => {
         if (exists) {
             const updated = current.filter(p => p.id !== id);
             localStorage.setItem('compareItems', JSON.stringify(updated));
+            setCompareItems(updated);
             toast.info("Removed from compare");
         } else {
             if (current.length >= 4) {
@@ -112,6 +119,7 @@ const ProductItem = ({ product }) => {
             }
             const updated = [...current, { id, name, price, image, brand }];
             localStorage.setItem('compareItems', JSON.stringify(updated));
+            setCompareItems(updated);
             toast.success("Added to compare");
         }
     };
@@ -123,7 +131,7 @@ const ProductItem = ({ product }) => {
             <div className="group imgWrapper w-full overflow-hidden rounded-t-xl relative">
                 <Link to={`/products/${id}`}>
                     <div className="img h-48 sm:h-52 md:h-56 overflow-hidden bg-gray-100">
-                        {image && <img src={image} alt={name} className='w-full h-full object-cover' style={{ transition: 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)' }} />}
+                        {image && <img src={image} alt={name} loading="lazy" decoding="async" width={300} height={300} className='w-full h-full object-cover' />}
                     </div>
                 </Link>
                 {discount > 0 && (
@@ -131,37 +139,25 @@ const ProductItem = ({ product }) => {
                         -{discount}%
                     </span>
                 )}
-                <div className="actions absolute -top-5 right-2 z-50 flex items-center gap-2 flex-col w-12.5" style={{ transition: 'transform 0.3s cubic-bezier(0.23, 1, 0.32, 1)' }}>
+                <div className="actions absolute -top-5 right-2 z-50 flex items-center gap-2 flex-col w-12.5">
                     <Button 
                         onClick={handleCompare} 
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.1)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scale(1)';
-                        }}
                         className={`w-9! h-9! min-w-9! rounded-full! bg-white! text-black hover:bg-[#ff5252]! hover:text-white! shadow-lg! ${isInCompare ? '!bg-[#ff5252] !text-white' : ''}`}
-                        style={{ transition: 'transform 0.16s ease-out, background-color 0.2s ease-out, color 0.2s ease-out' }}
+                        aria-label={isInCompare ? `Remove ${name} from compare` : `Add ${name} to compare`}
                     >
                         <DiGitCompare className='text-[18px] text-black!' />
                     </Button>
                     <Button 
                         onClick={handleWishlist} 
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = 'scale(1.1)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scale(1)';
-                        }}
                         className={`w-9! h-9! min-w-9! rounded-full! bg-white! text-black hover:bg-[#ff5252]! hover:text-white! shadow-lg! ${isInWishlist ? '!bg-[#ff5252] !text-white' : ''}`}
-                        style={{ transition: 'transform 0.16s ease-out, background-color 0.2s ease-out, color 0.2s ease-out' }}
+                        aria-label={isInWishlist ? `Remove ${name} from wishlist` : `Add ${name} to wishlist`}
                     >
                         {isInWishlist ? <FaHeart className='text-[18px] text-white!' /> : <FaRegHeart className='text-[18px] text-black!' />}
                     </Button>
                 </div>
             </div>
 
-            <div className="info p-3 py-4 relative h-auto min-h-[180px] flex flex-col" style={{ transition: 'box-shadow 0.3s cubic-bezier(0.23, 1, 0.32, 1)' }}>
+            <div className="info p-3 py-4 relative h-auto min-h-[180px] flex flex-col">
                 <h6 className='text-[12px] font-medium text-gray-500 uppercase tracking-wide mb-1'>
                     {brand}
                 </h6>
@@ -195,20 +191,20 @@ const ProductItem = ({ product }) => {
                 <div className="w-full">
                     <Button 
                         onClick={handleAddToCart}
-                        onMouseDown={(e) => {
-                            e.currentTarget.style.transform = 'scale(0.97)';
-                        }}
-                        onMouseUp={(e) => {
-                            e.currentTarget.style.transform = 'scale(1)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = 'scale(1)';
-                        }}
+                        disabled={isAddingToCart}
                         className='bg-gradient-to-r from-[#ff5252] to-[#ff7b7b]! text-white! flex w-full items-center justify-center gap-2 py-2! rounded-lg! shadow-md! font-medium! text-[13px]! sm:text-[14px]!'
-                        style={{ transition: 'transform 0.16s ease-out, box-shadow 0.2s ease-out' }}
                     >
-                        <MdOutlineShoppingCart className='text-[18px]' />
-                        Add to Cart
+                        {isAddingToCart ? (
+                          <>
+                            <CircularProgress size={18} color="inherit" />
+                            Adding...
+                          </>
+                        ) : (
+                          <>
+                            <MdOutlineShoppingCart className='text-[18px]' />
+                            Add to Cart
+                          </>
+                        )}
                     </Button>
                 </div>
             </div>

@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "prettier --write \"src/**/*.{js,jsx}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx}\""
   },
   "dependencies": {
     "@cloudinary/react": "^1.14.4",
@@ -16,6 +18,8 @@
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.7",
+    "@sentry/react": "^10.65.0",
+    "@sentry/tracing": "^7.120.4",
     "@tailwindcss/vite": "^4.1.18",
     "@types/react-image-magnify": "^2.7.4",
     "@vercel/analytics": "^2.0.1",
@@ -33,6 +37,9 @@
     "swiper": "^12.1.0",
     "tailwindcss": "^4.1.18"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/react": "^19.2.5",
@@ -42,6 +49,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "prettier": "^3.4.2",
     "vite": "^7.2.4"
   }
 }

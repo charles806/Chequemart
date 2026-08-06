@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { IoCloseSharp, IoBagCheckOutline } from "react-icons/io5";
 import { GoTriangleDown } from "react-icons/go";
-import { Rating, Button, Menu, MenuItem } from "@mui/material";
+import { Rating, Button, Menu, MenuItem, TextField, InputLabel, Select } from "@mui/material";
 import { MyContext } from "../../MyContext";
 
 const SIZES = ["S", "M", "L", "XL"];
@@ -44,6 +44,12 @@ const Cart = () => {
         0
     );
 
+    // Handle image error fallback
+    const handleImageError = (e) => {
+        e.target.src = "https://via.placeholder.com/100x100?text=No+Image";
+        e.target.onerror = null;
+    };
+
     return (
         <section className="py-10">
             <div className="my-container max-w-300 mx-auto flex flex-col md:flex-row gap-5 px-3">
@@ -77,14 +83,24 @@ const Cart = () => {
                                 className="cartItem w-full p-3 flex flex-col sm:flex-row items-center gap-4 pb-5 border-b border-[rgba(0,0,0,0.1)]"
                             >
                                 <div className="w-full sm:w-[20%]">
-                                    <img src={item.image} alt={item.name} className="w-full" />
+                                    <img 
+                                        src={item.image} 
+                                        alt={item.name} 
+                                        className="w-full h-auto"
+                                        width={80}
+                                        height={80}
+                                        onError={handleImageError}
+                                    />
                                 </div>
 
                                 <div className="w-full sm:w-[80%] relative">
-                                    <IoCloseSharp
+                                    <button
                                         className="cursor-pointer absolute top-0 right-0 text-[22px]"
                                         onClick={() => removeFromCart(item.id)}
-                                    />
+                                        aria-label={`Remove ${item.name} from cart`}
+                                    >
+                                        <IoCloseSharp />
+                                    </button>
 
                                     <span className="text-[13px]">{item.brand}</span>
 
@@ -96,21 +112,41 @@ const Cart = () => {
 
                                     <div className="flex items-center gap-4 mt-2">
 
-                                        {/* SIZE */}
-                                        <span
-                                            onClick={(e) => openMenu(e, "size", item.id)}
-                                            className="flex items-center bg-[#f1f1f1] text-[12px] font-semibold py-1 px-2 rounded-md cursor-pointer"
-                                        >
-                                            Size: {item.size || "M"} <GoTriangleDown />
-                                        </span>
+                                        {/* SIZE - Using native select for accessibility */}
+                                        <div>
+                                            <InputLabel id="size-label" shrink>Size</InputLabel>
+                                            <Select
+                                                value={item.size || "M"}
+                                                label="Size"
+                                                labelId="size-label"
+                                                className="bg-[#f1f1f1] text-[12px] font-semibold py-1 px-2 rounded-md cursor-pointer"
+                                                onChange={(e) => {/* Size update not implemented */}}
+                                            >
+                                                {SIZES.map((size) => (
+                                                    <MenuItem key={size} value={size}>
+                                                        {size}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </div>
 
-                                        {/* QTY */}
-                                        <span
-                                            onClick={(e) => openMenu(e, "qty", item.id)}
-                                            className="flex items-center bg-[#f1f1f1] text-[12px] font-semibold py-1 px-2 rounded-md cursor-pointer"
-                                        >
-                                            Qty: {item.qty} <GoTriangleDown />
-                                        </span>
+                                        {/* QTY - Using native select for accessibility */}
+                                        <div>
+                                            <InputLabel id="qty-label" shrink>Quantity</InputLabel>
+                                            <Select
+                                                value={item.qty}
+                                                label="Quantity"
+                                                labelId="qty-label"
+                                                className="bg-[#f1f1f1] text-[12px] font-semibold py-1 px-2 rounded-md cursor-pointer"
+                                                onChange={(e) => updateCartQty(item.id, parseInt(e.target.value))}
+                                            >
+                                                {QTY_OPTIONS.map((qty) => (
+                                                    <MenuItem key={qty} value={qty}>
+                                                        {qty}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </div>
 
                                     </div>
 
@@ -176,23 +212,6 @@ const Cart = () => {
                     </div>
                 </div>
             </div>
-
-            {/* MENU */}
-            <Menu anchorEl={anchorEl} open={open} onClose={closeMenu}>
-                {menuType === "size" &&
-                    SIZES.map((size) => (
-                        <MenuItem key={size} onClick={() => updateSize(size)}>
-                            {size}
-                        </MenuItem>
-                    ))}
-
-                {menuType === "qty" &&
-                    QTY_OPTIONS.map((qty) => (
-                        <MenuItem key={qty} onClick={() => updateQty(qty)}>
-                            {qty}
-                        </MenuItem>
-                    ))}
-            </Menu>
         </section >
     );
 };

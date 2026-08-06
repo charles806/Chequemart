@@ -43,13 +43,18 @@ const Register = () => {
         setErrors(prev => ({ ...prev, [e.target.name]: '' }));
     };
 
+    // Clear errors when userType changes
+    React.useEffect(() => {
+        setErrors({});
+    }, [userType]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = {};
 
         // ── Validation ───────────────────────────────────────
-        if (!formFields.name) newErrors.name = "Name is required.";
-        if (!formFields.email && !formFields.phone) {
+        if (!formFields.name.trim()) newErrors.name = "Name is required.";
+        if (!formFields.email.trim() && !formFields.phone.trim()) {
             newErrors.email = "Please provide an email or phone number.";
             newErrors.phone = "Please provide an email or phone number.";
         }
@@ -65,9 +70,9 @@ const Register = () => {
             newErrors.terms = "Please agree to the Terms & Conditions.";
         }
         if (userType === "seller") {
-            if (!formFields.storeName) newErrors.storeName = "Store name is required.";
+            if (!formFields.storeName.trim()) newErrors.storeName = "Store name is required.";
             if (!formFields.businessCategory) newErrors.businessCategory = "Business category is required.";
-            if (!formFields.businessAddress) newErrors.businessAddress = "Business address is required.";
+            if (!formFields.businessAddress.trim()) newErrors.businessAddress = "Business address is required.";
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -78,34 +83,20 @@ const Register = () => {
 
         // ── Build payload ────────────────────────────────────
         const payload = {
-            name: formFields.name,
-            email: formFields.email || undefined,
-            phone: formFields.phone || undefined,
+            name: formFields.name.trim(),
+            email: formFields.email.trim() || undefined,
+            phone: formFields.phone.trim() || undefined,
             password: formFields.password,
             role: userType,
             ...(userType === "seller" && {
-                storeName: formFields.storeName,
+                storeName: formFields.storeName.trim(),
                 businessCategory: formFields.businessCategory,
-                businessAddress: formFields.businessAddress,
+                businessAddress: formFields.businessAddress.trim(),
             }),
         };
 
         setIsLoading(true);
         try {
-            // Build payload
-            const payload = {
-                name: formFields.name,
-                email: formFields.email || undefined,
-                phone: formFields.phone || undefined,
-                password: formFields.password,
-                role: userType,
-                ...(userType === "seller" && {
-                    storeName: formFields.storeName,
-                    businessCategory: formFields.businessCategory,
-                    businessAddress: formFields.businessAddress,
-                }),
-            };
-
             // Use centralized API - select endpoint based on user type
             let data;
             if (userType === "seller") {
@@ -129,7 +120,8 @@ const Register = () => {
                 navigate('/seller/onboarding');
             }
         } catch (err) {
-            context.openAlertBox?.("error", "Network error. Please try again.");
+            const msg = err.response?.data?.message || err.message || "Registration failed. Please try again.";
+            context.openAlertBox?.("error", msg);
         } finally {
             setIsLoading(false);
         }

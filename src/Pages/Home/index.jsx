@@ -27,37 +27,92 @@ import phone from "../../assets/image/sub-banner-3.jpg"
 import { FaShippingFast } from "react-icons/fa";
 import { FaLongArrowAltRight } from "react-icons/fa";
 import { blogs } from "../../data/blogs";
+import ErrorMessage from "../../components/ErrorMessage";
 
 
 const Home = () => {
-  const swiperRef = useRef(null);
+  const swiperRef1 = useRef(null);
+  const swiperRef2 = useRef(null);
+  const swiperRef3 = useRef(null);
+  const swiperRef4 = useRef(null);
+  const sentinelRef = useRef(null);
+  const pageRef = useRef(1);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tabValue, setTabValue] = useState(0);
+  const [error, setError] = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
-        const data = await res.json();
-        if (data.success) {
-          setProducts(data.data || []);
+  const fetchProducts = async (pageNum = 1, append = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+    setError(null);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products?page=${pageNum}&limit=8`);
+      const data = await res.json();
+      if (data.success) {
+        const newItems = data.data || [];
+        if (append) {
+          setProducts((prev) => [...prev, ...newItems]);
+        } else {
+          setProducts(newItems);
         }
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-      } finally {
-        setLoading(false);
+        setHasMore(newItems.length >= 8);
+        if (append) {
+          pageRef.current = pageNum;
+        } else {
+          pageRef.current = 1;
+        }
       }
-    };
-    fetchProducts();
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      const nextPage = pageRef.current + 1;
+      fetchProducts(nextPage, true);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts(1);
   }, []);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    if (!hasMore || loading || loadingMore) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          const nextPage = pageRef.current + 1;
+          fetchProducts(nextPage, true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadingMore]);
 
   return (
     <main className='mt-0'>
+      {error && <ErrorMessage message={error} onRetry={fetchProducts} />}
       <Slider />
       <CatSlider />
 
@@ -97,7 +152,7 @@ const Home = () => {
           <div className="w-full mt-4">
             <div className="productsSlider pt-1 lg:pt-3 pb-0 relative">
               <Swiper
-                ref={swiperRef}
+                ref={swiperRef1}
                 onSlideChange={() => console.log('slide change')}
                 onSwiper={(swiper) => console.log(swiper)}
                 slidesPerView={4}
@@ -154,7 +209,7 @@ const Home = () => {
           </div>
           <div className="part2 w-full lg:w-[30%] flex gap-5 lg:gap-8 flex-col">
             <div className="bannerBoxV2 box w-full overflow-hidden rounded-md group relative h-40 lg:h-46">
-              <img src={subbanner1} alt="Sub Banner 2" className='w-full h-full object-cover transition-all duration-150 group-hover:scale-105' />
+              <img src={subbanner1} alt="Sub Banner 2" loading="eager" decoding="async" width={400} height={180} className='w-full h-full object-cover transition-all duration-150 group-hover:scale-105' />
               <div className="info absolute p-4 lg:p-5 top-0 right-0 w-[60%] lg:w-[70%] h-full z-10 flex items-center justify-center flex-col gap-1 lg:gap-2">
                 <h2 className="text-[14px] md:text-[18px] font-semibold leading-tight">
                   Buy Chairs at low price
@@ -163,7 +218,7 @@ const Home = () => {
               </div>
             </div>
             <div className="bannerBoxV2 box w-full overflow-hidden rounded-md group relative h-40 lg:h-46">
-              <img src={subbanner2} alt="Sub Banner 2" className='w-full h-full object-cover transition-all duration-150 group-hover:scale-105' />
+              <img src={subbanner2} alt="Sub Banner 2" loading="eager" decoding="async" width={400} height={180} className='w-full h-full object-cover transition-all duration-150 group-hover:scale-105' />
               <div className="info absolute p-4 lg:p-5 top-0 right-0 w-[60%] lg:w-[70%] h-full z-10 flex items-center justify-center flex-col gap-1 lg:gap-2">
                 <h2 className="text-[14px] md:text-[18px] font-semibold leading-tight">
                   Get HeadPhones at low price
@@ -216,7 +271,7 @@ const Home = () => {
             >
               <SwiperSlide>
                 <div className="bannerBoxV2 box w-full overflow-hidden rounded-md group relative h-40 lg:h-46">
-                  <img src={bag} alt="Bag" className='w-full h-full object-cover transition-all duration-150 group-hover:scale-105' />
+                  <img src={bag} alt="Bag" loading="lazy" decoding="async" width={300} height={180} className='w-full h-full object-cover transition-all duration-150 group-hover:scale-105' />
                   <div className="info absolute p-5 top-0 left-0 w-[70%] h-full z-50 flex items-center justify-center flex-col gap-2">
                     <h2 className="text-[14px] md:text-[18px] font-semibold">
                       Stylish Bags
@@ -233,7 +288,7 @@ const Home = () => {
 
               <SwiperSlide>
                 <div className="bannerBoxV2 box w-full overflow-hidden rounded-md group relative h-40 lg:h-46">
-                  <img src={camera} alt="Bag" className='w-full h-full object-cover transition-all duration-150 group-hover:scale-105' />
+                  <img src={camera} alt="Camera" loading="lazy" decoding="async" width={300} height={180} className='w-full h-full object-cover transition-all duration-150 group-hover:scale-105' />
                   <div className="info absolute p-5 top-0 left-0 w-[70%] h-full z-50 flex items-center justify-center flex-col gap-2">
                     <h2 className="text-[14px] md:text-[18px] font-semibold">
                       Digital Cameras
@@ -250,7 +305,7 @@ const Home = () => {
 
               <SwiperSlide>
                 <div className="bannerBoxV2 box w-full overflow-hidden rounded-md group relative h-40 lg:h-46">
-                  <img src={phone} alt="Bag" className='w-full h-full object-cover transition-all duration-150 group-hover:scale-105' />
+                  <img src={phone} alt="Phone" loading="lazy" decoding="async" width={300} height={180} className='w-full h-full object-cover transition-all duration-150 group-hover:scale-105' />
                   <div className="info absolute p-5 top-0 left-0 w-[70%] h-full z-50 flex items-center justify-center flex-col gap-2">
                     <h2 className="text-[14px] md:text-[18px] font-semibold">
                       Mobile Phone
@@ -267,7 +322,7 @@ const Home = () => {
 
               <SwiperSlide>
                 <div className="bannerBoxV2 box w-full overflow-hidden rounded-md group relative h-40 lg:h-46">
-                  <img src={subbanner2} alt="Bag" className='w-full h-full object-cover transition-all duration-150 group-hover:scale-105' />
+                  <img src={subbanner2} alt="HeadPhone Banner" loading="lazy" decoding="async" width={300} height={180} className='w-full h-full object-cover transition-all duration-150 group-hover:scale-105' />
                   <div className="info absolute p-5 top-0 left-0 w-[70%] h-full z-50 flex items-center justify-center flex-col gap-2">
                     <h2 className="text-[14px] md:text-[18px] font-semibold">
                       HeadPhone
@@ -300,7 +355,7 @@ const Home = () => {
 
           <div className="productsSlider pt-1 lg:pt-3 pb-0">
             <Swiper
-              ref={swiperRef}
+              ref={swiperRef2}
               onSlideChange={() => console.log('slide change')}
               onSwiper={(swiper) => console.log(swiper)}
               slidesPerView={4}
@@ -324,7 +379,7 @@ const Home = () => {
                 }
               }}
             >
-              {products.slice(0, 4).map((item) => (
+              {products.slice(4, 8).map((item) => (
                 <SwiperSlide key={item._id}>
                   <ProductItem product={{
                     id: item._id,
@@ -347,15 +402,15 @@ const Home = () => {
             <h2 className="text-[20px] font-semibold">
               Featured Products
             </h2>
-            {/* <Button className="text-[14px]! text-black! font-medium! hover:underline!">
+            <Button className="text-[14px]! text-black! font-medium! hover:underline!">
               <Link to="/products" className="text-[14px] text-black font-medium hover:underline">View All</Link>
               <FaLongArrowAltRight className="ml-2" />
-            </Button> */}
+            </Button>
           </div>
 
           <div className="productsSlider pt-1 lg:pt-3 pb-0">
             <Swiper
-              ref={swiperRef}
+              ref={swiperRef3}
               onSlideChange={() => console.log('slide change')}
               onSwiper={(swiper) => console.log(swiper)}
               slidesPerView={4}
@@ -379,62 +434,7 @@ const Home = () => {
                 }
               }}
             >
-              {products.slice(0, 4).map((item) => (
-                <SwiperSlide key={item._id}>
-                  <ProductItem product={{
-                    id: item._id,
-                    name: item.name,
-                    price: item.price,
-                    oldPrice: item.price * 1.2,
-                    image: item.images?.[0],
-                    brand: item.seller?.storeName || "Vendor"
-                  }} />
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-3 lg:py-2 pt-0 bg-white">
-        <div className="my-container">
-          {/* <div className="flex items-center justify-between">
-            <h2 className="text-[20px] font-semibold">
-              Featured Products
-            </h2>
-           <Button className="text-[14px]! text-black! font-medium! hover:underline!">
-              <Link to="/products" className="text-[14px] text-black font-medium hover:underline">View All</Link>
-              <FaLongArrowAltRight className="ml-2" />
-            </Button> 
-          </div> */}
-
-          <div className="productsSlider pt-1 lg:pt-3 pb-0">
-            <Swiper
-              ref={swiperRef}
-              onSlideChange={() => console.log('slide change')}
-              onSwiper={(swiper) => console.log(swiper)}
-              slidesPerView={4}
-              spaceBetween={10}
-              navigation={false}
-              modules={[Navigation]}
-              className="mySwiper"
-              centerInsufficientSlides={true}
-              breakpoints={{
-                320: {
-                  slidesPerView: 2,
-                  spaceBetween: 10,
-                },
-                640: {
-                  slidesPerView: 3,
-                  spaceBetween: 10,
-                },
-                1024: {
-                  slidesPerView: 4,
-                  spaceBetween: 10,
-                }
-              }}
-            >
-              {products.slice(0, 4).map((item) => (
+              {products.slice(8, 12).map((item) => (
                 <SwiperSlide key={item._id}>
                   <ProductItem product={{
                     id: item._id,
@@ -456,7 +456,7 @@ const Home = () => {
           <h2 className="text-[20px] font-semibold mb-4">From the Blog</h2>
           <div>
             <Swiper
-              ref={swiperRef}
+              ref={swiperRef4}
               onSlideChange={() => console.log('slide change')}
               onSwiper={(swiper) => console.log(swiper)}
               slidesPerView={4}
@@ -487,6 +487,41 @@ const Home = () => {
               ))}
             </Swiper>
           </div>
+        </div>
+      </section>
+      {/* All Products - Infinite Scroll */}
+      <section className="py-5 pb-8 pt-0 bg-white">
+        <div className="my-container">
+          <h2 className="text-[20px] font-semibold mb-4">All Products</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {products.map((item) => (
+              <ProductItem key={item._id} product={{
+                id: item._id,
+                name: item.name,
+                price: item.price,
+                oldPrice: item.price * 1.2,
+                image: item.images?.[0],
+                brand: item.seller?.storeName || "Vendor"
+              }} />
+            ))}
+          </div>
+
+          {loadingMore && <SkeletonProductGrid count={4} />}
+
+          {hasMore && (
+            <>
+              <div ref={sentinelRef} className="h-4" />
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="px-6 py-2.5 rounded-xl bg-[#ff5252] text-white font-semibold text-sm hover:bg-red-500 transition cursor-pointer disabled:opacity-50"
+                >
+                  {loadingMore ? "Loading..." : "Load More"}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </section>
     </main>

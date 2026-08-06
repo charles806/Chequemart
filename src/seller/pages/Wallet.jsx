@@ -38,16 +38,41 @@
  */
 
 import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
+import { authFetch } from "../../api";
 import Icon from "../components/ui/Icon";
 import StatusBadge from "../components/ui/StatusBadge";
 import Toast, { useToast } from "../components/ui/Toast";
 import { ICONS } from "../components/ui/icons";
 import { useSeller } from "../context/SellerContext";
 import CircularProgress from "@mui/material/CircularProgress";
-import { BANKS_LIST } from "../constants/banks";
 
-const fmt = (n) => "₦" + Number(n).toLocaleString();
+
+const fmt = (n, fallback = 0) => {
+  const num = Number(n);
+  return "₦" + (isNaN(num) ? Number(fallback) : num).toLocaleString();
+};
+
+const exportToCSV = (data, filename) => {
+  if (!data.length) return;
+  const headers = ["Date", "Amount", "Type", "Status", "Description"];
+  const rows = data.map((t) => [
+    t.date,
+    t.amount,
+    t.type,
+    t.status,
+    `"${(t.description || "").replace(/"/g, '""')}"`,
+  ]);
+  const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
 
 const MIN_WITHDRAWAL = 1000;
 
@@ -80,6 +105,25 @@ const AddBankModal = ({ onSave, onClose }) => {
   const [errors,    setErrors]    = useState({});
   const [verified,  setVerified]  = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [banksList, setBanksList] = useState([]);
+  const [banksLoading, setBanksLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/banks`);
+        if (res.ok) {
+          const data = await res.json();
+          setBanksList(data.banks || []);
+        }
+      } catch (err) {
+        console.warn("Failed to fetch banks:", err.message);
+      } finally {
+        setBanksLoading(false);
+      }
+    };
+    fetchBanks();
+  }, []);
 
   const update = (key) => (e) => {
     setForm((p) => ({ ...p, [key]: e.target.value }));
@@ -90,7 +134,7 @@ const AddBankModal = ({ onSave, onClose }) => {
   const handleVerify = async () => {
     if (!form.bankCode)                    { setErrors({ bankCode: "Select a bank first" }); return; }
     if (form.accountNumber.length !== 10)  { setErrors({ accountNumber: "Enter a 10-digit account number" }); return; }
-    const bank = BANKS_LIST.find((b) => b.code === form.bankCode);
+    const bank = banksList.find((b) => b.code === form.bankCode);
     setErrors({});
     setVerifying(true);
     try {
@@ -105,7 +149,7 @@ const AddBankModal = ({ onSave, onClose }) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Verification failed");
-      setForm((p) => ({ ...p, accountName: data.accountName }));
+      setForm((p) => ({ ...p, accountName: data.data?.accountName }));
       setVerified(true);
     } catch (err) {
       setErrors({ accountNumber: err.message || "Verification failed" });
@@ -115,20 +159,16 @@ const AddBankModal = ({ onSave, onClose }) => {
   };
 
   // POST /api/seller/bank-accounts
-  const handleSave = () => {
-    if (!verified) { setErrors({ accountNumber: "Verify account number first" }); return; }
-    const bank = BANKS_LIST.find((b) => b.code === form.bankCode);
-    onSave({
-      id:                    `BA-${Date.now()}`,
-      bankName:              bank?.name || "",
-      bankCode:              form.bankCode,
-      accountNumber:         `•••• ${form.accountNumber.slice(-4)}`,
-      accountName:           form.accountName,
-      isDefault:             false,
-      paystackRecipientCode: "RCP_pending", // backend will set the real code
-    });
-    onClose();
-  };
+    const handleSave = () => {
+        if (!verified) { setErrors({ accountNumber: "Verify account number first" }); return; }
+        onSave({
+          bankCode: form.bankCode,
+          accountNumber: form.accountNumber,
+          accountName: form.accountName,
+          isDefault: false,
+        });
+        onClose();
+      };
 
   return (
     <div
@@ -152,9 +192,9 @@ const AddBankModal = ({ onSave, onClose }) => {
 
         {/* Bank select */}
         <Field label="Bank Name" error={errors.bankCode}>
-          <select value={form.bankCode} onChange={update("bankCode")} className={inputCls(!!errors.bankCode) + " cursor-pointer"}>
-            <option value="">Select bank…</option>
-            {BANKS_LIST.map((b) => <option key={b.code} value={b.code}>{b.name}</option>)}
+          <select value={form.bankCode} onChange={update("bankCode")} className={inputCls(!!errors.bankCode) + " cursor-pointer"} disabled={banksLoading}>
+            <option value="">{banksLoading ? "Loading banks…" : "Select bank…"}</option>
+            {banksList.map((b) => <option key={b.code} value={b.code}>{b.name}</option>)}
           </select>
         </Field>
 
@@ -211,7 +251,7 @@ const AddBankModal = ({ onSave, onClose }) => {
 
 // ─────────────────────────────────────────────────────────────
 // WITHDRAW MODAL (2-step)
-// POST /api/seller/wallet/withdraw
+// POST /api/seller/withdraw
 // ─────────────────────────────────────────────────────────────
 const WithdrawModal = ({ wallet, bankAccounts, onSuccess, onClose, onAddBank }) => {
   const [selectedBank, setSelectedBank] = useState(bankAccounts.find((b) => b.isDefault)?.id || "");
@@ -240,15 +280,26 @@ const WithdrawModal = ({ wallet, bankAccounts, onSuccess, onClose, onAddBank }) 
 
   const handleContinue = () => { if (validate()) setStep(2); };
 
-  // POST /api/seller/wallet/withdraw
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setLoading(true);
-    // TODO: replace with real fetch call
-    setTimeout(() => {
-      setLoading(false);
+    setErrors({});
+    try {
+      const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/seller/withdraw`, {
+        method: "POST",
+        body: JSON.stringify({
+          amount: numAmount,
+          bankDetailId: selectedBank,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Withdrawal failed");
       setSuccess(true);
       onSuccess(numAmount);
-    }, 1600);
+    } catch (err) {
+      setErrors({ submit: err.message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (success) return (
@@ -435,6 +486,15 @@ const WithdrawModal = ({ wallet, bankAccounts, onSuccess, onClose, onAddBank }) 
           )}
         </div>
 
+        {/* Error banner */}
+        {errors.submit && (
+          <div className="px-5 py-3 bg-red-50 border-t border-red-100 flex-shrink-0">
+            <p className="text-xs text-red-600 font-medium flex items-center gap-1.5">
+              <Icon d={ICONS.warning} size={12} /> {errors.submit}
+            </p>
+          </div>
+        )}
+
         {/* Footer */}
         <div className="px-5 py-4 border-t border-gray-100 flex gap-3 flex-shrink-0">
           {step === 2 && (
@@ -473,12 +533,9 @@ export default function WalletPage() {
     const fetchWalletData = async () => {
         setLoading(true);
         try {
-            const token = Cookies.get("accessToken");
-            const headers = { Authorization: `Bearer ${token}` };
-
             const [txRes, bankRes] = await Promise.all([
-                fetch(`${import.meta.env.VITE_API_URL}/api/seller/wallet/transactions`, { headers }),
-                fetch(`${import.meta.env.VITE_API_URL}/api/seller/bank-accounts`, { headers })
+                authFetch(`${import.meta.env.VITE_API_URL}/api/seller/wallet/transactions`),
+                authFetch(`${import.meta.env.VITE_API_URL}/api/seller/bank-accounts`)
             ]);
 
             const txData = await txRes.json();
@@ -504,22 +561,20 @@ export default function WalletPage() {
 
     const handleAddBank = async (account) => {
         try {
-            const token = Cookies.get("accessToken");
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/seller/bank-accounts`, {
+            const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/seller/bank-accounts`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
-                },
                 body: JSON.stringify(account)
             });
 
+            const data = await res.json();
             if (res.ok) {
                 showToast("✅ Bank account added");
                 fetchWalletData();
+            } else {
+                showToast("❌ " + (data.message || "Failed to add bank account"));
             }
         } catch (error) {
-            showToast("❌ Failed to add bank account");
+            showToast("❌ " + (error.message || "Failed to add bank account"));
         }
     };
 
@@ -563,8 +618,7 @@ export default function WalletPage() {
         <div className="flex gap-2">
           <button
             onClick={() => setWithdraw(true)}
-            disabled={wallet.availableBalance < MIN_WITHDRAWAL}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#ff5252] text-white font-bold text-sm hover:bg-[#ff5252]-hover transition shadow-lg shadow-red-900/40 cursor-pointer disabled:opacity-40"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-[#ff5252] text-white font-bold text-sm hover:bg-[#ff5252]-hover transition shadow-lg shadow-red-900/40 cursor-pointer"
           >
             <Icon d={ICONS.send} size={14} /> Withdraw
           </button>
@@ -584,14 +638,22 @@ export default function WalletPage() {
             <h2 className="font-black text-gray-900 text-sm">Transaction History</h2>
             <p className="text-[10px] text-gray-400">Credits & debits on your wallet</p>
           </div>
-          <div className="flex gap-1 bg-gray-100 p-1 rounded-xl">
-            {[["all","All"],["credit","In"],["debit","Out"]].map(([v, l]) => (
-              <button key={v} onClick={() => setTxFilter(v)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer
-                  ${txFilter === v ? "bg-white text-gray-800 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}>
-                {l}
-              </button>
-            ))}
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1 bg-gray-100 p-1 rounded-xl">
+              {[["all","All"],["credit","In"],["debit","Out"]].map(([v, l]) => (
+                <button key={v} onClick={() => setTxFilter(v)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer
+                    ${txFilter === v ? "bg-white text-gray-800 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}>
+                  {l}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => exportToCSV(filteredTx, `transactions-${new Date().toISOString().slice(0, 10)}.csv`)}
+              className="px-2.5 py-1 rounded-lg text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 transition cursor-pointer"
+            >
+              Export CSV
+            </button>
           </div>
         </div>
         <div className="divide-y divide-gray-50">

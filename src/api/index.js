@@ -1,10 +1,37 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL;
-import Cookies from 'js-cookie';
 import { toast } from 'sonner';
+import Cookies from 'js-cookie';
 
-const getToken = () => Cookies.get('accessToken');
+// ── In-memory access token (resets on page refresh) ──
+let accessToken = null;
 
-// Optional auth endpoints - don't redirect on 401
+export const setAccessToken = (token) => { accessToken = token; };
+export const getAccessToken = () => accessToken;
+export const clearAccessToken = () => { accessToken = null; };
+
+// ── Refresh access token using the HttpOnly refresh cookie ──
+let refreshPromise = null;
+
+const refreshAccessToken = async () => {
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = (async () => {
+    const res = await fetch(`${API_BASE_URL}/api/auth/refresh-token`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+    if (!res.ok) throw new Error('Refresh failed');
+    const data = await res.json();
+    accessToken = data.accessToken;
+    return data;
+  })();
+  try {
+    return await refreshPromise;
+  } finally {
+    refreshPromise = null;
+  }
+};
+
+// ── Optional auth endpoints — don't redirect on 401 ──
 const optionalAuthEndpoints = [
   '/api/cart',
   '/api/cart/wishlist',
@@ -12,42 +39,84 @@ const optionalAuthEndpoints = [
   '/api/products',
 ];
 
+// ── Core request function ──
 const api = async (endpoint, options = {}) => {
-  const token = getToken();
   const isOptionalAuth = optionalAuthEndpoints.some(e => endpoint.startsWith(e));
 
   const headers = {
     'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
+    ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     ...options.headers,
   };
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  let response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers,
+    credentials: 'include',
   });
 
-  // Handle 401 - logout and redirect for protected endpoints
+  // ── Handle 401 — try refresh, then retry ──
+  const isAuthRequest = endpoint.startsWith('/api/auth/');
   if (response.status === 401 || response.status === 403) {
     if (isOptionalAuth) {
-      // For optional auth endpoints, just return error without redirect
       return { success: false, data: [] };
     }
-    Cookies.remove('accessToken', { path: '/' });
-    Cookies.remove('user', { path: '/' });
-    Cookies.remove('isLogin', { path: '/' });
-    toast.info("Session expired. Please login again.");
-    window.location.href = '/login';
-    throw { response: { status: response.status, data: {} } };
+
+    if (!isAuthRequest && accessToken) {
+      try {
+        await refreshAccessToken();
+        headers.Authorization = `Bearer ${accessToken}`;
+        response = await fetch(`${API_BASE_URL}${endpoint}`, {
+          ...options,
+          headers,
+          credentials: 'include',
+        });
+      } catch {
+        clearAccessToken();
+        toast.info("Session expired. Please login again.");
+        window.location.href = '/login';
+        throw { response: { status: 401, data: {} } };
+      }
+    }
   }
 
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     throw { response: { status: response.status, data } };
   }
 
   return data;
+};
+
+// ── authFetch — reusable wrapper for direct fetch() callers ──
+// Attaches Bearer token, handles 401 via refresh, redirects to login on failure.
+// Returns the Response object (caller still does .json(), .ok checks as usual).
+export const authFetch = async (url, options = {}) => {
+  const token = getAccessToken() || Cookies.get('accessToken');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token && { Authorization: `Bearer ${token}` }),
+    ...options.headers,
+  };
+
+  let response = await fetch(url, { ...options, headers, credentials: 'include' });
+
+  if ((response.status === 401 || response.status === 403) && token) {
+    try {
+      await refreshAccessToken();
+      headers.Authorization = `Bearer ${accessToken}`;
+      response = await fetch(url, { ...options, headers, credentials: 'include' });
+    } catch {
+      clearAccessToken();
+      Cookies.remove('user');
+      toast.info('Session expired. Please login again.');
+      window.location.href = '/login';
+      throw new Error('Session expired');
+    }
+  }
+
+  return response;
 };
 
 // ============ AUTH API ============
@@ -57,16 +126,12 @@ export const login = async (identifier, password) => {
     method: 'POST',
     body: JSON.stringify({ identifier, password }),
   });
-  if (data.token) {
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-  }
+  if (data.accessToken) setAccessToken(data.accessToken);
   return data;
 };
 
 export const googleLogin = () => {
-  const GOOGLE_AUTH_URL = `${API_BASE_URL}/api/auth/google`;
-  window.location.href = GOOGLE_AUTH_URL;
+  window.location.href = `${API_BASE_URL}/api/auth/google`;
 };
 
 export const registerBuyer = async (userData) => {
@@ -74,10 +139,7 @@ export const registerBuyer = async (userData) => {
     method: 'POST',
     body: JSON.stringify(userData),
   });
-  if (data.token) {
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-  }
+  if (data.accessToken) setAccessToken(data.accessToken);
   return data;
 };
 
@@ -86,21 +148,21 @@ export const registerSeller = async (userData) => {
     method: 'POST',
     body: JSON.stringify(userData),
   });
-  if (data.token) {
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-  }
+  if (data.accessToken) setAccessToken(data.accessToken);
   return data;
 };
 
-export const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-};
-
-export const getCurrentUser = () => {
-  const user = localStorage.getItem('user');
-  return user ? JSON.parse(user) : null;
+export const logout = async () => {
+  try {
+    await fetch(`${API_BASE_URL}/api/auth/logout`, {
+      method: 'POST',
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      credentials: 'include',
+    });
+  } catch {
+    // Ignore network errors — clear local state regardless
+  }
+  clearAccessToken();
 };
 
 // ============ PRODUCTS API ============
@@ -173,13 +235,27 @@ export const getSellerEscrowSummary = async () => api('/api/seller/escrow/summar
 // ============ UPLOAD API ============
 
 export const uploadImage = async (formData) => {
-  const token = getToken();
   const response = await fetch(`${API_BASE_URL}/api/upload`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
+    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
     body: formData,
   });
   return response.json();
 };
 
-export default { login, registerBuyer, registerSeller, logout, getCurrentUser, getProducts, getProduct, getCategories, getCart, addToCart, removeFromCart, clearCart, getWishlist, addToWishlist, removeFromWishlist, createOrder, getMyOrders, getOrder, initializePayment, markReceived, cancelOrder, createDispute, getMyDisputes, getProfile, updateProfile, getDeliveryAddresses, addDeliveryAddress, deleteDeliveryAddress, getSellerDashboard, getSellerOrders, updateOrderStatus, getSellerWallet, getSellerBankAccounts, addBankAccount, deleteBankAccount, requestWithdrawal, getWithdrawals, getSellerProducts, createProduct, updateProduct, deleteProduct, getSellerEscrow, getSellerEscrowSummary, uploadImage };
+export default {
+  login, registerBuyer, registerSeller, logout,
+  getProducts, getProduct, getCategories,
+  getCart, addToCart, removeFromCart, clearCart,
+  getWishlist, addToWishlist, removeFromWishlist,
+  createOrder, getMyOrders, getOrder,
+  initializePayment, markReceived, cancelOrder,
+  createDispute, getMyDisputes,
+  getProfile, updateProfile,
+  getDeliveryAddresses, addDeliveryAddress, deleteDeliveryAddress,
+  getSellerDashboard, getSellerOrders, updateOrderStatus,
+  getSellerWallet, getSellerBankAccounts, addBankAccount, deleteBankAccount,
+  requestWithdrawal, getWithdrawals,
+  getSellerProducts, createProduct, updateProduct, deleteProduct,
+  getSellerEscrow, getSellerEscrowSummary, uploadImage,
+};
