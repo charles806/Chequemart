@@ -23,8 +23,8 @@
  *   Calls Paystack resolve endpoint, returns accountName.
  *
  * On success:
- *   - Backend creates seller record + wallet + returns JWT
- *   - Store JWT in Cookies: "accessToken"
+ *   - Backend marks onboarding complete and returns the updated user
+ *   - Frontend updates the user in context
  *   - Call props.onComplete() to enter dashboard
  *
  * PROPS:
@@ -32,11 +32,11 @@
  * ─────────────────────────────────────────────────────────────
  */
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import Cookies from "js-cookie";
+import { useState, useRef, useEffect, useCallback, useContext } from "react";
 import Icon from "../components/ui/Icon";
 import { ICONS } from "../components/ui/icons";
 import img from "../../assets/image/logo1.png";
+import { MyContext } from "../../MyContext";
 
 // ─────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -105,11 +105,11 @@ const validators = {
 // SHARED FIELD COMPONENTS
 // ─────────────────────────────────────────────────────────────
 const inputCls = (err) => `
-  w-full px-3 py-3 rounded-xl bg-gray-50 border text-sm text-gray-800
-  placeholder-gray-400 focus:outline-none focus:ring-2 transition-all
+  w-full px-3 py-3 rounded-xl bg-neutral-50 border text-sm text-neutral-800
+  placeholder-neutral-400 focus:outline-none focus:ring-2 transition-all
   ${err
     ? "border-red-400 bg-red-50 focus:ring-red-200"
-    : "border-gray-200 focus:ring-[#ff5252]/25 focus:border-[#ff5252]/50"
+    : "border-neutral-200 focus:ring-primary-500/25 focus:border-primary-500/50"
   }
 `;
 
@@ -118,13 +118,13 @@ const Field = ({ label, error, hint, children, htmlFor }) => (
     {label && (
       <label
         htmlFor={htmlFor}
-        className="text-xs font-bold text-gray-500 uppercase tracking-wide"
+        className="text-xs font-bold text-neutral-500 uppercase tracking-wide"
       >
         {label}
       </label>
     )}
     {children}
-    {hint && !error && <p className="text-[10px] text-gray-400">{hint}</p>}
+    {hint && !error && <p className="text-[10px] text-neutral-400">{hint}</p>}
     {error && (
       <p role="alert" className="text-xs text-red-500 font-medium">
         {error}
@@ -134,23 +134,82 @@ const Field = ({ label, error, hint, children, htmlFor }) => (
 );
 
 // ─────────────────────────────────────────────────────────────
-// PROGRESS BAR
+// STEPPER — vertical rail (desktop) / compact bar (mobile)
 // ─────────────────────────────────────────────────────────────
-const ProgressBar = ({ step }) => (
-  <div className="flex gap-1.5 mb-6" role="progressbar" aria-valuenow={step} aria-valuemax={TOTAL_STEPS - 1}>
-    {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-      <div
-        key={i}
-        className="flex-1 h-1.5 rounded-full transition-all duration-300"
-        style={{
-          background:
-            i < step
-              ? "linear-gradient(to right, #ff5252, #ff867f)"
-              : "#e5e7eb",
-        }}
-      />
-    ))}
-  </div>
+const STEP_ICONS = [ICONS.store, ICONS.user, ICONS.storefront, ICONS.bank, ICONS.camera, ICONS.check];
+
+const Stepper = ({ step }) => (
+  <>
+    {/* Mobile compact stepper */}
+    <div
+      className="md:hidden flex items-center gap-1.5 mb-5"
+      role="progressbar"
+      aria-valuenow={step}
+      aria-valuemin={1}
+      aria-valuemax={TOTAL_STEPS}
+    >
+      {STEP_META.map((s, i) => {
+        const n = i + 1;
+        const done = n < step;
+        const active = n === step;
+        return (
+          <div
+            key={n}
+            className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${
+              done ? "bg-primary-500" : active ? "bg-primary-400" : "bg-neutral-200"
+            }`}
+          />
+        );
+      })}
+    </div>
+
+    {/* Desktop vertical rail */}
+    <ol className="hidden md:flex flex-col gap-1">
+      {STEP_META.map((s, i) => {
+        const n = i + 1;
+        const done = n < step;
+        const active = n === step;
+        return (
+          <li key={n} className="flex items-start gap-3 py-1">
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${
+                done
+                  ? "bg-primary-500 text-white"
+                  : active
+                  ? "bg-[#ff5252] text-white ring-4 ring-primary-100"
+                  : "bg-neutral-100 text-neutral-400"
+              }`}
+            >
+              {done ? (
+                <Icon d={ICONS.check} size={14} />
+              ) : (
+                <Icon d={STEP_ICONS[i]} size={14} />
+              )}
+            </div>
+            <div className={active ? "" : done ? "" : "opacity-50"}>
+              <p
+                className={`text-sm font-semibold leading-tight ${
+                  active ? "text-neutral-900" : done ? "text-neutral-700" : "text-neutral-400"
+                }`}
+              >
+                {s.title}
+              </p>
+              <p className="text-[11px] text-neutral-400 leading-tight mt-0.5">
+                {s.subtitle}
+              </p>
+            </div>
+            {i < TOTAL_STEPS - 1 && (
+              <div
+                className={`ml-[13px] -mt-1 w-0.5 flex-1 min-h-[18px] rounded-full ${
+                  done ? "bg-primary-300" : "bg-neutral-200"
+                }`}
+              />
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  </>
 );
 
 // ─────────────────────────────────────────────────────────────
@@ -184,7 +243,7 @@ const ImageUpload = ({ label, preview, aspect, onUpload, uploading }) => {
 
   return (
     <div>
-      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+      <p className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-1.5">
         {label}
       </p>
       <div
@@ -193,8 +252,8 @@ const ImageUpload = ({ label, preview, aspect, onUpload, uploading }) => {
         aria-label={`Upload ${label}`}
         onClick={() => !uploading && ref.current.click()}
         onKeyDown={(e) => e.key === "Enter" && !uploading && ref.current.click()}
-        className={`relative overflow-hidden rounded-2xl border-2 border-dashed border-[#ff5252]/30
-          bg-red-50/30 hover:border-[#ff5252]/60 hover:bg-red-50 transition
+        className={`relative overflow-hidden rounded-2xl border-2 border-dashed border-primary-500/30
+          bg-red-50/30 hover:border-primary-500/60 hover:bg-red-50 transition
           flex items-center justify-center group
           ${uploading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
           ${aspect === "banner" ? "h-24 w-full" : "h-20 w-20"}`}
@@ -211,9 +270,9 @@ const ImageUpload = ({ label, preview, aspect, onUpload, uploading }) => {
             <Icon
               d={ICONS.upload}
               size={16}
-              className="text-[#ff5252]/40 mx-auto mb-1"
+              className="text-primary-500/40 mx-auto mb-1"
             />
-            <p className="text-[10px] text-gray-400 font-medium leading-tight">
+            <p className="text-[10px] text-neutral-400 font-medium leading-tight">
               {aspect === "banner" ? "1200 × 300px" : "1:1 ratio"}
             </p>
           </div>
@@ -246,13 +305,13 @@ const StepWelcome = ({ onNext }) => (
       <img src={img} alt="ChequeMart logo" className="w-full h-full object-cover" />
     </div>
     <div>
-      <h2 className="text-2xl font-black text-gray-900">Welcome to ChequeMart</h2>
-      <p className="text-gray-500 text-sm mt-2 leading-relaxed max-w-xs mx-auto">
+      <h2 className="text-2xl font-black text-neutral-900">Welcome to ChequeMart</h2>
+      <p className="text-neutral-500 text-sm mt-2 leading-relaxed max-w-xs mx-auto">
         Set up your seller account in a few steps and start selling to thousands
         of buyers across Nigeria.
       </p>
     </div>
-    <div className="space-y-2 text-left bg-gray-50 border border-gray-100 rounded-2xl p-4">
+    <div className="space-y-2 text-left bg-neutral-50 border border-neutral-100 rounded-2xl p-4">
       {[
         [ICONS.user, "Personal details & account"],
         [ICONS.store, "Store name, category & bio"],
@@ -260,16 +319,16 @@ const StepWelcome = ({ onNext }) => (
         [ICONS.camera, "Logo & banner (optional)"],
       ].map(([icon, label]) => (
         <div key={label} className="flex items-center gap-3 py-1.5">
-          <div className="w-7 h-7 rounded-lg bg-[#ff5252]/10 flex items-center justify-center shrink-0">
-            <Icon d={icon} size={13} className="text-[#ff5252]" />
+          <div className="w-7 h-7 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
+            <Icon d={icon} size={13} className="text-primary-500" />
           </div>
-          <p className="text-sm text-gray-700 font-medium">{label}</p>
+          <p className="text-sm text-neutral-700 font-medium">{label}</p>
         </div>
       ))}
     </div>
     <button
       onClick={onNext}
-      className="w-full py-3.5 rounded-2xl bg-[#ff5252] text-white font-bold text-base hover:bg-red-500 transition cursor-pointer shadow-lg shadow-red-200"
+      className="w-full py-3.5 rounded-2xl bg-[#ff5252] text-white font-bold text-base hover:bg-primary-600 transition cursor-pointer shadow-lg shadow-primary-200"
     >
       Get Started →
     </button>
@@ -382,7 +441,7 @@ const StepStore = ({ data, onChange, errors, onBlurField }) => (
         <Icon
           d={ICONS.map}
           size={15}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
         />
         <input
           id="location"
@@ -464,7 +523,7 @@ const StepBank = ({ data, onChange, errors, onVerify, verified, verifying, onBlu
             type="button"
             onClick={onVerify}
             disabled={verifying || !canVerify}
-            className="px-3 py-2 rounded-xl bg-[#ff5252]/10 text-[#ff5252] text-xs font-bold hover:bg-[#ff5252]/20 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+            className="px-3 py-2 rounded-xl bg-primary-50 text-primary-500 text-xs font-bold hover:bg-primary-100 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
           >
             {verifying ? "Checking…" : verified ? "✓ Done" : "Verify"}
           </button>
@@ -479,15 +538,15 @@ const StepBank = ({ data, onChange, errors, onVerify, verified, verifying, onBlu
             className="text-green-500 stroke-3 shrink-0"
           />
           <div>
-            <p className="text-[10px] text-gray-400">Account verified</p>
-            <p className="text-sm font-black text-gray-800">{data.accountName}</p>
+            <p className="text-[10px] text-neutral-400">Account verified</p>
+            <p className="text-sm font-black text-neutral-800">{data.accountName}</p>
           </div>
         </div>
       )}
 
       <div className="flex gap-2 bg-blue-50 border border-blue-100 rounded-xl p-3">
         <Icon d={ICONS.info} size={14} className="text-blue-400 shrink-0 mt-0.5" />
-        <p className="text-[11px] text-gray-500 leading-relaxed">
+        <p className="text-[11px] text-neutral-500 leading-relaxed">
           Your account details are encrypted at rest. We create a Paystack
           transfer recipient for fast, secure payouts.
         </p>
@@ -499,9 +558,9 @@ const StepBank = ({ data, onChange, errors, onVerify, verified, verifying, onBlu
 // STEP 5 — Media upload
 const StepMedia = ({ data, onChange, uploading }) => (
   <div className="space-y-5">
-    <div className="flex gap-2 bg-gray-50 border border-gray-100 rounded-xl p-3">
-      <Icon d={ICONS.info} size={14} className="text-gray-400 shrink-0 mt-0.5" />
-      <p className="text-[11px] text-gray-500 leading-relaxed">
+    <div className="flex gap-2 bg-neutral-50 border border-neutral-100 rounded-xl p-3">
+      <Icon d={ICONS.info} size={14} className="text-neutral-400 shrink-0 mt-0.5" />
+      <p className="text-[11px] text-neutral-500 leading-relaxed">
         You can skip this step and add media later from the Storefront settings.
       </p>
     </div>
@@ -530,8 +589,8 @@ const StepMedia = ({ data, onChange, uploading }) => (
 
 // STEP 6 — Review
 const Section = ({ title, rows }) => (
-  <div className="bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden">
-    <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider px-4 py-2.5 border-b border-gray-100 bg-white">
+  <div className="bg-neutral-50 border border-neutral-100 rounded-2xl overflow-hidden">
+    <p className="text-[10px] font-black text-neutral-400 uppercase tracking-wider px-4 py-2.5 border-b border-neutral-100 bg-white">
       {title}
     </p>
     {rows
@@ -539,10 +598,10 @@ const Section = ({ title, rows }) => (
       .map(([k, v]) => (
         <div
           key={k}
-          className="flex justify-between items-center px-4 py-2.5 text-sm border-b border-gray-100 last:border-0"
+          className="flex justify-between items-center px-4 py-2.5 text-sm border-b border-neutral-100 last:border-0"
         >
-          <span className="text-gray-400 font-medium">{k}</span>
-          <span className="text-gray-800 font-semibold text-right max-w-[55%] truncate">
+          <span className="text-neutral-400 font-medium">{k}</span>
+          <span className="text-neutral-800 font-semibold text-right max-w-[55%] truncate">
             {v}
           </span>
         </div>
@@ -593,6 +652,7 @@ const StepReview = ({ personal, store, bank }) => (
 // MAIN ONBOARDING COMPONENT
 // ─────────────────────────────────────────────────────────────
 export default function Onboarding({ onComplete }) {
+  const context = useContext(MyContext);
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -662,12 +722,9 @@ export default function Onboarding({ onComplete }) {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = Cookies.get("accessToken");
-        if (!token) return;
-
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/api/auth/me`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          { credentials: "include" }
         );
 
         if (!response.ok) return;
@@ -883,12 +940,12 @@ export default function Onboarding({ onComplete }) {
   };
 
   // ── Upload file to Cloudinary ───────────────────────────
-  const uploadFile = async (file, token) => {
+  const uploadFile = async (file) => {
     const formData = new FormData();
     formData.append("image", file);
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/upload/product-image`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
       body: formData,
     });
     const data = await res.json();
@@ -903,15 +960,12 @@ export default function Onboarding({ onComplete }) {
     let uploadedBanner = null;
 
     try {
-      const token = Cookies.get("accessToken");
-      if (!token) throw new Error("Session expired. Please log in again.");
-
       // Upload media to Cloudinary first (if files selected)
       if (media.logoFile || media.bannerFile) {
         setMediaUploading(true);
         const results = await Promise.allSettled([
-          media.logoFile ? uploadFile(media.logoFile, token) : Promise.resolve(null),
-          media.bannerFile ? uploadFile(media.bannerFile, token) : Promise.resolve(null),
+          media.logoFile ? uploadFile(media.logoFile) : Promise.resolve(null),
+          media.bannerFile ? uploadFile(media.bannerFile) : Promise.resolve(null),
         ]);
         if (results[0].status === "fulfilled") uploadedLogo = results[0].value;
         else throw new Error(results[0].reason?.message || "Logo upload failed");
@@ -926,10 +980,8 @@ export default function Onboarding({ onComplete }) {
         `${import.meta.env.VITE_API_URL}/api/auth/complete-onboarding`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             personal,
             store,
@@ -948,8 +1000,8 @@ export default function Onboarding({ onComplete }) {
         throw new Error(data.message || "Something went wrong. Please try again.");
       }
 
-      if (data.user) {
-        Cookies.set("user", JSON.stringify(data.user), { expires: 7 });
+      if (data.user && context.login) {
+        context.login(data.user);
       }
 
       localStorage.removeItem("onboarding_draft");
@@ -965,138 +1017,201 @@ export default function Onboarding({ onComplete }) {
   // ── Loading screen ────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center p-4">
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#ff5252] mx-auto mb-4" />
-          <p className="text-gray-500">Loading your information…</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4" />
+          <p className="text-neutral-500">Loading your information…</p>
         </div>
       </div>
     );
   }
 
+  // ── Branding panel (desktop left column) ─────────────────
+  const BrandPanel = (
+    <aside className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-[#ff5252] via-[#f03e3e] to-[#c92a2a] text-white p-10 w-[42%] max-w-md shrink-0 relative overflow-hidden">
+      <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-white/10 blur-2xl" />
+      <div className="absolute -bottom-32 -left-20 w-80 h-80 rounded-full bg-black/10 blur-2xl" />
+
+      <div className="relative flex items-center gap-3">
+        <div className="w-11 h-11 rounded-2xl bg-white flex items-center justify-center overflow-hidden shadow-lg">
+          <img src={img} alt="ChequeMart logo" className="w-full h-full object-cover" />
+        </div>
+        <div>
+          <p className="font-black text-lg leading-none">ChequeMart</p>
+          <p className="text-xs text-white/70 mt-1">Seller Onboarding</p>
+        </div>
+      </div>
+
+      <div className="relative">
+        <h1 className="text-3xl font-black leading-tight">
+          Launch your store on the largest Nigerian marketplace
+        </h1>
+        <p className="text-white/80 text-sm mt-4 leading-relaxed">
+          Join thousands of sellers reaching buyers across the country. Set up
+          takes just a few minutes.
+        </p>
+
+        <ul className="mt-8 space-y-4">
+          {[
+            [ICONS.shieldCheck, "Secure escrow payments on every order"],
+            [ICONS.trendUp, "Reach millions of active buyers"],
+            [ICONS.wallet, "Fast withdrawals straight to your bank"],
+          ].map(([icon, label]) => (
+            <li key={label} className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+                <Icon d={icon} size={16} />
+              </div>
+              <span className="text-sm font-medium text-white/90">{label}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <p className="relative text-xs text-white/60">
+        © {new Date().getFullYear()} ChequeMart. Selling made simple.
+      </p>
+    </aside>
+  );
+
   // ── Main render ───────────────────────────────────────────
   return (
-    <div className="h-screen bg-surface flex items-center justify-center p-4">
-      <div
-        className="bg-white rounded-3xl shadow-xl border border-gray-100 w-full max-w-md flex flex-col overflow-hidden"
-        style={{ height: "min(680px, calc(100vh - 32px))" }}
-      >
-        {/* Fixed header */}
-        <div className="px-6 pt-6 pb-4 border-b border-gray-50 shrink-0">
-          {step > 1 && <ProgressBar step={step - 1} />}
-          <div className="flex items-center gap-3">
-            {step > 1 && (
-              <button
-                onClick={handleBack}
-                aria-label="Go back"
-                className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition cursor-pointer shrink-0"
-              >
-                <Icon
-                  d={ICONS.chevronR}
-                  size={16}
-                  className="text-gray-500 rotate-180"
-                />
-              </button>
-            )}
-            <div>
-              <h2 className="font-black text-gray-900 text-lg leading-none">
-                {STEP_META[step - 1].title}
-              </h2>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {STEP_META[step - 1].subtitle}
-              </p>
+    <div className="min-h-screen bg-neutral-50 flex">
+      {BrandPanel}
+
+      {/* Right column: stepper + form */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex items-stretch justify-center overflow-y-auto px-4 md:px-8 py-6 md:py-10">
+          <div className="w-full max-w-3xl flex flex-col md:flex-row md:items-start md:gap-12">
+            {/* Stepper rail (desktop) */}
+            <div className="hidden md:block pt-3 pb-2 shrink-0 pr-2">
+              <Stepper step={step} />
             </div>
-            {step > 1 && (
-              <span className="ml-auto flex items-center gap-2 shrink-0">
-                {savedStatus && (
-                  <span className="text-[10px] text-green-500 font-medium">{savedStatus}</span>
-                )}
-                <span className="text-xs text-gray-400 font-semibold">
-                  {step - 1} / {TOTAL_STEPS - 1}
-                </span>
-              </span>
-            )}
-          </div>
-        </div>
 
-        {/* Scrollable content */}
-        <div className="overflow-y-auto flex-1 px-6 py-5">
-          {step === 1 && <StepWelcome onNext={handleNext} />}
-          {step === 2 && (
-            <StepPersonal
-              data={personal}
-              onChange={updatePersonal}
-              errors={errors}
-              onBlurField={validateField}
-            />
-          )}
-          {step === 3 && (
-            <StepStore
-              data={store}
-              onChange={updateStore}
-              errors={errors}
-              onBlurField={validateField}
-            />
-          )}
-          {step === 4 && (
-            <StepBank
-              data={bank}
-              onChange={updateBank}
-              errors={errors}
-              onVerify={handleVerifyBank}
-              verified={bankVerified}
-              verifying={bankVerifying}
-              onBlurField={validateField}
-              banksList={banksList}
-              banksLoading={banksLoading}
-            />
-          )}
-          {step === 5 && <StepMedia data={media} onChange={updateMedia} uploading={mediaUploading} />}
-          {step === 6 && (
-            <StepReview personal={personal} store={store} bank={bank} />
-          )}
-        </div>
+            {/* Card */}
+            <div className="bg-white rounded-3xl shadow-xl border border-neutral-100 w-full md:w-[460px] flex flex-col overflow-hidden">
+              {/* Mobile header with compact stepper */}
+              <div className="md:hidden px-6 pt-6 pb-3 border-b border-neutral-50 shrink-0">
+                <Stepper step={step} />
+              </div>
 
-        {/* Footer — hidden on Step 1 (Welcome has its own CTA) */}
-        {step > 1 && (
-          <div className="px-6 py-4 border-t border-gray-50 bg-gray-50/50 flex flex-col gap-2 shrink-0">
-            {submitError && (
-              <p role="alert" className="text-xs text-red-500 font-medium text-center">
-                {submitError}
-              </p>
-            )}
-            <div className="flex items-center justify-end gap-3">
-              {step < TOTAL_STEPS ? (
-                <button
-                  onClick={handleNext}
-                  className="px-5 py-2.5 rounded-xl bg-[#ff5252] text-white font-semibold text-sm hover:bg-red-500 transition cursor-pointer"
-                >
-                  Next
-                </button>
-              ) : (
-                <button
-                  onClick={handleSubmit}
-                  disabled={submitting || mediaUploading}
-                  className="px-5 py-2.5 rounded-xl bg-[#ff5252] text-white font-semibold text-sm hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer flex items-center gap-2"
-                >
-                  {mediaUploading ? (
-                    <>
-                      <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                      Uploading media…
-                    </>
-                  ) : submitting ? (
-                    <>
-                      <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                      Creating…
-                    </>
-                  ) : (
-                    "Create Store"
+              {/* Fixed header */}
+              <div className="px-6 md:px-8 pt-6 md:pt-7 pb-5 border-b border-neutral-50 shrink-0">
+                <div className="flex items-center gap-3">
+                  {step > 1 && (
+                    <button
+                      onClick={handleBack}
+                      aria-label="Go back"
+                      className="w-9 h-9 rounded-xl bg-neutral-100 flex items-center justify-center hover:bg-neutral-200 transition cursor-pointer shrink-0"
+                    >
+                      <Icon
+                        d={ICONS.chevronR}
+                        size={16}
+                        className="text-neutral-500 rotate-180"
+                      />
+                    </button>
                   )}
-                </button>
+                  <div>
+                    <h2 className="font-black text-neutral-900 text-lg leading-none">
+                      {STEP_META[step - 1].title}
+                    </h2>
+                    <p className="text-xs text-neutral-400 mt-0.5">
+                      {STEP_META[step - 1].subtitle}
+                    </p>
+                  </div>
+                  {step > 1 && (
+                    <span className="ml-auto flex items-center gap-2 shrink-0">
+                      {savedStatus && (
+                        <span className="text-[10px] text-green-500 font-medium">{savedStatus}</span>
+                      )}
+                      <span className="text-xs text-neutral-400 font-semibold">
+                        {step - 1} / {TOTAL_STEPS - 1}
+                      </span>
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Scrollable content */}
+              <div className="overflow-y-auto flex-1 px-6 md:px-8 py-6">
+                {step === 1 && <StepWelcome onNext={handleNext} />}
+                {step === 2 && (
+                  <StepPersonal
+                    data={personal}
+                    onChange={updatePersonal}
+                    errors={errors}
+                    onBlurField={validateField}
+                  />
+                )}
+                {step === 3 && (
+                  <StepStore
+                    data={store}
+                    onChange={updateStore}
+                    errors={errors}
+                    onBlurField={validateField}
+                  />
+                )}
+                {step === 4 && (
+                  <StepBank
+                    data={bank}
+                    onChange={updateBank}
+                    errors={errors}
+                    onVerify={handleVerifyBank}
+                    verified={bankVerified}
+                    verifying={bankVerifying}
+                    onBlurField={validateField}
+                    banksList={banksList}
+                    banksLoading={banksLoading}
+                  />
+                )}
+                {step === 5 && <StepMedia data={media} onChange={updateMedia} uploading={mediaUploading} />}
+                {step === 6 && (
+                  <StepReview personal={personal} store={store} bank={bank} />
+                )}
+              </div>
+
+              {/* Footer — hidden on Step 1 (Welcome has its own CTA) */}
+              {step > 1 && (
+                <div className="px-6 md:px-8 py-5 border-t border-neutral-50 bg-neutral-50/50 flex flex-col gap-2 shrink-0">
+                  {submitError && (
+                    <p role="alert" className="text-xs text-red-500 font-medium text-center">
+                      {submitError}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-end gap-3">
+                    {step < TOTAL_STEPS ? (
+                      <button
+                        onClick={handleNext}
+                        className="px-6 py-3 rounded-xl bg-[#ff5252] text-white font-semibold text-sm hover:bg-primary-600 transition cursor-pointer shadow-md shadow-primary-200"
+                      >
+                        {step === TOTAL_STEPS - 1 ? "Review & Confirm" : "Continue"}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleSubmit}
+                        disabled={submitting || mediaUploading}
+                        className="px-6 py-3 rounded-xl bg-[#ff5252] text-white font-semibold text-sm hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition cursor-pointer flex items-center gap-2 shadow-md shadow-primary-200"
+                      >
+                        {mediaUploading ? (
+                          <>
+                            <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                            Uploading media…
+                          </>
+                        ) : submitting ? (
+                          <>
+                            <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                            Creating…
+                          </>
+                        ) : (
+                          "Create Store"
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

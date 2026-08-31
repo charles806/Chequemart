@@ -1,17 +1,12 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import Cookies from "js-cookie";
 import { toast } from "sonner";
-import { setAccessToken, clearAccessToken, getAccessToken, authFetch } from "./api";
+import { authFetch, logout as apiLogout } from "./api";
 import { Context } from "./Context";
 
 export const MyContext = Context;
 
 const MyContextProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const savedUser = Cookies.get("user");
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
-  const [accessToken, setAccessTokenState] = useState(null);
+  const [user, setUser] = useState(null);
   const [isLogin, setIsLogin] = useState(false);
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
@@ -19,27 +14,20 @@ const MyContextProvider = ({ children }) => {
   const [isOpenCatPanel, setIsOpenCatPanel] = useState(false);
   const [authReady, setAuthReady] = useState(false);
 
-  // On mount, silently refresh the token using the HttpOnly refresh cookie
+  // On mount, ask the server who this session belongs to.
+  // The browser sends the session cookie automatically — no tokens involved.
   useEffect(() => {
     const initAuth = async () => {
-      const savedUser = Cookies.get("user");
-      if (!savedUser) {
-        setAuthReady(true);
-        return;
-      }
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/refresh-token`, {
-          method: "POST",
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, {
+          method: "GET",
           credentials: "include",
         });
         if (res.ok) {
           const data = await res.json();
-          setAccessToken(data.accessToken);
-          setAccessTokenState(data.accessToken);
           if (data.user) {
             setUser(data.user);
             setIsLogin(true);
-            Cookies.set("user", JSON.stringify(data.user), { expires: 7, path: "/" });
           }
         }
       } catch {
@@ -51,12 +39,12 @@ const MyContextProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  // Fetch cart from database on login or token change
+  // Fetch cart from database on login
   useEffect(() => {
     const controller = new AbortController();
-    
+
     const fetchCart = async () => {
-      if (!accessToken) {
+      if (!isLogin) {
         setCart([]);
         return;
       }
@@ -84,16 +72,16 @@ const MyContextProvider = ({ children }) => {
     };
 
     if (authReady) fetchCart();
-    
-    return () => controller.abort();
-  }, [accessToken, authReady]);
 
-  // Fetch wishlist on login or token change
+    return () => controller.abort();
+  }, [isLogin, authReady]);
+
+  // Fetch wishlist on login
   useEffect(() => {
     const controller = new AbortController();
-    
+
     const fetchWishlistData = async () => {
-      if (!accessToken) {
+      if (!isLogin) {
         setWishlist([]);
         return;
       }
@@ -107,7 +95,7 @@ const MyContextProvider = ({ children }) => {
             id: item._id,
             name: item.name,
             price: item.price,
-            oldPrice: item.price * 1.2,
+            oldPrice: item.oldPrice || null,
             image: item.images?.[0],
             brand: item.seller?.storeName || item.brand,
           }));
@@ -121,31 +109,25 @@ const MyContextProvider = ({ children }) => {
     };
 
     if (authReady) fetchWishlistData();
-    
-    return () => controller.abort();
-  }, [accessToken, authReady]);
 
-  const login = useCallback((userData, token) => {
+    return () => controller.abort();
+  }, [isLogin, authReady]);
+
+  const login = useCallback((userData) => {
     setUser(userData);
-    setAccessToken(token);
-    setAccessTokenState(token);
     setIsLogin(true);
-    Cookies.set("user", JSON.stringify(userData), { expires: 7, path: "/" });
   }, []);
 
   const logout = useCallback(() => {
+    // Destroy the server-side session (clears the session cookie)
+    apiLogout().catch(() => {});
     setUser(null);
-    setAccessToken(null);
-    setAccessTokenState(null);
     setIsLogin(false);
     setCart([]);
-    clearAccessToken();
-    Cookies.remove("user", { path: "/" });
   }, []);
 
   const addToCart = useCallback(async (product) => {
-    const token = accessToken || getAccessToken();
-    if (!token) {
+    if (!isLogin) {
       toast.error("Please login to add to cart");
       return;
     }
@@ -180,7 +162,6 @@ const MyContextProvider = ({ children }) => {
       } else {
         // Rollback on failure - refetch from server
         fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
-          headers: { Authorization: `Bearer ${token}` },
           credentials: 'include'
         }).then(r => r.json()).then(data => {
           if (data.success) {
@@ -199,7 +180,6 @@ const MyContextProvider = ({ children }) => {
     } catch (error) {
       // Rollback on error - refetch from server
       fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
-        headers: { Authorization: `Bearer ${token}` },
         credentials: 'include'
       }).then(r => r.json()).then(data => {
         if (data.success) {
@@ -216,11 +196,10 @@ const MyContextProvider = ({ children }) => {
       toast.error("Failed to add to cart");
       console.log(error)
     }
-  }, [accessToken]);
+  }, [isLogin]);
 
   const removeFromCart = useCallback(async (id) => {
-    const token = accessToken || getAccessToken();
-    if (!token) return;
+    if (!isLogin) return;
     try {
       const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/cart/remove/${id}`, {
         method: "DELETE",
@@ -240,11 +219,10 @@ const MyContextProvider = ({ children }) => {
     } catch {
       toast.error("Failed to remove from cart");
     }
-  }, [accessToken]);
+  }, [isLogin]);
 
   const updateCartQty = useCallback(async (id, qty) => {
-    const token = accessToken || getAccessToken();
-    if (!token) return;
+    if (!isLogin) return;
     try {
       const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/cart/update`, {
         method: "PUT",
@@ -265,11 +243,10 @@ const MyContextProvider = ({ children }) => {
     } catch {
       toast.error("Failed to update quantity");
     }
-  }, [accessToken]);
+  }, [isLogin]);
 
   const emptyCart = useCallback(async () => {
-    const token = accessToken || getAccessToken();
-    if (!token) return;
+    if (!isLogin) return;
     try {
       const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/cart/clear`, {
         method: "DELETE",
@@ -281,11 +258,10 @@ const MyContextProvider = ({ children }) => {
     } catch (error) {
       console.error("Failed to clear cart:", error);
     }
-  }, [accessToken]);
+  }, [isLogin]);
 
   const fetchWishlist = useCallback(async () => {
-    const token = accessToken || getAccessToken();
-    if (!token) return;
+    if (!isLogin) return;
     try {
       const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/cart/wishlist`);
       const data = await res.json();
@@ -294,7 +270,7 @@ const MyContextProvider = ({ children }) => {
           id: item._id,
           name: item.name,
           price: item.price,
-          oldPrice: item.price * 1.2,
+          oldPrice: item.oldPrice || null,
           image: item.images?.[0],
           brand: item.seller?.storeName || item.brand,
         }));
@@ -303,11 +279,10 @@ const MyContextProvider = ({ children }) => {
     } catch (error) {
       console.error("Failed to fetch wishlist:", error);
     }
-  }, [accessToken]);
+  }, [isLogin]);
 
   const addToWishlist = useCallback(async (productId) => {
-    const token = accessToken || getAccessToken();
-    if (!token) return;
+    if (!isLogin) return;
     try {
       const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/cart/wishlist/add`, {
         method: "POST",
@@ -323,11 +298,10 @@ const MyContextProvider = ({ children }) => {
     } catch {
       toast.error("Failed to add to wishlist");
     }
-  }, [accessToken, fetchWishlist]);
+  }, [isLogin, fetchWishlist]);
 
   const removeFromWishlist = useCallback(async (productId) => {
-    const token = accessToken || getAccessToken();
-    if (!token) return;
+    if (!isLogin) return;
     try {
       const res = await authFetch(`${import.meta.env.VITE_API_URL}/api/cart/wishlist/remove/${productId}`, {
         method: "DELETE",
@@ -340,7 +314,7 @@ const MyContextProvider = ({ children }) => {
     } catch {
       toast.error("Failed to remove from wishlist");
     }
-  }, [accessToken]);
+  }, [isLogin]);
 
   const openAlertBox = useCallback((type, message) => {
     if (type === "success") toast.success(message);
@@ -350,7 +324,6 @@ const MyContextProvider = ({ children }) => {
 
   const value = useMemo(() => ({
     user,
-    accessToken,
     isLogin,
     cart,
     wishlist,
@@ -369,7 +342,7 @@ const MyContextProvider = ({ children }) => {
     fetchWishlist,
     openAlertBox,
     authReady,
-  }), [user, accessToken, isLogin, cart, wishlist, openCartPanel, isOpenCatPanel, login, logout, addToCart, removeFromCart, updateCartQty, emptyCart, addToWishlist, removeFromWishlist, fetchWishlist, openAlertBox, authReady]);
+  }), [user, isLogin, cart, wishlist, openCartPanel, isOpenCatPanel, login, logout, addToCart, removeFromCart, updateCartQty, emptyCart, addToWishlist, removeFromWishlist, fetchWishlist, openAlertBox, authReady]);
 
   return <MyContext.Provider value={value}>{children}</MyContext.Provider>;
 };

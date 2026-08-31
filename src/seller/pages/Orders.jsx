@@ -84,21 +84,21 @@ const OrderDetail = ({ order, onClose, onUpdateStatus, onReleaseEscrow }) => {
       <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[88vh] animate-slide-up">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#ff5252]/10 flex items-center justify-center">
-              <Icon d={ICONS.orders} size={15} className="text-[#ff5252]" />
+            <div className="w-8 h-8 rounded-xl bg-primary-50 flex items-center justify-center">
+              <Icon d={ICONS.orders} size={15} className="text-primary-500" />
             </div>
             <div>
-              <h3 className="font-black text-gray-900 text-sm leading-none uppercase">#{order._id.slice(-6)}</h3>
-              <p className="text-[10px] text-gray-400 mt-0.5">{new Date(order.createdAt).toLocaleDateString()}</p>
+              <h3 className="font-black text-neutral-900 text-sm leading-none uppercase">#{order._id.slice(-6)}</h3>
+              <p className="text-[10px] text-neutral-400 mt-0.5">{new Date(order.createdAt).toLocaleDateString()}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition cursor-pointer"
+            className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-neutral-200 transition cursor-pointer"
           >
-            <Icon d={ICONS.close} size={14} className="text-gray-500" />
+            <Icon d={ICONS.close} size={14} className="text-neutral-500" />
           </button>
         </div>
 
@@ -106,8 +106,8 @@ const OrderDetail = ({ order, onClose, onUpdateStatus, onReleaseEscrow }) => {
         <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
 
           {/* Amount hero */}
-          <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 text-center space-y-1.5">
-            <p className="text-3xl font-black text-gray-900">{fmt(order.totalAmount || order.amount)}</p>
+          <div className="bg-neutral-50 border border-neutral-100 rounded-2xl p-4 text-center space-y-1.5">
+            <p className="text-3xl font-black text-neutral-900">{fmt(order.totalAmount || order.amount)}</p>
             <div className="flex justify-center gap-2">
               <StatusBadge status={order.status} />
               <StatusBadge status={paymentStatus} category="payment" />
@@ -128,7 +128,7 @@ const OrderDetail = ({ order, onClose, onUpdateStatus, onReleaseEscrow }) => {
           )}
 
           {/* Details */}
-          <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50 overflow-hidden">
+          <div className="bg-white rounded-2xl border border-neutral-100 divide-y divide-neutral-50 overflow-hidden">
             {[
               ["Product", order.products.map(p => p.name).join(", ")],
               ["Quantity", `${order.products.reduce((s, p) => s + p.quantity, 0)} items`],
@@ -137,8 +137,8 @@ const OrderDetail = ({ order, onClose, onUpdateStatus, onReleaseEscrow }) => {
               ["Tracking", order.trackingNumber || "Not yet assigned"],
             ].map(([k, v]) => (
               <div key={k} className="flex justify-between items-center px-4 py-2.5 text-sm">
-                <span className="text-gray-400 font-medium">{k}</span>
-                <span className={`font-bold text-right max-w-[55%] ${k === "Tracking" && !order.trackingNumber ? "text-gray-300" : "text-gray-800"}`}>
+                <span className="text-neutral-400 font-medium">{k}</span>
+                <span className={`font-bold text-right max-w-[55%] ${k === "Tracking" && !order.trackingNumber ? "text-neutral-300" : "text-neutral-800"}`}>
                   {v}
                 </span>
               </div>
@@ -149,8 +149,8 @@ const OrderDetail = ({ order, onClose, onUpdateStatus, onReleaseEscrow }) => {
           <div className="flex gap-2.5 bg-blue-50 border border-blue-100 rounded-xl p-3">
             <Icon d={ICONS.map} size={15} className="text-blue-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-xs font-bold text-gray-600">Shipping Address</p>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs font-bold text-neutral-600">Shipping Address</p>
+              <p className="text-xs text-neutral-500 mt-0.5">
                 {order.shippingAddress?.fullName}, {order.shippingAddress?.address}, {order.shippingAddress?.city}
               </p>
             </div>
@@ -161,7 +161,7 @@ const OrderDetail = ({ order, onClose, onUpdateStatus, onReleaseEscrow }) => {
             <div className="flex gap-2.5 bg-green-50 border border-green-100 rounded-xl p-3">
               <Icon d={ICONS.check} size={15} className="text-green-500 flex-shrink-0 mt-0.5 stroke-[3]" />
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-gray-500 leading-relaxed">
+                <p className="text-xs text-neutral-500 leading-relaxed">
                   Order collected. Funds should be released to your wallet automatically.
                 </p>
                 <button
@@ -177,7 +177,7 @@ const OrderDetail = ({ order, onClose, onUpdateStatus, onReleaseEscrow }) => {
           {/* Status update buttons */}
           {transitions.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Update Status</p>
+              <p className="text-xs font-bold text-neutral-400 uppercase tracking-wider">Update Status</p>
               <div className="flex gap-2">
                 {transitions.map((s) => {
                   const requiresPayment = REQUIRES_PAID.includes(s);
@@ -190,10 +190,10 @@ const OrderDetail = ({ order, onClose, onUpdateStatus, onReleaseEscrow }) => {
                       disabled={disabled}
                       className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition cursor-pointer
                         ${disabled
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          ? "bg-neutral-100 text-neutral-400 cursor-not-allowed"
                           : s === "Cancelled"
                             ? "border-2 border-red-200 text-red-500 hover:bg-red-50"
-                            : "bg-[#ff5252] text-white hover:bg-[#ff5252]-hover shadow-md shadow-red-200"
+                            : "bg-[#ff5252] text-white hover:bg-primary-600 shadow-md shadow-primary-200"
                         }`}
                     >
                       {s === "Cancelled" ? "Cancel" : "Mark as " + s}
@@ -300,12 +300,12 @@ export default function OrdersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-black text-gray-900">Orders</h1>
-          <p className="text-xs text-gray-400">{orders.length} total orders</p>
+          <h1 className="text-xl font-black text-neutral-900">Orders</h1>
+          <p className="text-xs text-neutral-400">{orders.length} total orders</p>
         </div>
         <button
           onClick={() => window.print()}
-          className="print:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 transition cursor-pointer"
+          className="print:hidden flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-neutral-200 text-xs font-bold text-neutral-600 hover:bg-neutral-50 transition cursor-pointer"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
           Print
@@ -313,71 +313,71 @@ export default function OrdersPage() {
       </div>
 
       {/* Print-only header */}
-      <div className="hidden print:block mb-6 pb-4 border-b-2 border-gray-300">
-        <h2 className="text-2xl font-bold text-gray-900">ChequeMart</h2>
-        <p className="text-sm text-gray-500">Seller Orders Report</p>
-        <p className="text-xs text-gray-400">{new Date().toLocaleDateString()}</p>
+      <div className="hidden print:block mb-6 pb-4 border-b-2 border-neutral-300">
+        <h2 className="text-2xl font-bold text-neutral-900">ChequeMart</h2>
+        <p className="text-sm text-neutral-500">Seller Orders Report</p>
+        <p className="text-xs text-neutral-400">{new Date().toLocaleDateString()}</p>
       </div>
 
       {/* Stats strip */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 text-center">
-          <p className="text-lg font-black text-gray-900">{orders.length}</p>
-          <p className="text-[10px] text-gray-400 font-semibold">Total</p>
+        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-3 text-center">
+          <p className="text-lg font-black text-neutral-900">{orders.length}</p>
+          <p className="text-[10px] text-neutral-400 font-semibold">Total</p>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 text-center">
+        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-3 text-center">
           <p className="text-lg font-black text-yellow-600">{orders.filter((o) => o.status === "pending").length}</p>
-          <p className="text-[10px] text-gray-400 font-semibold">Pending</p>
+          <p className="text-[10px] text-neutral-400 font-semibold">Pending</p>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 text-center">
+        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-3 text-center">
           <p className="text-lg font-black text-orange-600">{orders.filter((o) => o.status === "processing").length}</p>
-          <p className="text-[10px] text-gray-400 font-semibold">Processing</p>
+          <p className="text-[10px] text-neutral-400 font-semibold">Processing</p>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 text-center">
+        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-3 text-center">
           <p className="text-lg font-black text-purple-600">{orders.filter((o) => o.status === "confirmed").length}</p>
-          <p className="text-[10px] text-gray-400 font-semibold">Confirmed</p>
+          <p className="text-[10px] text-neutral-400 font-semibold">Confirmed</p>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 text-center">
+        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-3 text-center">
           <p className="text-lg font-black text-blue-600">{orders.filter((o) => o.status === "shipped").length}</p>
-          <p className="text-[10px] text-gray-400 font-semibold">Shipped</p>
+          <p className="text-[10px] text-neutral-400 font-semibold">Shipped</p>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 text-center">
+        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-3 text-center">
           <p className="text-lg font-black text-green-600">{orders.filter((o) => o.status === "delivered").length}</p>
-          <p className="text-[10px] text-gray-400 font-semibold">Delivered</p>
+          <p className="text-[10px] text-neutral-400 font-semibold">Delivered</p>
         </div>
       </div>
 
       {/* Payment status strip */}
       <div className="grid grid-cols-2 gap-2">
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 text-center">
+        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-3 text-center">
           <p className="text-lg font-black text-green-600">
             {orders.filter((o) => getPaymentStatus(o) === "Paid").length}
           </p>
-          <p className="text-[10px] text-gray-400 font-semibold">Paid</p>
+          <p className="text-[10px] text-neutral-400 font-semibold">Paid</p>
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 text-center">
+        <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-3 text-center">
           <p className="text-lg font-black text-red-600">
             {orders.filter((o) => getPaymentStatus(o) === "Unpaid").length}
           </p>
-          <p className="text-[10px] text-gray-400 font-semibold">Unpaid</p>
+          <p className="text-[10px] text-neutral-400 font-semibold">Unpaid</p>
         </div>
       </div>
 
       {/* Search */}
       <div className="relative">
-        <Icon d={ICONS.search} size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Icon d={ICONS.search} size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by order ID, product or customer"
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm
-            focus:outline-none focus:ring-2 focus:ring-[#ff5252]/20 focus:border-[#ff5252]/40 transition"
+          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-neutral-200 text-sm
+            focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500/40 transition"
         />
       </div>
 
       {/* Filter tabs - Status */}
       <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
-        <span className="text-xs font-bold text-gray-400 self-center mr-1">Status:</span>
+        <span className="text-xs font-bold text-neutral-400 self-center mr-1">Status:</span>
         {STATUS_FILTERS.map((f) => (
           <button
             key={f}
@@ -390,8 +390,8 @@ export default function OrdersPage() {
             className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0
               transition cursor-pointer
               ${statusFilter === f
-                ? "bg-[#ff5252] text-white shadow-md shadow-red-200"
-                : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300"}`}
+                ? "bg-[#ff5252] text-white shadow-md shadow-primary-200"
+                : "bg-white text-neutral-500 border border-neutral-200 hover:border-neutral-300"}`}
           >
             {f === "All" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
@@ -400,7 +400,7 @@ export default function OrdersPage() {
 
       {/* Filter tabs - Payment */}
       <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
-        <span className="text-xs font-bold text-gray-400 self-center mr-1">Payment:</span>
+        <span className="text-xs font-bold text-neutral-400 self-center mr-1">Payment:</span>
         {PAYMENT_FILTERS.map((f) => (
           <button
             key={f}
@@ -409,7 +409,7 @@ export default function OrdersPage() {
               transition cursor-pointer
               ${paymentFilter === f
                 ? f === "Paid" ? "bg-green-500 text-white shadow-md" : f === "Unpaid" ? "bg-red-500 text-white shadow-md" : "bg-[#ff5252] text-white shadow-md"
-                : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300"}`}
+                : "bg-white text-neutral-500 border border-neutral-200 hover:border-neutral-300"}`}
           >
             {f}
           </button>
@@ -421,10 +421,10 @@ export default function OrdersPage() {
         <div className="space-y-2 min-h-[300px]">
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <CircularProgress size={30} className="text-[#ff5252]" />
+              <CircularProgress size={30} className="text-primary-500" />
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-14 bg-white rounded-2xl border border-gray-100 text-gray-400">
+            <div className="text-center py-14 bg-white rounded-2xl border border-neutral-100 text-neutral-400">
               <Icon d={ICONS.orders} size={36} className="mx-auto mb-2 opacity-20" />
               <p className="text-sm font-semibold">No orders found</p>
             </div>
@@ -437,27 +437,27 @@ export default function OrdersPage() {
                 <div
                   key={order._id}
                   onClick={() => setSelected(order)}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3 hover:shadow-md hover:border-gray-200 transition-all cursor-pointer"
+                  className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 flex items-center gap-3 hover:shadow-md hover:border-neutral-200 transition-all cursor-pointer"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-[#ff5252]/8 flex items-center justify-center flex-shrink-0">
-                    <Icon d={ICONS.truck} size={18} className="text-[#ff5252]" />
+                  <div className="w-10 h-10 rounded-xl bg-primary-50/80 flex items-center justify-center flex-shrink-0">
+                    <Icon d={ICONS.truck} size={18} className="text-primary-500" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                      <p className="text-sm font-bold text-gray-900 truncate">
+                      <p className="text-sm font-bold text-neutral-900 truncate">
                         {order.products.map(p => p.name).join(", ")}
                       </p>
                       <StatusBadge status={order.status} />
                       <StatusBadge status={paymentStatus} category="payment" />
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-400">
+                    <div className="flex items-center gap-3 text-xs text-neutral-400">
                       <span className="font-mono uppercase tracking-tighter">#{order._id.slice(-6)}</span>
                       <span>{order.buyer?.name || "Customer"}</span>
                       <span>{new Date(order.createdAt).toLocaleDateString()}</span>
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-black text-gray-900">{fmt(order.totalAmount || order.amount)}</p>
+                    <p className="text-sm font-black text-neutral-900">{fmt(order.totalAmount || order.amount)}</p>
                     {order.trackingNumber && (
                       <p className="text-[10px] text-blue-400 font-medium mt-0.5">{order.trackingNumber}</p>
                     )}

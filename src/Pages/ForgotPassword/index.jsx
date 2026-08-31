@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { FaArrowLeft, FaEnvelope, FaCheckCircle, FaExclamationCircle, FaPhone } from 'react-icons/fa'
+import { FaEnvelope, FaCheckCircle, FaPhone } from 'react-icons/fa'
 import { FaRegArrowAltCircleLeft } from 'react-icons/fa'
-import { Button, TextField, CircularProgress, Alert, Box, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Button, TextField, CircularProgress, Alert, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { toast } from 'sonner'
 
 const ForgotPassword = () => {
@@ -20,13 +20,13 @@ const ForgotPassword = () => {
     setLoading(true)
 
     try {
-      const payload = method === 'email' ? { email } : { phone: phone.startsWith('+') ? phone : `+234${phone.slice(1)}` }
-      
+      const payload = method === 'email'
+        ? { email }
+        : { phone: phone.startsWith('+') ? phone : `+234${phone.slice(1)}` }
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/forgot-password-otp`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
 
@@ -34,15 +34,11 @@ const ForgotPassword = () => {
 
       if (data.success) {
         setSuccess(true)
-        if (method === 'email') {
-          toast.success('Reset code sent to your email')
-        } else {
-          toast.success('Reset code sent to your phone')
-        }
+        toast.success(`Reset code sent to your ${method === 'email' ? 'email' : 'phone'}`)
       } else {
         setError(data.message || 'Something went wrong')
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.')
     } finally {
       setLoading(false)
@@ -50,108 +46,91 @@ const ForgotPassword = () => {
   }
 
   return (
-    <section className='py-10 md:py-16 bg-gray-50 min-h-screen'>
+    <section className="py-12 bg-neutral-50 min-h-[70vh] flex items-center">
       <div className="my-container">
         <div className="max-w-md mx-auto">
-          {/* Back to Login */}
-          <div className="mb-6">
-            <Link 
-              to="/login" 
-              className="flex items-center gap-2 text-gray-600 hover:text-[#ff5252] transition-colors text-sm"
-            >
-              <FaRegArrowAltCircleLeft className="rotate-180" />
-              Back to Login
-            </Link>
-          </div>
+          {/* Back link */}
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-2 text-neutral-500 hover:text-primary-500 transition-colors text-sm mb-6"
+          >
+            <FaRegArrowAltCircleLeft className="rotate-180" />
+            Back to Login
+          </Link>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+          <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-8">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-[#fff5f2] rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaEnvelope className="text-2xl text-[#ff5252]" />
+              <div className="w-14 h-14 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaEnvelope className="text-xl text-primary-500" />
               </div>
-              <h1 className='text-2xl font-bold text-gray-800 mb-2'>
+              <h1 className="text-xl font-semibold text-neutral-900 mb-2">
                 Reset Password
               </h1>
-              <p className="text-gray-500 text-sm">
+              <p className="text-neutral-400 text-sm">
                 Choose how you want to receive your reset code
               </p>
             </div>
 
-            {/* Success State */}
+            {/* Success state */}
             {success ? (
               <div className="text-center py-4">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FaCheckCircle className="text-2xl text-green-600" />
+                <div className="w-14 h-14 bg-success-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaCheckCircle className="text-xl text-success-500" />
                 </div>
-                <h2 className="text-lg font-semibold text-gray-800 mb-2">
-                  Code Sent!
-                </h2>
-                <p className="text-gray-500 text-sm mb-6">
+                <h2 className="text-lg font-semibold text-neutral-900 mb-2">Code Sent!</h2>
+                <p className="text-neutral-400 text-sm mb-6">
                   We sent a code to your {method === 'email' ? 'email' : 'phone'}
                 </p>
-                <Alert severity="info" className="mb-4 text-left">
+                <Alert severity="info" className="mb-4 text-left text-sm">
                   Enter the 6-digit code to reset your password
                 </Alert>
                 <Button
                   variant="contained"
                   fullWidth
                   onClick={() => navigate('/verify-reset-code', { state: { method, identifier: method === 'email' ? email : phone } })}
-                  className="bg-gradient-to-r from-[#ff5252] to-[#ff7b7b]! hover:from-[#e04848]! hover:to-[#ff5252]! text-white! py-3! rounded-lg!"
+                  className="btn-org!"
                 >
                   Enter Code
                 </Button>
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => {
-                    setSuccess(false)
-                    setEmail('')
-                    setPhone('')
-                  }}
-                  className="mt-2 border-gray-300! text-gray-600! hover:border-[#ff5252]!"
+                  onClick={() => { setSuccess(false); setEmail(''); setPhone('') }}
+                  className="mt-2 border-neutral-200! text-neutral-500! hover:border-primary-500! hover:text-primary-500!"
                 >
                   Send Again
                 </Button>
               </div>
             ) : (
-              /* Form */
               <form onSubmit={handleSubmit}>
                 {error && (
-                  <Alert severity="error" className="mb-4">
-                    {error}
-                  </Alert>
+                  <Alert severity="error" className="mb-4">{error}</Alert>
                 )}
 
-                {/* Method Toggle */}
+                {/* Method toggle */}
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Send reset code via
                   </label>
                   <ToggleButtonGroup
                     value={method}
                     exclusive
-                    onChange={(e, newMethod) => {
-                      if (newMethod !== null) {
-                        setMethod(newMethod)
-                      }
-                    }}
+                    onChange={(e, newMethod) => { if (newMethod !== null) setMethod(newMethod) }}
                     fullWidth
                     className="!flex"
                   >
                     <ToggleButton
                       value="email"
-                      className={`flex-1! ${method === 'email' ? '!bg-[#ff5252] !text-white' : ''}`}
+                      className={`flex-1! !border-neutral-200 ${method === 'email' ? '!bg-primary-500 !text-white !border-primary-500' : ''}`}
                     >
-                      <FaEnvelope className="mr-2" />
-                      Email
+                      <FaEnvelope className="mr-2" /> Email
                     </ToggleButton>
                     <ToggleButton
                       value="sms"
-                      className={`flex-1! ${method === 'sms' ? '!bg-[#ff5252] !text-white' : ''}`}
+                      className={`flex-1! !border-neutral-200 ${method === 'sms' ? '!bg-primary-500 !text-white !border-primary-500' : ''}`}
                     >
-                      <FaPhone className="mr-2" />
-                      SMS
+                      <FaPhone className="mr-2" /> SMS
                     </ToggleButton>
                   </ToggleButtonGroup>
                 </div>
@@ -168,16 +147,12 @@ const ForgotPassword = () => {
                       required
                       placeholder="Enter your email"
                       InputProps={{
-                        startAdornment: (
-                          <FaEnvelope className="text-gray-400 mr-2" />
-                        ),
+                        startAdornment: <FaEnvelope className="text-neutral-300 mr-2" />,
                       }}
-                      sx={{ 
+                      sx={{
                         "& .MuiInputBase-root": { height: "50px" },
                         "& .MuiOutlinedInput-root": {
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#ff5252",
-                          },
+                          "&.Mui-focused fieldset": { borderColor: "#ff5252" },
                         },
                       }}
                     />
@@ -194,20 +169,16 @@ const ForgotPassword = () => {
                       required
                       placeholder="8012345678"
                       InputProps={{
-                        startAdornment: (
-                          <FaPhone className="text-gray-400 mr-2" />
-                        ),
+                        startAdornment: <FaPhone className="text-neutral-300 mr-2" />,
                       }}
-                      sx={{ 
+                      sx={{
                         "& .MuiInputBase-root": { height: "50px" },
                         "& .MuiOutlinedInput-root": {
-                          "&.Mui-focused fieldset": {
-                            borderColor: "#ff5252",
-                          },
+                          "&.Mui-focused fieldset": { borderColor: "#ff5252" },
                         },
                       }}
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-neutral-400 mt-1">
                       Enter phone number without +234
                     </p>
                   </div>
@@ -218,7 +189,7 @@ const ForgotPassword = () => {
                   variant="contained"
                   fullWidth
                   disabled={loading}
-                  className="bg-gradient-to-r from-[#ff5252] to-[#ff7b7b]! hover:from-[#e04848]! hover:to-[#ff5252]! text-white! py-3! rounded-lg! font-semibold! transition-all!"
+                  className="btn-org! py-3! font-semibold!"
                   startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                 >
                   {loading ? 'Sending...' : 'Send Reset Code'}
@@ -226,15 +197,11 @@ const ForgotPassword = () => {
               </form>
             )}
 
-            {/* Remember Password */}
             {!success && (
               <div className="mt-6 text-center">
-                <p className="text-gray-500 text-sm">
+                <p className="text-neutral-400 text-sm">
                   Remember your password?{' '}
-                  <Link 
-                    to="/login" 
-                    className="text-[#ff5252] font-medium hover:underline"
-                  >
+                  <Link to="/login" className="text-primary-500 font-medium hover:text-primary-600 transition-colors">
                     Sign in
                   </Link>
                 </p>
@@ -242,12 +209,9 @@ const ForgotPassword = () => {
             )}
           </div>
 
-          {/* Help Text */}
-          <div className="mt-6 text-center">
-            <p className="text-gray-400 text-xs">
-              The code expires in 10 minutes.
-            </p>
-          </div>
+          <p className="mt-6 text-center text-neutral-300 text-xs">
+            The code expires in 10 minutes.
+          </p>
         </div>
       </div>
     </section>

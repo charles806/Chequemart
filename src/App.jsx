@@ -8,11 +8,9 @@ import Products from "./Pages/Products";
 import ProductDetail from "./Pages/ProductDetail";
 import Login from "./Pages/Login";
 import Register from "./Pages/Register";
-import AuthCallback from "./Pages/AuthCallback";
 import ForgotPassword from "./Pages/ForgotPassword";
 import BlogList from "./Pages/Blog";
 import BlogPost from "./Pages/BlogPost";
-import Compare from "./Pages/Compare";
 import VerifyResetCode from "./Pages/VerifyResetCode";
 import NewPassword from "./Pages/NewPassword";
 import ResetPassword from "./Pages/ResetPassword";
@@ -22,6 +20,9 @@ import Checkout from "./Pages/Checkout";
 import Account from "./Pages/Account/index";
 import MyList from "./Pages/MyList"
 import Orders from "./Pages/Orders"
+import HelpCenter from "./Pages/HelpCenter"
+import PrivacyPolicy from "./Pages/PrivacyPolicy"
+import TermsOfService from "./Pages/TermsOfService"
 
 // Seller Dashboard
 import SellerApp from "./seller/SellerApp";
@@ -29,8 +30,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 // Components
 import Header from "./Component/Header";
+import MobileBottomNav from "./Component/MobileBottomNav";
 import { Footer } from "./Component/Footer";
-import ErrorBoundary from "./components/ErrorBoundary";
 import { useHotkey } from "./hooks/useHotkey";
 
 // Context
@@ -55,10 +56,11 @@ const MarketplaceLayout = () => {
         Skip to main content
       </a>
       <div role="banner"><Header /></div>
-      <main id="main-content" className="pt-18 pb-12 lg:pt-0 lg:pb-0" role="main">
+      <main id="main-content" className="pt-18 pb-20 lg:pt-0 lg:pb-0" role="main">
         <Outlet />
       </main>
       <Footer />
+      <MobileBottomNav />
     </>
   );
 };
@@ -68,9 +70,7 @@ const App = () => {
     <BrowserRouter>
       <ScrollToTop />
       <MyContextProvider>
-        <ErrorBoundary>
-          <AppContent />
-        </ErrorBoundary>
+        <AppContent />
       </MyContextProvider>
     </BrowserRouter>
   );
@@ -79,7 +79,6 @@ const App = () => {
 const AppContent = () => {
   const { cart, removeFromCart, updateCartQty, openCartPanel, setOpenCartPanel } = React.useContext(MyContext);
   useHotkey("Escape", () => setOpenCartPanel(false));
-  useHotkey("?", () => alert("Keyboard Shortcuts:\n\nEsc - Close panels\nCtrl+K - Search (when focused)"));
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
   const toggleCartPanel = (newOpen) => {
@@ -98,13 +97,11 @@ const AppContent = () => {
           <Route path="/products" element={<Products />} />
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/blog" element={<BlogList />} />
           <Route path="/blog/:id" element={<BlogPost />} />
-          <Route path="/compare" element={<Compare />} />
           <Route path="/verify-reset-code" element={<VerifyResetCode />} />
           <Route path="/new-password" element={<NewPassword />} />
           <Route path="/verify-email" element={<Verify />} />
@@ -113,6 +110,9 @@ const AppContent = () => {
           <Route path="/account" element={<Account />} />
           <Route path="/my-list" element={<MyList />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/help-center" element={<HelpCenter />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
         </Route>
       </Routes>
       <Toaster
@@ -128,35 +128,43 @@ const AppContent = () => {
         anchor="right"
         onClose={() => toggleCartPanel(false)}
         PaperProps={{
-          className: "w-[400px] bg-white flex flex-col",
+          className: "cartPanel w-full sm:w-[400px] bg-white flex flex-col",
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-6 border-b border-black/10">
-          <h4 className="text-[18px] font-semibold text-black">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-neutral-100">
+          <h4 className="text-lg font-semibold text-neutral-900">
             Shopping Cart ({cart.length})
           </h4>
-          <IoCloseSharp
-            className="text-2xl cursor-pointer text-gray-500 hover:text-[#ff5252] transition"
+          <button
             onClick={() => toggleCartPanel(false)}
+            className="p-2 rounded-lg text-neutral-400 hover:text-primary-500 hover:bg-primary-50 transition-colors"
             aria-label="Close cart"
-          />
+          >
+            <IoCloseSharp className="text-xl" />
+          </button>
         </div>
 
         {/* Cart Items */}
         <div className="flex-1 overflow-y-auto">
           {cart.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-400 p-10 text-center">
+            <div className="flex flex-col items-center justify-center h-full text-neutral-400 p-10 text-center">
               <IoBagCheckOutline className="text-5xl mb-4 opacity-20" />
-              <p>Your cart is empty</p>
+              <p className="text-sm font-medium text-neutral-500">Your cart is empty</p>
+              <button
+                onClick={() => toggleCartPanel(false)}
+                className="mt-4 text-sm font-semibold text-primary-500 hover:text-primary-600 transition-colors"
+              >
+                Continue Shopping
+              </button>
             </div>
           ) : (
             cart.map((item) => (
               <div
                 key={item.id}
-                className="flex gap-4 p-6 border-b border-black/10 hover:bg-gray-50 transition"
+                className="flex gap-4 p-5 border-b border-neutral-100 hover:bg-neutral-50 transition-colors"
               >
-                <div className="w-20 h-20 rounded-lg overflow-hidden border border-black/10 shrink-0">
+                <div className="w-20 h-20 rounded-lg overflow-hidden border border-neutral-200 shrink-0">
                   <img
                     src={item.image}
                     alt={item.name}
@@ -166,30 +174,30 @@ const AppContent = () => {
                   />
                 </div>
 
-                <div className="flex-1 flex flex-col gap-2">
-                  <h4 className="text-sm font-medium text-gray-800">
+                <div className="flex-1 flex flex-col gap-1.5">
+                  <h4 className="text-sm font-medium text-neutral-800 line-clamp-2">
                     {item.name}
                   </h4>
 
-                  <p className="text-base font-semibold text-[#ff5252]">
+                  <p className="text-base font-bold text-primary-500">
                     ₦{item.price.toLocaleString()}
                   </p>
 
                   <div className="flex items-center gap-2 mt-1">
                     <button
-                      className="w-11 h-11 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-[#ff5252] hover:text-[#ff5252] hover:bg-[#fff5f2] transition"
+                      className="w-8 h-8 border border-neutral-200 rounded-md flex items-center justify-center text-neutral-500 hover:border-primary-500 hover:text-primary-500 hover:bg-primary-50 transition-colors text-sm"
                       onClick={() => updateCartQty(item.id, Math.max(1, item.qty - 1))}
                       aria-label={`Decrease quantity of ${item.name}`}
                     >
                       -
                     </button>
 
-                    <span className="min-w-7.5 text-center text-sm font-medium text-gray-800">
+                    <span className="min-w-7 text-center text-sm font-medium text-neutral-800">
                       {item.qty}
                     </span>
 
                     <button
-                      className="w-11 h-11 border border-gray-300 rounded flex items-center justify-center text-gray-500 hover:border-[#ff5252] hover:text-[#ff5252] hover:bg-[#fff5f2] transition"
+                      className="w-8 h-8 border border-neutral-200 rounded-md flex items-center justify-center text-neutral-500 hover:border-primary-500 hover:text-primary-500 hover:bg-primary-50 transition-colors text-sm"
                       onClick={() => updateCartQty(item.id, item.qty + 1)}
                       aria-label={`Increase quantity of ${item.name}`}
                     >
@@ -199,7 +207,7 @@ const AppContent = () => {
                 </div>
 
                 <button
-                  className="text-lg text-gray-400 cursor-pointer hover:text-red-500 transition"
+                  className="text-neutral-400 cursor-pointer hover:text-error transition-colors self-start p-1"
                   onClick={() => removeFromCart(item.id)}
                   aria-label={`Remove ${item.name} from cart`}
                 >
@@ -211,36 +219,34 @@ const AppContent = () => {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-black/10 bg-white">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-base text-gray-500 font-medium">
-              Subtotal:
-            </span>
-            <span className="text-xl text-[#ff5252] font-bold">₦{subtotal.toLocaleString()}</span>
-          </div>
+        {cart.length > 0 && (
+          <div className="p-6 border-t border-neutral-100 bg-white">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-sm text-neutral-500 font-medium">Subtotal:</span>
+              <span className="text-xl font-bold text-primary-500">₦{subtotal.toLocaleString()}</span>
+            </div>
 
-          <div className="flex flex-col gap-3">
-            <Link
-              to="/checkout"
-              onClick={() => toggleCartPanel(false)}
-              className="w-full py-3 rounded-md font-semibold text-white bg-[#ff5252] hover:bg-accent hover:-translate-y-px hover:shadow-lg hover:shadow-orange-400/30 transition text-center"
-            >
-              Checkout
-            </Link>
-
-            <Link
-              to="/cart"
-              onClick={() => toggleCartPanel(false)}
-              className="w-full py-3 rounded-md font-semibold text-[#ff5252] border-2 border-[#ff5252] hover:bg-[#fff5f2] transition text-center"
-            >
-              View Cart
-            </Link>
+            <div className="flex flex-col gap-2.5">
+              <Link
+                to="/checkout"
+                onClick={() => toggleCartPanel(false)}
+                className="w-full py-3 rounded-lg font-semibold text-white bg-primary-500 hover:bg-primary-600 transition-all text-center text-sm"
+              >
+                Checkout
+              </Link>
+              <Link
+                to="/cart"
+                onClick={() => toggleCartPanel(false)}
+                className="w-full py-3 rounded-lg font-semibold text-primary-500 border border-primary-500 hover:bg-primary-50 transition-all text-center text-sm"
+              >
+                View Cart
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
       </Drawer>
     </>
   );
 };
-
 
 export default App;

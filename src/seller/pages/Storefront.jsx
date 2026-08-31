@@ -24,7 +24,6 @@
  */
 
 import { useState, useEffect, useRef }  from "react";
-import Cookies from "js-cookie";
 import Icon                  from "../components/ui/Icon";
 import Toast, { useToast }   from "../components/ui/Toast";
 import { ICONS }             from "../components/ui/icons";
@@ -48,13 +47,13 @@ const CATEGORIES = [
 // ─────────────────────────────────────────────────────────────
 // SHARED INPUT STYLES
 // ─────────────────────────────────────────────────────────────
-const inputCls = "w-full px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ff5252]/25 focus:border-[#ff5252]/50 transition-all";
+const inputCls = "w-full px-3 py-2.5 rounded-xl bg-neutral-50 border border-neutral-200 text-sm text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500/25 focus:border-primary-500/50 transition-all";
 
 const Field = ({ label, hint, children }) => (
   <div className="flex flex-col gap-1">
-    {label && <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</label>}
+    {label && <label className="text-xs font-bold text-neutral-500 uppercase tracking-wide">{label}</label>}
     {children}
-    {hint && <p className="text-[10px] text-gray-400">{hint}</p>}
+    {hint && <p className="text-[10px] text-neutral-400">{hint}</p>}
   </div>
 );
 
@@ -76,11 +75,11 @@ const ImageUploadBtn = ({ label, preview, aspect, onUpload }) => {
 
   return (
     <div>
-      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">{label}</p>
+      <p className="text-xs font-bold text-neutral-500 uppercase tracking-wide mb-1.5">{label}</p>
       <div
         onClick={() => ref.current.click()}
-        className={`relative overflow-hidden rounded-md border-2 border-dashed border-[#ff5252]/30
-          bg-red-50/40 hover:border-[#ff5252]/60 hover:bg-red-50 transition cursor-pointer
+        className={`relative overflow-hidden rounded-md border-2 border-dashed border-primary-500/30
+          bg-red-50/40 hover:border-primary-500/60 hover:bg-red-50 transition cursor-pointer
           flex items-center justify-center group
           ${aspect === "banner" ? "h-28 w-full" : "h-24 w-24"}`}
       >
@@ -93,8 +92,8 @@ const ImageUploadBtn = ({ label, preview, aspect, onUpload }) => {
           </>
         ) : (
           <div className="text-center">
-            <Icon d={ICONS.upload} size={18} className="text-[#ff5252]/40 mx-auto mb-1" />
-            <p className="text-[10px] text-gray-400 font-medium">
+            <Icon d={ICONS.upload} size={18} className="text-primary-500/40 mx-auto mb-1" />
+            <p className="text-[10px] text-neutral-400 font-medium">
               {aspect === "banner" ? "1200 × 300px" : "1:1 ratio"}
             </p>
           </div>
@@ -109,7 +108,7 @@ const ImageUploadBtn = ({ label, preview, aspect, onUpload }) => {
 // LIVE STORE PREVIEW (buyer-facing card preview)
 // ─────────────────────────────────────────────────────────────
 const StorePreview = ({ form, stats }) => (
-  <div className="bg-gray-100 rounded-md overflow-hidden border border-gray-200">
+  <div className="bg-neutral-100 rounded-md overflow-hidden border border-neutral-200">
     {/* Banner */}
     <div className="h-20 bg-gradient-to-r from-dark to-[#ff5252]/60 relative overflow-hidden">
       {form.bannerPreview && (
@@ -129,21 +128,21 @@ const StorePreview = ({ form, stats }) => (
         </div>
         <div className="pb-1">
           <div className="flex items-center gap-1.5">
-            <p className="text-sm font-black text-gray-900 leading-none">{form.storeName || "Your Store"}</p>
-            {stats.isVerified && <Icon d={ICONS.shieldCheck} size={12} className="text-[#ff5252]" />}
+            <p className="text-sm font-black text-neutral-900 leading-none">{form.storeName || "Your Store"}</p>
+            {stats.isVerified && <Icon d={ICONS.shieldCheck} size={12} className="text-primary-500" />}
           </div>
           <div className="flex items-center gap-1 mt-0.5">
             <Icon d={ICONS.star} size={10} className="text-yellow-400 fill-yellow-400" />
-            <span className="text-[10px] text-gray-500 font-semibold">{stats.rating} · {stats.totalOrders} orders</span>
+            <span className="text-[10px] text-neutral-500 font-semibold">{stats.rating} · {stats.totalOrders} orders</span>
           </div>
         </div>
       </div>
-      <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+      <p className="text-xs text-neutral-500 line-clamp-2 leading-relaxed">
         {form.description || "Your store description will appear here…"}
       </p>
       <div className="flex items-center gap-1 mt-1.5">
-        <Icon d={ICONS.map} size={10} className="text-gray-400" />
-        <span className="text-[10px] text-gray-400">{form.location || "Location"}</span>
+        <Icon d={ICONS.map} size={10} className="text-neutral-400" />
+        <span className="text-[10px] text-neutral-400">{form.location || "Location"}</span>
       </div>
     </div>
   </div>
@@ -160,7 +159,7 @@ export default function StorefrontPage() {
     storeName: seller?.sellerInfo?.storeName || "",
     description: seller?.sellerInfo?.description || "",
     location: seller?.sellerInfo?.location || "",
-    category: seller?.sellerInfo?.category || "",
+    category: seller?.sellerInfo?.businessCategory || "",
     instagram: seller?.sellerInfo?.socialLinks?.instagram || "",
     twitter: seller?.sellerInfo?.socialLinks?.twitter || "",
     whatsapp: seller?.sellerInfo?.socialLinks?.whatsapp || "",
@@ -174,7 +173,7 @@ export default function StorefrontPage() {
         storeName: seller.sellerInfo.storeName || "",
         description: seller.sellerInfo.description || "",
         location: seller.sellerInfo.location || "",
-        category: seller.sellerInfo.category || "",
+        category: seller.sellerInfo.businessCategory || "",
         instagram: seller.sellerInfo.socialLinks?.instagram || "",
         twitter: seller.sellerInfo.socialLinks?.twitter || "",
         whatsapp: seller.sellerInfo.socialLinks?.whatsapp || "",
@@ -194,19 +193,16 @@ export default function StorefrontPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const token = Cookies.get("accessToken");
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/profile`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           sellerInfo: {
             storeName: form.storeName,
             description: form.description,
             location: form.location,
-            category: form.category,
+            businessCategory: form.category,
             socialLinks: {
               instagram: form.instagram,
               twitter: form.twitter,
@@ -245,15 +241,15 @@ export default function StorefrontPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-black text-gray-900">Storefront</h1>
-          <p className="text-xs text-gray-400">Customise how buyers see your store</p>
+          <h1 className="text-xl font-black text-neutral-900">Storefront</h1>
+          <p className="text-xs text-neutral-400">Customise how buyers see your store</p>
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold
             transition cursor-pointer shadow-md disabled:opacity-60
-            ${saved ? "bg-green-500 text-white shadow-green-200" : "bg-[#ff5252] text-white hover:bg-[#ff5252]-hover shadow-red-200"}`}
+            ${saved ? "bg-green-500 text-white shadow-green-200" : "bg-[#ff5252] text-white hover:bg-[#ff5252]-hover shadow-primary-200"}`}
         >
           {saved
             ? <><Icon d={ICONS.check} size={14} className="stroke-3" /> Saved</>
@@ -265,13 +261,13 @@ export default function StorefrontPage() {
       <div className="grid grid-cols-3 gap-2.5">
         {[
           [ICONS.star,    `${stats.rating} ★`, "Rating",       "text-yellow-500"],
-          [ICONS.orders,  stats.totalOrders, "Orders",   "text-[#ff5252]"   ],
+          [ICONS.orders,  stats.totalOrders, "Orders",   "text-primary-500"   ],
           [ICONS.package, stats.totalProducts,"Products","text-blue-500"  ],
         ].map(([icon, val, lbl, c]) => (
-          <div key={lbl} className="bg-white rounded-md border border-gray-100 shadow-sm p-3.5 text-center">
+          <div key={lbl} className="bg-white rounded-md border border-neutral-100 shadow-sm p-3.5 text-center">
             <Icon d={icon} size={16} className={`${c} mx-auto mb-1`} />
             <p className={`text-lg font-black ${c}`}>{val}</p>
-            <p className="text-[10px] text-gray-400 font-semibold">{lbl}</p>
+            <p className="text-[10px] text-neutral-400 font-semibold">{lbl}</p>
           </div>
         ))}
       </div>
@@ -284,14 +280,14 @@ export default function StorefrontPage() {
           </div>
           <div>
             <p className="text-sm font-bold text-green-700">Verified Seller</p>
-            <p className="text-xs text-gray-500">Your store displays a verified badge to buyers.</p>
+            <p className="text-xs text-neutral-500">Your store displays a verified badge to buyers.</p>
           </div>
         </div>
       )}
 
       {/* Media uploads */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 space-y-4">
-        <h2 className="font-black text-gray-900 text-sm">Store Media</h2>
+      <div className="bg-white rounded-3xl border border-neutral-100 shadow-sm p-5 space-y-4">
+        <h2 className="font-black text-neutral-900 text-sm">Store Media</h2>
         <ImageUploadBtn label="Store Banner" preview={form.bannerPreview} aspect="banner"
           onUpload={(url) => setForm((p) => ({ ...p, bannerPreview: url }))} />
         <ImageUploadBtn label="Store Logo" preview={form.logoPreview} aspect="logo"
@@ -299,8 +295,8 @@ export default function StorefrontPage() {
       </div>
 
       {/* Store info */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 space-y-4">
-        <h2 className="font-black text-gray-900 text-sm">Store Information</h2>
+      <div className="bg-white rounded-3xl border border-neutral-100 shadow-sm p-5 space-y-4">
+        <h2 className="font-black text-neutral-900 text-sm">Store Information</h2>
 
         <Field label="Store Name" hint="This is the name buyers see on your store page">
           <input value={form.storeName} onChange={update("storeName")} placeholder="e.g. John's Electronics" className={inputCls} />
@@ -314,7 +310,7 @@ export default function StorefrontPage() {
 
         <Field label="Location" hint="City, State  e.g. Lagos, Nigeria">
           <div className="relative">
-            <Icon d={ICONS.map} size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Icon d={ICONS.map} size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
             <input value={form.location} onChange={update("location")} placeholder="Lagos, Nigeria" className={inputCls + " pl-9"} />
           </div>
         </Field>
@@ -323,15 +319,15 @@ export default function StorefrontPage() {
           <textarea value={form.description} onChange={update("description")} rows={4}
             placeholder="Describe your store, products and what sets you apart…"
             className={inputCls + " resize-none"} />
-          <p className="text-[10px] text-gray-300 text-right">{form.description.length} chars</p>
+          <p className="text-[10px] text-neutral-300 text-right">{form.description.length} chars</p>
         </Field>
       </div>
 
       {/* Social links */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 space-y-4">
+      <div className="bg-white rounded-3xl border border-neutral-100 shadow-sm p-5 space-y-4">
         <div>
-          <h2 className="font-black text-gray-900 text-sm">Social Links</h2>
-          <p className="text-xs text-gray-400 mt-0.5">Optional — shown on your public store page to build buyer trust</p>
+          <h2 className="font-black text-neutral-900 text-sm">Social Links</h2>
+          <p className="text-xs text-neutral-400 mt-0.5">Optional — shown on your public store page to build buyer trust</p>
         </div>
         {[
           ["Instagram",   "instagram", "@yourstore"  ],
@@ -340,7 +336,7 @@ export default function StorefrontPage() {
         ].map(([label, key, ph]) => (
           <Field key={key} label={label}>
             <div className="relative">
-              <Icon d={ICONS.link} size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Icon d={ICONS.link} size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
               <input value={form[key]} onChange={update(key)} placeholder={ph} className={inputCls + " pl-9"} />
             </div>
           </Field>
@@ -348,12 +344,12 @@ export default function StorefrontPage() {
       </div>
 
       {/* Live preview */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 space-y-3">
+      <div className="bg-white rounded-3xl border border-neutral-100 shadow-sm p-5 space-y-3">
         <div className="flex items-center gap-2">
-          <Icon d={ICONS.eye} size={15} className="text-gray-400" />
-          <h2 className="font-black text-gray-900 text-sm">Live Preview</h2>
+          <Icon d={ICONS.eye} size={15} className="text-neutral-400" />
+          <h2 className="font-black text-neutral-900 text-sm">Live Preview</h2>
         </div>
-        <p className="text-xs text-gray-400">How your store card appears to buyers</p>
+        <p className="text-xs text-neutral-400">How your store card appears to buyers</p>
         <StorePreview form={form} stats={stats} />
       </div>
 
@@ -363,7 +359,7 @@ export default function StorefrontPage() {
         disabled={saving}
         className={`w-full py-3 rounded-md text-white font-bold text-sm transition cursor-pointer
           flex items-center justify-center gap-2 shadow-md disabled:opacity-60
-          ${saved ? "bg-green-500 shadow-green-200" : "bg-[#ff5252] hover:bg-[#ff5252]-hover shadow-red-200"}`}
+          ${saved ? "bg-green-500 shadow-green-200" : "bg-[#ff5252] hover:bg-[#ff5252]-hover shadow-primary-200"}`}
       >
         {saved
           ? <><Icon d={ICONS.check} size={16} className="stroke-3" /> Changes Saved!</>

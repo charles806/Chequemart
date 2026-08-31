@@ -62,7 +62,7 @@ const MiniBarChart = ({ data }) => {
             <div
               className={`
                 absolute -top-6 text-[10px] font-semibold
-                bg-gray-900 text-white px-2 py-1 rounded-md
+                bg-neutral-900 text-white px-2 py-1 rounded-md
                 shadow-md whitespace-nowrap
                 transition-all duration-200
                 ${isActive ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 pointer-events-none"}
@@ -89,7 +89,7 @@ const MiniBarChart = ({ data }) => {
             <span
               className={`
                 text-[10px] font-medium transition-colors duration-200
-                ${isActive ? "text-gray-800" : "text-gray-400"}
+                ${isActive ? "text-neutral-800" : "text-neutral-400"}
               `}
             >
               {d.label}
@@ -107,10 +107,10 @@ const MiniBarChart = ({ data }) => {
 const StatCard = ({ label, value, change, icon }) => {
   const positive = change >= 0;
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 cursor-pointer">
+    <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 cursor-pointer">
       <div className="flex items-start justify-between mb-3">
-        <div className="w-9 h-9 rounded-xl bg-[#ff5252]/10 flex items-center justify-center">
-          <Icon d={icon} size={16} className="text-[#ff5252]" />
+        <div className="w-9 h-9 rounded-xl bg-primary-50 flex items-center justify-center">
+          <Icon d={icon} size={16} className="text-primary-500" />
         </div>
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5
           ${positive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
@@ -118,8 +118,8 @@ const StatCard = ({ label, value, change, icon }) => {
           {Math.abs(change)}%
         </span>
       </div>
-      <p className="text-xl font-black text-gray-900 leading-none">{value}</p>
-      <p className="text-[10px] text-gray-400 font-semibold mt-1">{label}</p>
+      <p className="text-xl font-black text-neutral-900 leading-none">{value}</p>
+      <p className="text-[10px] text-neutral-400 font-semibold mt-1">{label}</p>
     </div>
   );
 };
@@ -177,7 +177,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="h-96 flex items-center justify-center">
-        <CircularProgress size={40} className="text-[#ff5252]" />
+        <CircularProgress size={40} className="text-primary-500" />
       </div>
     );
   }
@@ -193,18 +193,18 @@ export default function DashboardPage() {
     <div className="space-y-5">
 
       {/* Welcome banner */}
-      <div className="bg-white rounded-3xl p-5 shadow-2xl shadow-black/20">
-        <p className="text-gray-600 text-sm mb-0.5 font-medium">Welcome back 👋</p>
-        <h2 className="text-gray-900 text-2xl font-black">{seller.storeName || "My Store"}</h2>
-        <p className="text-gray-400 text-[10px] font-semibold mt-1 uppercase tracking-wider">Here's what's happening in your store today.</p>
+      <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl p-5 shadow-lg">
+        <p className="text-white/70 text-sm mb-0.5 font-medium">Welcome back</p>
+        <h2 className="text-white text-2xl font-black">{seller.storeName || "My Store"}</h2>
+        <p className="text-white/50 text-[10px] font-semibold mt-1 uppercase tracking-wider">Here's what's happening in your store today.</p>
         <div className="mt-5 grid grid-cols-2 gap-3">
-          <div className="bg-white/5 rounded-2xl p-4 backdrop-blur-md border border-white/5 hover:bg-white/10 transition-colors">
+          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-md border border-white/10 hover:bg-white/15 transition-colors">
             <p className="text-white text-xl font-black">{fmt(wallet.availableBalance)}</p>
-            <p className="text-white/50 text-[10px] font-bold mt-1 uppercase">Available Balance</p>
+            <p className="text-white/60 text-[10px] font-bold mt-1 uppercase">Available Balance</p>
           </div>
-          <div className="bg-white/5 rounded-2xl p-4 backdrop-blur-md border border-white/5 hover:bg-white/10 transition-colors">
+          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-md border border-white/10 hover:bg-white/15 transition-colors">
             <p className="text-white text-xl font-black">{fmt(wallet.escrowBalance)}</p>
-            <p className="text-[#ff5252] text-[10px] font-bold mt-1 uppercase tracking-widest">In Escrow</p>
+            <p className="text-white/80 text-[10px] font-bold mt-1 uppercase tracking-widest">In Escrow</p>
           </div>
         </div>
       </div>
@@ -223,51 +223,51 @@ export default function DashboardPage() {
       </div>
 
       {/* Revenue chart */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
+      <div className="bg-white rounded-3xl border border-neutral-100 shadow-sm p-5">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="font-black text-gray-900 text-sm">Weekly Revenue</h3>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <h3 className="font-black text-neutral-900 text-sm">Weekly Revenue</h3>
+            <p className="text-xs text-neutral-400 mt-0.5">
               {fmt(dashboardData.weeklyRevenue.reduce((s, d) => s + d.revenue, 0))} this week
             </p>
           </div>
-          <Icon d={ICONS.bar} size={18} className="text-[#ff5252]/30" />
+          <Icon d={ICONS.bar} size={18} className="text-primary-500/30" />
         </div>
         <MiniBarChart data={dashboardData.weeklyRevenue} />
       </div>
 
       {/* Recent orders */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-          <h3 className="font-black text-gray-900 text-sm">Recent Orders</h3>
-          <span className="text-[10px] text-[#ff5252] font-bold cursor-pointer hover:underline">
+      <div className="bg-white rounded-3xl border border-neutral-100 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-neutral-50 flex items-center justify-between">
+          <h3 className="font-black text-neutral-900 text-sm">Recent Orders</h3>
+          <span className="text-[10px] text-primary-500 font-bold cursor-pointer hover:underline">
             <Link to="/seller/orders">
               View all
             </Link>
           </span>
         </div>
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-neutral-50">
           {dashboardData.recentOrders.length === 0 ? (
             <div className="px-5 py-10 text-center">
-              <p className="text-gray-400 text-sm italic font-medium">No orders yet</p>
+              <p className="text-neutral-400 text-sm italic font-medium">No orders yet</p>
             </div>
           ) : (
             dashboardData.recentOrders.map((order) => (
-              <div key={order._id} className="px-5 py-3.5 flex items-center gap-3 hover:bg-gray-50/50 transition">
-                <div className="w-9 h-9 rounded-xl bg-[#ff5252]/8 flex items-center justify-center shrink-0">
-                  <Icon d={ICONS.truck} size={16} className="text-[#ff5252]" />
+              <div key={order._id} className="px-5 py-3.5 flex items-center gap-3 hover:bg-neutral-50/50 transition">
+                <div className="w-9 h-9 rounded-xl bg-primary-50/80 flex items-center justify-center shrink-0">
+                  <Icon d={ICONS.truck} size={16} className="text-primary-500" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-800 truncate">
+                  <p className="text-sm font-semibold text-neutral-800 truncate">
                     {order.products.map(p => p.name).join(', ')}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-[10px] text-gray-400 font-mono">#{order._id.slice(-6).toUpperCase()}</p>
-                    <p className="text-[10px] text-gray-400">{order.buyer?.name || "Customer"}</p>
+                    <p className="text-[10px] text-neutral-400 font-mono">#{order._id.slice(-6).toUpperCase()}</p>
+                    <p className="text-[10px] text-neutral-400">{order.buyer?.name || "Customer"}</p>
                   </div>
                 </div>
                 <div className="text-right shrink-0 space-y-1">
-                  <p className="text-sm font-black text-gray-900">{fmt(order.totalAmount)}</p>
+                  <p className="text-sm font-black text-neutral-900">{fmt(order.totalAmount)}</p>
                   <StatusBadge status={order.status} />
                 </div>
               </div>

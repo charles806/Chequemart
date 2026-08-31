@@ -25,7 +25,7 @@ const Sidebar = ({ open, setOpen }) => {
       <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-50
-          w-64 bg-[#e8e8e8] border-r border-black/5
+          w-64 bg-neutral-50 border-r border-neutral-200
           transform transition-transform duration-200 ease-in-out
           lg:translate-x-0
           ${open ? "translate-x-0" : "-translate-x-full"}
@@ -33,11 +33,11 @@ const Sidebar = ({ open, setOpen }) => {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center gap-3 px-6 py-4 border-b border-black/5">
-            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-[#ff5252] to-red-300 flex items-center justify-center">
+          <div className="flex items-center gap-3 px-6 py-4 border-b border-neutral-200">
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary-500 to-primary-300 flex items-center justify-center">
               <span className="text-white font-bold text-sm">S</span>
             </div>
-            <span className="text-lg font-bold text-gray-900">Seller Dashboard</span>
+            <span className="text-lg font-bold text-neutral-900">Seller Dashboard</span>
           </div>
 
           {/* Navigation */}
@@ -48,8 +48,8 @@ const Sidebar = ({ open, setOpen }) => {
                 to={`/seller/${item.key}`}
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive
-                    ? "bg-[#ff5252]/10 text-[#ff5252]"
-                    : "text-gray-600 hover:bg-black/5 hover:text-gray-900"
+                    ? "bg-primary-50 text-primary-500"
+                    : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
                   }`
                 }
                 onClick={() => setOpen(false)}
@@ -61,15 +61,15 @@ const Sidebar = ({ open, setOpen }) => {
           </nav>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-black/5 space-y-3">
+          <div className="px-6 py-4 border-t border-neutral-200 space-y-3">
             <NavLink
               to="/"
-              className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-700 transition"
+              className="flex items-center gap-2 text-xs text-neutral-500 hover:text-neutral-700 transition"
             >
               <Icon d={ICONS.chevronR} size={12} className="rotate-180" />
               Back to Shop
             </NavLink>
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-neutral-400">
               v1.0.0 • Chequemart Seller
             </div>
           </div>

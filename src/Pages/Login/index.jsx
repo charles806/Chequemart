@@ -1,12 +1,10 @@
-/* eslint-disable no-unused-vars */
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 import { Button, CircularProgress } from "@mui/material";
 import { IoEye, IoEyeOff } from "react-icons/io5";
-import { FcGoogle } from "react-icons/fc";
 import { MyContext } from "../../MyContext";
-import { login, googleLogin } from "../../api";
+import { login } from "../../api";
 
 const Login = () => {
   const [isShowPassword, setIsShowPassword] = useState(false);
@@ -59,23 +57,21 @@ const Login = () => {
 
     setIsLoading(true);
     try {
-      // Use centralized API from api.js
       const data = await login(formFields.identifier, formFields.password);
 
       if (context.login) {
-        context.login(data.user, data.accessToken);
+        context.login(data.user);
       }
       if (context.openAlertBox) {
         context.openAlertBox("success", "Login successful!");
       }
-      // Redirect based on role and onboarding status
-      if (data.user.role === 'buyer') {
-        navigate('/');
-      } else if (data.user.role === 'seller') {
+      if (data.user.role === "buyer") {
+        navigate("/");
+      } else if (data.user.role === "seller") {
         if (data.user.sellerInfo?.onboardingComplete) {
-          navigate('/seller/dashboard');
+          navigate("/seller/dashboard");
         } else {
-          navigate('/seller/onboarding');
+          navigate("/seller/onboarding");
         }
       }
     } catch (err) {
@@ -87,16 +83,22 @@ const Login = () => {
   };
 
   return (
-    <section className="py-10">
-      <div className="w-full flex justify-center px-4">
-        <div className="bg-white shadow-md rounded-md w-full sm:w-[90%] md:w-[60%] lg:w-100 px-6 py-8">
-          <h3 className="text-center text-[22px] font-semibold text-black mb-8">
-            Login to your account
-          </h3>
+    <section className="py-12 bg-neutral-50 min-h-[70vh] flex items-center">
+      <div className="w-full px-4">
+        <div className="bg-white rounded-xl border border-neutral-200 shadow-sm w-full max-w-md mx-auto p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h3 className="text-xl font-semibold text-neutral-900 mb-2">
+              Welcome back
+            </h3>
+            <p className="text-sm text-neutral-400">
+              Sign in to your Chequemart account
+            </p>
+          </div>
 
           <form className="w-full" onSubmit={handleSubmit}>
-            {/* EMAIL OR PHONE */}
-            <div className="w-full mb-6">
+            {/* Email or Phone */}
+            <div className="w-full mb-5">
               <TextField
                 type="text"
                 id="identifier"
@@ -112,7 +114,7 @@ const Login = () => {
               />
             </div>
 
-            {/* PASSWORD */}
+            {/* Password */}
             <div className="w-full mb-2 relative">
               <TextField
                 type={isShowPassword ? "text" : "password"}
@@ -131,66 +133,45 @@ const Login = () => {
                 type="button"
                 disableRipple
                 onClick={() => setIsShowPassword(!isShowPassword)}
-                className="absolute! right-0! z-50! w-10! h-10! min-w-10! rounded-full! text-black/60! transition-all! duration-300! hover:bg-black/5! hover:text-black!"
+                className="absolute! right-0! z-50! w-10! h-10! min-w-10! rounded-full! text-neutral-400! transition-all! duration-300! hover:bg-neutral-50! hover:text-neutral-700!"
               >
                 {isShowPassword ? (
-                  <IoEyeOff className="text-[20px]" />
+                  <IoEyeOff className="text-lg" />
                 ) : (
-                  <IoEye className="text-[20px]" />
+                  <IoEye className="text-lg" />
                 )}
               </Button>
             </div>
 
-            {/* FORGOT */}
+            {/* Forgot password */}
             <div className="flex justify-end mb-6">
               <Link
                 to="/forgot-password"
-                className="text-[14px] font-medium text-[#ff5252] hover:text-black hover:underline transition"
+                className="text-sm text-primary-500 hover:text-primary-600 font-medium transition-colors"
               >
                 Forgot Password?
               </Link>
             </div>
 
-            {/* LOGIN BUTTON */}
-            <div className="mt-6 mb-6">
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="btn-org w-full!"
-              >
-                {isLoading ? <CircularProgress size={22} color="inherit" /> : "Login"}
-              </Button>
-            </div>
+            {/* Submit */}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="btn-org w-full!"
+            >
+              {isLoading ? <CircularProgress size={20} color="inherit" /> : "Sign In"}
+            </Button>
 
-            {/* REGISTER */}
-            <p className="text-center text-[14px] text-gray-500 mb-6">
-              Don&apos;t have an account?
+            {/* Register link */}
+            <p className="text-center text-sm text-neutral-400 mt-6">
+              Don&apos;t have an account?{" "}
               <Link
                 to="/register"
-                className="ml-1 font-semibold text-[#ff5252] hover:text-black hover:underline"
+                className="text-primary-500 font-semibold hover:text-primary-600 transition-colors"
               >
-                Register
+                Create Account
               </Link>
             </p>
-
-            {/* DIVIDER */}
-            <div className="flex items-center gap-4 my-6">
-              <div className="flex-1 h-px bg-gray-200" />
-              <p className="text-[13px] font-medium text-gray-400 whitespace-nowrap">
-                Or continue with social account
-              </p>
-              <div className="flex-1 h-px bg-gray-200" />
-            </div>
-
-            {/* GOOGLE */}
-            <Button
-              type="button"
-              onClick={googleLogin}
-              className="w-full! flex! items-center! justify-center! gap-3! bg-gray-50! text-black! border! border-gray-300! py-3! rounded-md! normal-case! text-[15px]! font-medium!"
-            >
-              <FcGoogle className="text-[20px]" />
-              <span>Continue with Google</span>
-            </Button>
           </form>
         </div>
       </div>

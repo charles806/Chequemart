@@ -16,7 +16,6 @@
  */
 
 import { useState, useRef, useEffect } from "react";
-import Cookies from "js-cookie";
 import CircularProgress from "@mui/material/CircularProgress";
 import Icon from "./Icon";
 import { ICONS } from "./icons";
@@ -29,29 +28,29 @@ const CATEGORIES = [
 const CONDITIONS = ["Brand New", "Like New", "Fairly Used", "Refurbished"];
 
 const EMPTY_FORM = {
-  name: "", price: "", stock: "", category: "",
+  name: "", price: "", discountPrice: "", stock: "", category: "",
   condition: "Brand New", sku: "", description: "",
-  images: [], status: "Active",
+  deliveryFee: "", images: [], status: "Active",
 };
 
 // ─────────────────────────────────────────────────────────────
 // SHARED FIELD COMPONENTS (scoped to this file)
 // ─────────────────────────────────────────────────────────────
 const inputCls = (hasError) => `
-  w-full px-3 py-2.5 rounded-xl bg-gray-50 border text-sm text-gray-800
-  placeholder-gray-400 focus:outline-none focus:ring-2 transition-all
+  w-full px-3 py-2.5 rounded-xl bg-neutral-50 border text-sm text-neutral-800
+  placeholder-neutral-400 focus:outline-none focus:ring-2 transition-all
   ${hasError
     ? "border-red-400 bg-red-50 focus:ring-red-200"
-    : "border-gray-200 focus:ring-[#ff5252]/25 focus:border-[#ff5252]/50"}
+    : "border-neutral-200 focus:ring-primary-500/25 focus:border-primary-500/50"}
 `;
 
 const Field = ({ label, error, hint, children }) => (
   <div className="flex flex-col gap-1">
     {label && (
-      <label className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</label>
+      <label className="text-xs font-bold text-neutral-500 uppercase tracking-wide">{label}</label>
     )}
     {children}
-    {hint && !error && <p className="text-[10px] text-gray-400">{hint}</p>}
+    {hint && !error && <p className="text-[10px] text-neutral-400">{hint}</p>}
     {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
   </div>
 );
@@ -60,7 +59,7 @@ const FInput = ({ label, error, hint, prefix, ...props }) => (
   <Field label={label} error={error} hint={hint}>
     <div className="relative">
       {prefix && (
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-neutral-400">
           {prefix}
         </span>
       )}
@@ -104,7 +103,6 @@ const ImageUpload = ({ images, onChange }) => {
     const newUrls = [...images];
 
     try {
-      const token = Cookies.get("accessToken");
       for (const file of files) {
         if (newUrls.length >= 5) break;
 
@@ -113,9 +111,7 @@ const ImageUpload = ({ images, onChange }) => {
 
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/upload/product-image`, {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
+          credentials: "include",
           body: formData
         });
 
@@ -143,7 +139,7 @@ const ImageUpload = ({ images, onChange }) => {
         {images.map((url, i) => (
           <div
             key={i}
-            className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-gray-200 group flex-shrink-0"
+            className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-neutral-200 group flex-shrink-0"
           >
             <img src={url} alt="" className="w-full h-full object-cover" />
             {i === 0 && (
@@ -168,17 +164,17 @@ const ImageUpload = ({ images, onChange }) => {
             type="button"
             disabled={uploading}
             onClick={() => inputRef.current.click()}
-            className="w-16 h-16 rounded-xl border-2 border-dashed border-[#ff5252]/30
-              bg-red-50/50 hover:border-[#ff5252]/60 hover:bg-red-50 transition
+            className="w-16 h-16 rounded-xl border-2 border-dashed border-primary-500/30
+              bg-red-50/50 hover:border-primary-500/60 hover:bg-primary-50 transition
               flex flex-col items-center justify-center gap-0.5 flex-shrink-0 cursor-pointer disabled:opacity-50"
             aria-label="Add image"
           >
             {uploading ? (
-              <CircularProgress size={16} className="text-[#ff5252]" />
+              <CircularProgress size={16} className="text-primary-500" />
             ) : (
               <>
-                <Icon d={ICONS.upload} size={16} className="text-[#ff5252]/50" />
-                <span className="text-[9px] text-gray-400 font-medium">Add</span>
+                <Icon d={ICONS.upload} size={16} className="text-primary-500/50" />
+                <span className="text-[9px] text-neutral-400 font-medium">Add</span>
               </>
             )}
           </button>
@@ -207,7 +203,9 @@ const ProductModal = ({ product, onSave, onClose }) => {
       ? { 
           ...product, 
           price: String(product.price), 
+          discountPrice: product.discountPrice ? String(product.discountPrice) : "",
           stock: String(product.stock),
+          deliveryFee: product.deliveryFee ? String(product.deliveryFee) : "",
           category: product.category
         }
       : { ...EMPTY_FORM }
@@ -227,6 +225,10 @@ const ProductModal = ({ product, onSave, onClose }) => {
     if (form.stock === "" || isNaN(form.stock) || +form.stock < 0) e.stock = "Enter a valid stock quantity";
     if (!form.category) e.category = "Select a category";
     if (!form.description.trim()) e.description = "Add a product description";
+    if (form.discountPrice && Number(form.discountPrice) >= Number(form.price))
+      e.discountPrice = "Must be less than regular price";
+    if (form.deliveryFee && (isNaN(form.deliveryFee) || Number(form.deliveryFee) < 0))
+      e.deliveryFee = "Enter a valid delivery fee";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -248,8 +250,12 @@ const ProductModal = ({ product, onSave, onClose }) => {
       ...form,
       price: Number(form.price),
       stock: Number(form.stock),
+      deliveryFee: form.deliveryFee ? Number(form.deliveryFee) : 0,
       status: computeStatus(form.stock),
     };
+    if (form.discountPrice !== "" && form.discountPrice != null && !isNaN(form.discountPrice)) {
+      payload.discountPrice = Number(form.discountPrice);
+    }
 
     onSave(payload);
     setSaved(true);
@@ -273,22 +279,22 @@ const ProductModal = ({ product, onSave, onClose }) => {
         className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[92vh] animate-slide-up"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100 flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#ff5252]/10 flex items-center justify-center">
-              <Icon d={isEdit ? ICONS.edit : ICONS.plus} size={15} className="text-[#ff5252]" />
+            <div className="w-8 h-8 rounded-xl bg-primary-50 flex items-center justify-center">
+              <Icon d={isEdit ? ICONS.edit : ICONS.plus} size={15} className="text-primary-500" />
             </div>
-            <h2 className="font-black text-gray-900 text-base">
+            <h2 className="font-black text-neutral-900 text-base">
               {isEdit ? "Edit Product" : "Add New Product"}
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition cursor-pointer"
+            className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-neutral-200 transition cursor-pointer"
             aria-label="Close"
           >
-            <Icon d={ICONS.close} size={14} className="text-gray-500" />
+            <Icon d={ICONS.close} size={14} className="text-neutral-500" />
           </button>
         </div>
 
@@ -324,6 +330,29 @@ const ProductModal = ({ product, onSave, onClose }) => {
               value={form.stock}
               onChange={update("stock")}
               error={errors.stock}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <FInput
+              label="Discount Price (₦)"
+              prefix="₦"
+              type="number"
+              placeholder="0"
+              hint="Must be less than regular price"
+              value={form.discountPrice}
+              onChange={update("discountPrice")}
+              error={errors.discountPrice}
+            />
+            <FInput
+              label="Delivery Fee (₦)"
+              prefix="₦"
+              type="number"
+              placeholder="0"
+              hint="Fixed fee charged per order"
+              value={form.deliveryFee}
+              onChange={update("deliveryFee")}
+              error={errors.deliveryFee}
             />
           </div>
 
@@ -377,11 +406,11 @@ const ProductModal = ({ product, onSave, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-gray-100 flex gap-3 shrink-0">
+        <div className="px-5 py-4 border-t border-neutral-100 flex gap-3 shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition cursor-pointer"
+            className="px-5 py-2.5 rounded-xl border border-neutral-200 text-sm font-bold text-neutral-600 hover:bg-neutral-50 transition cursor-pointer"
           >
             Cancel
           </button>
@@ -392,7 +421,7 @@ const ProductModal = ({ product, onSave, onClose }) => {
               flex items-center justify-center gap-2 shadow-md
               ${saved
                 ? "bg-green-500 shadow-green-200"
-                : "bg-[#ff5252] hover:bg-[#ff5252]-hover shadow-red-200"}`}
+                : "bg-[#ff5252] hover:bg-[#ff5252]-hover shadow-primary-200"}`}
           >
             {saved ? (
               <><Icon d={ICONS.check} size={15} className="stroke-3" /> Saved!</>

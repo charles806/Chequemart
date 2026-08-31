@@ -1,37 +1,9 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 import { toast } from 'sonner';
-import Cookies from 'js-cookie';
 
-// ── In-memory access token (resets on page refresh) ──
-let accessToken = null;
-
-export const setAccessToken = (token) => { accessToken = token; };
-export const getAccessToken = () => accessToken;
-export const clearAccessToken = () => { accessToken = null; };
-
-// ── Refresh access token using the HttpOnly refresh cookie ──
-let refreshPromise = null;
-
-const refreshAccessToken = async () => {
-  if (refreshPromise) return refreshPromise;
-  refreshPromise = (async () => {
-    const res = await fetch(`${API_BASE_URL}/api/auth/refresh-token`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-    if (!res.ok) throw new Error('Refresh failed');
-    const data = await res.json();
-    accessToken = data.accessToken;
-    return data;
-  })();
-  try {
-    return await refreshPromise;
-  } finally {
-    refreshPromise = null;
-  }
-};
-
-// ── Optional auth endpoints — don't redirect on 401 ──
+// ── Core request function ──
+// No tokens here. The browser only ever sends the opaque HttpOnly session
+// cookie; the server refreshes tokens transparently inside its middleware.
 const optionalAuthEndpoints = [
   '/api/cart',
   '/api/cart/wishlist',
@@ -39,44 +11,30 @@ const optionalAuthEndpoints = [
   '/api/products',
 ];
 
-// ── Core request function ──
 const api = async (endpoint, options = {}) => {
   const isOptionalAuth = optionalAuthEndpoints.some(e => endpoint.startsWith(e));
 
   const headers = {
     'Content-Type': 'application/json',
-    ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     ...options.headers,
   };
 
-  let response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers,
     credentials: 'include',
   });
 
-  // ── Handle 401 — try refresh, then retry ──
-  const isAuthRequest = endpoint.startsWith('/api/auth/');
+  // ── Handle 401 — session is gone (refresh already failed server-side) ──
   if (response.status === 401 || response.status === 403) {
     if (isOptionalAuth) {
       return { success: false, data: [] };
     }
 
-    if (!isAuthRequest && accessToken) {
-      try {
-        await refreshAccessToken();
-        headers.Authorization = `Bearer ${accessToken}`;
-        response = await fetch(`${API_BASE_URL}${endpoint}`, {
-          ...options,
-          headers,
-          credentials: 'include',
-        });
-      } catch {
-        clearAccessToken();
-        toast.info("Session expired. Please login again.");
-        window.location.href = '/login';
-        throw { response: { status: 401, data: {} } };
-      }
+    if (!endpoint.startsWith('/api/auth/')) {
+      toast.info("Session expired. Please login again.");
+      window.location.href = '/login';
+      throw { response: { status: 401, data: {} } };
     }
   }
 
@@ -90,30 +48,20 @@ const api = async (endpoint, options = {}) => {
 };
 
 // ── authFetch — reusable wrapper for direct fetch() callers ──
-// Attaches Bearer token, handles 401 via refresh, redirects to login on failure.
-// Returns the Response object (caller still does .json(), .ok checks as usual).
+// Plain credential-cookie fetch. Returns the Response object.
 export const authFetch = async (url, options = {}) => {
-  const token = getAccessToken() || Cookies.get('accessToken');
+  const isFormData = options.body instanceof FormData;
   const headers = {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...options.headers,
   };
 
   let response = await fetch(url, { ...options, headers, credentials: 'include' });
 
-  if ((response.status === 401 || response.status === 403) && token) {
-    try {
-      await refreshAccessToken();
-      headers.Authorization = `Bearer ${accessToken}`;
-      response = await fetch(url, { ...options, headers, credentials: 'include' });
-    } catch {
-      clearAccessToken();
-      Cookies.remove('user');
-      toast.info('Session expired. Please login again.');
-      window.location.href = '/login';
-      throw new Error('Session expired');
-    }
+  if (response.status === 401 || response.status === 403) {
+    toast.info('Session expired. Please login again.');
+    window.location.href = '/login';
+    throw new Error('Session expired');
   }
 
   return response;
@@ -122,47 +70,41 @@ export const authFetch = async (url, options = {}) => {
 // ============ AUTH API ============
 
 export const login = async (identifier, password) => {
-  const data = await api('/api/auth/login', {
+  return api('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify({ identifier, password }),
   });
-  if (data.accessToken) setAccessToken(data.accessToken);
-  return data;
-};
-
-export const googleLogin = () => {
-  window.location.href = `${API_BASE_URL}/api/auth/google`;
 };
 
 export const registerBuyer = async (userData) => {
-  const data = await api('/api/auth/register', {
+  return api('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify(userData),
   });
-  if (data.accessToken) setAccessToken(data.accessToken);
-  return data;
 };
 
 export const registerSeller = async (userData) => {
-  const data = await api('/api/auth/register', {
+  return api('/api/auth/register', {
     method: 'POST',
     body: JSON.stringify(userData),
   });
-  if (data.accessToken) setAccessToken(data.accessToken);
-  return data;
+};
+
+export const resendVerification = async () => {
+  return api('/api/auth/resend-verification', {
+    method: 'POST',
+  });
 };
 
 export const logout = async () => {
   try {
     await fetch(`${API_BASE_URL}/api/auth/logout`, {
       method: 'POST',
-      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
       credentials: 'include',
     });
   } catch {
     // Ignore network errors — clear local state regardless
   }
-  clearAccessToken();
 };
 
 // ============ PRODUCTS API ============
@@ -237,14 +179,13 @@ export const getSellerEscrowSummary = async () => api('/api/seller/escrow/summar
 export const uploadImage = async (formData) => {
   const response = await fetch(`${API_BASE_URL}/api/upload`, {
     method: 'POST',
-    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
     body: formData,
   });
   return response.json();
 };
 
 export default {
-  login, registerBuyer, registerSeller, logout,
+  login, registerBuyer, registerSeller, resendVerification, logout,
   getProducts, getProduct, getCategories,
   getCart, addToCart, removeFromCart, clearCart,
   getWishlist, addToWishlist, removeFromWishlist,

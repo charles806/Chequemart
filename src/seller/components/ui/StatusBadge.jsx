@@ -25,7 +25,7 @@ const STYLES = {
   Shipped:     "bg-blue-100   text-blue-700   border-blue-200",
   Delivered:   "bg-green-100  text-green-700  border-green-200",
   Collected:   "bg-teal-100   text-teal-700   border-teal-200",
-  Cancelled:   "bg-gray-100   text-gray-500   border-gray-200",
+  Cancelled:   "bg-neutral-100 text-neutral-500 border-neutral-200",
 
   // Payment Status
   Paid:       "bg-green-100  text-green-700  border-green-200",
@@ -35,13 +35,13 @@ const STYLES = {
   Active:      "bg-green-100  text-green-700  border-green-200",
   "Low Stock": "bg-orange-100 text-orange-700 border-orange-200",
   Out:         "bg-red-100    text-red-600    border-red-200",
-  Draft:       "bg-gray-100   text-gray-500   border-gray-200",
+  Draft:       "bg-neutral-100 text-neutral-500 border-neutral-200",
 
   // Escrow
   held:        "bg-purple-100 text-purple-700 border-purple-200",
   released:   "bg-green-100  text-green-700  border-green-200",
   disputed:   "bg-red-100    text-red-600    border-red-200",
-  refunded:   "bg-gray-100   text-gray-500   border-gray-200",
+  refunded:   "bg-neutral-100 text-neutral-500 border-neutral-200",
 
   // Transactions
   completed:   "bg-green-100  text-green-700  border-green-200",
@@ -93,7 +93,7 @@ const CATEGORY = {
 };
 
 const StatusBadge = ({ status, category }) => {
-  const style = STYLES[status] || "bg-gray-100 text-gray-500 border-gray-200";
+  const style = STYLES[status] || "bg-neutral-100 text-neutral-500 border-neutral-200";
   const label = LABELS[status] || status;
   const inferredCategory = category || CATEGORY[status] || "default";
   const paymentIcon = PAYMENT_ICONS[status];

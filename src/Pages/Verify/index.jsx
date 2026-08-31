@@ -1,16 +1,31 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import verifyImg from "../../assets/image/verify3.png";
 import Button from "@mui/material/Button";
+import { resendVerification } from "../../api";
+import { MyContext } from "../../MyContext";
 
 const Verify = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [status, setStatus] = useState("verifying");
+    const [resending, setResending] = useState(false);
     const token = searchParams.get("token");
     const hasFetched = useRef(false);
     const context = React.useContext(MyContext);
+
+    const handleResend = async () => {
+        setResending(true);
+        try {
+            await resendVerification();
+            context.openAlertBox?.("success", "A new verification link has been sent to your email.");
+        } catch (err) {
+            const msg = err.response?.data?.message || err.message || "Failed to resend verification link.";
+            context.openAlertBox?.("error", msg);
+        } finally {
+            setResending(false);
+        }
+    };
 
     useEffect(() => {
         if (!token) {
@@ -94,6 +109,16 @@ const Verify = () => {
                                     className="w-full btn-org btn-lg"
                                 >
                                     Go to Register
+                                </Button>
+                            </div>
+                            <div className="flex items-center justify-center mt-3">
+                                <Button
+                                    onClick={handleResend}
+                                    disabled={resending}
+                                    variant="text"
+                                    className="w-full btn-lg"
+                                >
+                                    {resending ? "Sending..." : "Resend verification link"}
                                 </Button>
                             </div>
                         </>

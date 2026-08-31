@@ -12,7 +12,7 @@ const ErrorMessage = ({ message = "Something went wrong", onRetry, fullPage = fa
       {onRetry && (
         <button
           onClick={onRetry}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-red-600 transition"
+          className="inline-flex items-center bg-[#ff5252] cursor-pointer gap-2 px-4 py-2 bg-primary text-white rounded-md text-sm font-medium transition"
         >
           <RefreshCw className="h-4 w-4" />
           Try Again

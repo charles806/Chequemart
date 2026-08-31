@@ -1,15 +1,7 @@
-@import "tailwindcss";
-
-/* ── Custom easing curves (same as main app) ── */
-:root {
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
-  --duration-fast: 160ms;
-  --duration-normal: 200ms;
-  --duration-slow: 400ms;
-  --accent-color: #ff5252;
-}
+/* ═══════════════════════════════════════════════════════════
+   SELLER DASHBOARD STYLES
+   Inherits all tokens from index.css — no duplicate imports
+   ═══════════════════════════════════════════════════════════ */
 
 /* ── Global resets ─────────────────────────────────────────── */
 *, *::before, *::after {
@@ -23,38 +15,37 @@ html {
 
 body {
   margin: 0;
-  background-color: var(--background);
+  background-color: var(--surface-bg);
   font-family: var(--font-family);
 }
 
-/* ── Respect user preference for reduced motion ───────────────── */
+/* ── Respect user preference for reduced motion ─────────── */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }
 
-/* ── Hide scrollbar (utility) ──────────────────────────────── */
+/* ── Hide scrollbar (utility) ──────────────────────────── */
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-/* ── Fix transparent select dropdowns ─────────────────────── */
+/* ── Fix transparent select dropdowns ─────────────────── */
 select {
-  background-color: #f9fafb;
-  color: #1f2937;
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-800);
 }
 
 select option {
   background-color: #ffffff;
-  color: #1f2937;
+  color: var(--color-neutral-800);
 }
+
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -62,34 +53,32 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 input[type="number"] { -moz-appearance: textfield; }
 
-/* ── Button press feedback (seller dashboard) ─────────── */
-button,
-[role="button"] {
-  transition: transform var(--duration-fast) var(--ease-out), background-color var(--duration-fast) ease-out, box-shadow var(--duration-fast) var(--ease-out);
+/* ── Button press feedback ─────────────────────────── */
+button, [role="button"] {
+  transition: transform var(--duration-fast) var(--ease-out),
+              background-color var(--duration-fast) ease-out,
+              box-shadow var(--duration-fast) var(--ease-out);
 }
 
-button:active,
-[role="button"]:active {
-  transform: scale(0.97);
+button:active, [role="button"]:active {
+  transform: scale(0.98);
 }
 
-/* ── Focus visible for accessibility ──────────────────────── */
+/* ── Focus visible for accessibility ──────────────────── */
 :focus-visible {
-  outline: 2px solid var(--accent-color);
+  outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
 }
 
 /* Touch device hover state handling */
 @media (hover: hover) and (pointer: fine) {
-  button:hover,
-  [role="button"]:hover {
+  button:hover, [role="button"]:hover {
     background-color: rgba(0, 0, 0, 0.04);
   }
 }
 
 @media (hover: none) {
-  button:active,
-  [role="button"]:active {
+  button:active, [role="button"]:active {
     background-color: rgba(0, 0, 0, 0.08);
   }
 }

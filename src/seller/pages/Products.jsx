@@ -25,7 +25,6 @@
  */
 
 import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
 import Icon from "../components/ui/Icon";
 import StatusBadge from "../components/ui/StatusBadge";
 import ProductModal from "../components/ui/ProductModal";
@@ -49,15 +48,15 @@ const DeleteConfirm = ({ product, onConfirm, onClose }) => (
         <Icon d={ICONS.trash} size={24} className="text-red-500" />
       </div>
       <div>
-        <h3 className="font-black text-gray-900 text-base">Delete Product?</h3>
-        <p className="text-sm text-gray-500 mt-1">
+        <h3 className="font-black text-neutral-900 text-base">Delete Product?</h3>
+        <p className="text-sm text-neutral-500 mt-1">
           <strong>{product.name}</strong> will be permanently removed from your store.
         </p>
       </div>
       <div className="flex gap-3">
         <button
           onClick={onClose}
-          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition cursor-pointer"
+          className="flex-1 py-2.5 rounded-xl border border-neutral-200 text-sm font-bold text-neutral-600 hover:bg-neutral-50 transition cursor-pointer"
         >
           Cancel
         </button>
@@ -86,9 +85,8 @@ export default function ProductsPage() {
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            const token = Cookies.get("accessToken");
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my-products`, {
-                headers: { Authorization: `Bearer ${token}` }
+                credentials: "include"
             });
             const data = await res.json();
             if (data.success) {
@@ -128,17 +126,14 @@ export default function ProductsPage() {
     const handleSave = async (payload) => {
         const isEdit = !!modalProduct?._id;
         try {
-            const token = Cookies.get("accessToken");
             const url = isEdit
                 ? `${import.meta.env.VITE_API_URL}/api/products/${modalProduct._id}`
                 : `${import.meta.env.VITE_API_URL}/api/products`;
 
             const res = await fetch(url, {
                 method: isEdit ? "PUT" : "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
-                },
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify(payload)
             });
 
@@ -158,10 +153,9 @@ export default function ProductsPage() {
     // DELETE /api/seller/products/:id
     const handleDelete = async () => {
         try {
-            const token = Cookies.get("accessToken");
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${deleteTarget._id}`, {
                 method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` }
+                credentials: "include"
             });
 
             if (res.ok) {
@@ -182,12 +176,12 @@ export default function ProductsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-black text-gray-900">Products</h1>
-          <p className="text-xs text-gray-400">{total} products in your store</p>
+          <h1 className="text-xl font-black text-neutral-900">Products</h1>
+          <p className="text-xs text-neutral-400">{total} products in your store</p>
         </div>
         <button
           onClick={() => setModalProduct(null)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#ff5252] text-white text-sm font-bold hover:bg-[#ff5252] transition cursor-pointer shadow-md shadow-red-200"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#ff5252] text-white text-sm font-bold hover:bg-[#ff5252] transition cursor-pointer shadow-md shadow-primary-200"
         >
           <Icon d={ICONS.plus} size={15} />
           Add Product
@@ -197,48 +191,48 @@ export default function ProductsPage() {
       {/* Stats strip */}
       <div className="grid grid-cols-4 gap-2">
         {[
-          ["Total",     total,    "text-gray-900"   ],
+          ["Total",     total,    "text-neutral-900"   ],
           ["Active",    active,   "text-green-600"  ],
           ["Low Stock", lowStock, "text-orange-500" ],
-          ["Out",       out,      "text-[#ff5252]"    ],
+          ["Out",       out,      "text-primary-500"    ],
         ].map(([l, v, c]) => (
-          <div key={l} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 text-center">
+          <div key={l} className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-3 text-center">
             <p className={`text-xl font-black ${c}`}>{v}</p>
-            <p className="text-[10px] text-gray-400 font-semibold leading-tight mt-0.5">{l}</p>
+            <p className="text-[10px] text-neutral-400 font-semibold leading-tight mt-0.5">{l}</p>
           </div>
         ))}
       </div>
 
       {/* Search */}
       <div className="relative">
-        <Icon d={ICONS.search} size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Icon d={ICONS.search} size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name, category or SKU…"
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm
-            focus:outline-none focus:ring-2 focus:ring-[#ff5252]/20 focus:border-[#ff5252]/40 transition"
+          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-neutral-200 text-sm
+            focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500/40 transition"
         />
       </div>
 
       {/* Products list */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[300px]">
+      <div className="bg-white rounded-3xl border border-neutral-100 shadow-sm overflow-hidden min-h-[300px]">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <CircularProgress size={30} className="text-[#ff5252]" />
+            <CircularProgress size={30} className="text-primary-500" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-14 text-gray-400">
+          <div className="text-center py-14 text-neutral-400">
             <Icon d={ICONS.package} size={36} className="mx-auto mb-2 opacity-20" />
             <p className="text-sm font-semibold">No products found</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-neutral-50">
             {filtered.map((product) => (
-              <div key={product._id} className="px-5 py-4 flex items-center gap-3 hover:bg-gray-50/50 transition">
+              <div key={product._id} className="px-5 py-4 flex items-center gap-3 hover:bg-neutral-50/50 transition">
 
                 {/* Image */}
-                <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center shrink-0 text-[#ff5252] font-black text-sm overflow-hidden border border-red-100">
+                <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center shrink-0 text-primary-500 font-black text-sm overflow-hidden border border-red-100">
                    {product.images && product.images.length > 0 ? (
                      <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
                    ) : (
@@ -249,32 +243,32 @@ export default function ProductsPage() {
                 {/* Info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-bold text-gray-900 truncate">{product.name}</p>
+                    <p className="text-sm font-bold text-neutral-900 truncate">{product.name}</p>
                     <StatusBadge status={product.status} />
                   </div>
-                  <p className="text-[11px] text-gray-400 mt-0.5">
+                  <p className="text-[11px] text-neutral-400 mt-0.5">
                     {product.category} · {product.sku || "No SKU"} · {product.stock} in stock
                   </p>
                 </div>
 
                 {/* Price */}
-                <p className="text-sm font-black text-gray-900 shrink-0">{fmt(product.price)}</p>
+                <p className="text-sm font-black text-neutral-900 shrink-0">{fmt(product.price)}</p>
 
                 {/* Actions */}
                 <div className="flex gap-1.5 shrink-0">
                   <button
                     onClick={() => setModalProduct(product)}
-                    className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition cursor-pointer"
+                    className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center hover:bg-blue-100 hover:text-blue-600 transition cursor-pointer"
                     aria-label="Edit product"
                   >
-                    <Icon d={ICONS.edit} size={14} className="text-gray-500" />
+                    <Icon d={ICONS.edit} size={14} className="text-neutral-500" />
                   </button>
                   <button
                     onClick={() => setDeleteTarget(product)}
-                    className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-red-100 hover:text-red-500 transition cursor-pointer"
+                    className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center hover:bg-red-100 hover:text-red-500 transition cursor-pointer"
                     aria-label="Delete product"
                   >
-                    <Icon d={ICONS.trash} size={14} className="text-gray-500" />
+                    <Icon d={ICONS.trash} size={14} className="text-neutral-500" />
                   </button>
                 </div>
               </div>

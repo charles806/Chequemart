@@ -24,7 +24,6 @@
  */
 
 import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
 import Icon from "../components/ui/Icon";
 import { ICONS } from "../components/ui/icons";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -38,16 +37,16 @@ const fmtK = (n) => n >= 1000000 ? `₦${(n / 1000000).toFixed(1)}M` : n >= 1000
 const KPICard = ({ label, value, change }) => {
   const up = change >= 0;
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+    <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">{label}</p>
+        <p className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">{label}</p>
         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5
           ${up ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
           <Icon d={up ? ICONS.trendUp : ICONS.trendDown} size={8} className="stroke-[3]" />
           {Math.abs(change)}%
         </span>
       </div>
-      <p className="text-xl font-black text-gray-900">{value}</p>
+      <p className="text-xl font-black text-neutral-900">{value}</p>
     </div>
   );
 };
@@ -72,11 +71,11 @@ const RevenueChart = ({ data }) => {
             onMouseLeave={() => setHovered(null)}
           >
             {/* Tooltip */}
-            <div className={`text-[9px] font-black text-gray-700 bg-white border border-gray-100
+            <div className={`text-[9px] font-black text-neutral-700 bg-white border border-neutral-100
               shadow-md rounded-lg px-1.5 py-1 whitespace-nowrap transition-all duration-100 text-center
               ${isH ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
               <p>{fmtK(d.revenue)}</p>
-              <p className="text-gray-400 font-normal">{d.orders} orders</p>
+              <p className="text-neutral-400 font-normal">{d.orders} orders</p>
             </div>
             {/* Bar */}
             <div
@@ -88,7 +87,7 @@ const RevenueChart = ({ data }) => {
                   : "linear-gradient(to top, rgba(255, 82, 82, 0.33), rgba(255, 82, 82, 0.66))",
               }}
             />
-            <span className="text-[9px] text-gray-400 font-semibold truncate w-full text-center">
+            <span className="text-[9px] text-neutral-400 font-semibold truncate w-full text-center">
               {d.label}
             </span>
           </div>
@@ -117,7 +116,7 @@ const OrdersChart = ({ data }) => {
             onMouseEnter={() => setHovered(i)}
             onMouseLeave={() => setHovered(null)}
           >
-            <div className={`text-[9px] font-bold text-gray-700 bg-white border border-gray-100
+            <div className={`text-[9px] font-bold text-neutral-700 bg-white border border-neutral-100
               shadow-sm rounded-md px-1 py-0.5 transition-all duration-100
               ${isH ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
               {d.orders}
@@ -184,13 +183,13 @@ const DonutChart = ({ data }) => {
           <div key={d.status} className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: d.color }} />
-              <p className="text-xs text-gray-600 font-medium">{d.status}</p>
+              <p className="text-xs text-neutral-600 font-medium">{d.status}</p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-14 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div className="w-14 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
                 <div className="h-full rounded-full" style={{ width: `${d.pct}%`, backgroundColor: d.color }} />
               </div>
-              <span className="text-xs font-bold text-gray-500 w-8 text-right">{d.pct}%</span>
+              <span className="text-xs font-bold text-neutral-500 w-8 text-right">{d.pct}%</span>
             </div>
           </div>
         ))}
@@ -208,26 +207,26 @@ const TopProducts = ({ products }) => {
     <div className="space-y-3">
       {products.map((p, i) => (
         <div key={p.id} className="flex items-center gap-3">
-          <span className="w-5 text-xs font-black text-gray-300 flex-shrink-0">{i + 1}</span>
+          <span className="w-5 text-xs font-black text-neutral-300 flex-shrink-0">{i + 1}</span>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-1">
-              <p className="text-sm font-bold text-gray-800 truncate">{p.name}</p>
+              <p className="text-sm font-bold text-neutral-800 truncate">{p.name}</p>
               <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full
                   ${p.growth >= 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
                   {p.growth >= 0 ? "+" : ""}{p.growth}%
                 </span>
-                <span className="text-xs font-black text-gray-900">{fmt(p.revenue)}</span>
+                <span className="text-xs font-black text-neutral-900">{fmt(p.revenue)}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div className="flex-1 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full bg-[#ff5252] transition-all duration-500"
                   style={{ width: `${(p.revenue / max) * 100}%` }}
                 />
               </div>
-              <span className="text-[10px] text-gray-400 w-14 text-right flex-shrink-0">
+              <span className="text-[10px] text-neutral-400 w-14 text-right flex-shrink-0">
                 {p.sales} sold
               </span>
             </div>
@@ -256,15 +255,15 @@ const ActivityFeed = ({ items }) => {
   };
 
   return (
-    <div className="space-y-0 divide-y divide-gray-50">
+    <div className="space-y-0 divide-y divide-neutral-50">
       {items.map((item, i) => (
         <div key={i} className="flex items-center gap-3 py-3">
           <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${colorMap[item.type]}`}>
             <Icon d={iconMap[item.type]} size={14} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-700 font-medium leading-tight">{item.message}</p>
-            <p className="text-[10px] text-gray-400 mt-0.5">{item.time}</p>
+            <p className="text-sm text-neutral-700 font-medium leading-tight">{item.message}</p>
+            <p className="text-[10px] text-neutral-400 mt-0.5">{item.time}</p>
           </div>
           {item.amount && (
             <p className="text-sm font-black text-green-600 flex-shrink-0">+{fmt(item.amount)}</p>
@@ -288,12 +287,9 @@ export default function AnalyticsPage() {
   const fetchAnalytics = async () => {
   setLoading(true);
   try {
-    const token = Cookies.get("accessToken");
-    const headers = { Authorization: `Bearer ${token}` };
-
     const [summaryRes, revenueRes] = await Promise.all([
-      fetch(`${import.meta.env.VITE_API_URL}/api/seller/analytics/summary?period=${period}`, { headers }),
-      fetch(`${import.meta.env.VITE_API_URL}/api/seller/analytics/revenue?period=${period}`, { headers }),
+      fetch(`${import.meta.env.VITE_API_URL}/api/seller/analytics/summary?period=${period}`, { credentials: "include" }),
+      fetch(`${import.meta.env.VITE_API_URL}/api/seller/analytics/revenue?period=${period}`, { credentials: "include" }),
     ]);
 
     const summaryData = await summaryRes.json();
@@ -348,7 +344,7 @@ export default function AnalyticsPage() {
   if (loading || !data) {
     return (
       <div className="h-96 flex items-center justify-center">
-        <CircularProgress size={40} className="text-[#ff5252]" />
+        <CircularProgress size={40} className="text-primary-500" />
       </div>
     );
   }
@@ -363,18 +359,18 @@ export default function AnalyticsPage() {
       {/* Header + period switcher */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-black text-gray-900">Analytics</h1>
-          <p className="text-xs text-gray-400">Performance overview for your store</p>
+          <h1 className="text-xl font-black text-neutral-900">Analytics</h1>
+          <p className="text-xs text-neutral-400">Performance overview for your store</p>
         </div>
-        <div className="flex gap-1 bg-white border border-gray-200 p-1 rounded-xl shadow-sm">
+        <div className="flex gap-1 bg-white border border-neutral-200 p-1 rounded-xl shadow-sm">
           {PERIODS.map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition cursor-pointer
                 ${period === p
-                  ? "bg-[#ff5252] text-white shadow-md shadow-red-200"
-                  : "text-gray-400 hover:text-gray-600"}`}
+                  ? "bg-[#ff5252] text-white shadow-md shadow-primary-200"
+                  : "text-neutral-400 hover:text-neutral-600"}`}
             >
               {p}
             </button>
@@ -390,15 +386,15 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Revenue chart */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
+      <div className="bg-white rounded-3xl border border-neutral-100 shadow-sm p-5">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h3 className="font-black text-gray-900 text-sm">Revenue</h3>
-            <p className="text-2xl font-black text-[#ff5252] mt-0.5">{fmt(totalRev)}</p>
+            <h3 className="font-black text-neutral-900 text-sm">Revenue</h3>
+            <p className="text-2xl font-black text-primary-500 mt-0.5">{fmt(totalRev)}</p>
           </div>
           <div className="text-right">
-            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Orders</p>
-            <p className="text-lg font-black text-gray-900">{totalOrd}</p>
+            <p className="text-[10px] text-neutral-400 font-semibold uppercase tracking-wider">Orders</p>
+            <p className="text-lg font-black text-neutral-900">{totalOrd}</p>
           </div>
         </div>
         <RevenueChart data={chartData} />
@@ -407,23 +403,23 @@ export default function AnalyticsPage() {
       {/* Order breakdown + orders volume side by side (stacked on mobile) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Donut */}
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-          <h3 className="font-black text-gray-900 text-sm mb-4">Order Breakdown</h3>
+        <div className="bg-white rounded-3xl border border-neutral-100 shadow-sm p-5">
+          <h3 className="font-black text-neutral-900 text-sm mb-4">Order Breakdown</h3>
           <DonutChart data={data.orderBreakdown} />
         </div>
 
         {/* Orders volume */}
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-          <h3 className="font-black text-gray-900 text-sm mb-1">Order Volume</h3>
-          <p className="text-[10px] text-gray-400 mb-4 capitalize">{period} trend</p>
+        <div className="bg-white rounded-3xl border border-neutral-100 shadow-sm p-5">
+          <h3 className="font-black text-neutral-900 text-sm mb-1">Order Volume</h3>
+          <p className="text-[10px] text-neutral-400 mb-4 capitalize">{period} trend</p>
           <OrdersChart data={chartData} />
         </div>
       </div>
 
       {/* Recent activity */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
-        <h3 className="font-black text-gray-900 text-sm mb-1">Recent Activity</h3>
-        <p className="text-[10px] text-gray-400 mb-2">Latest store events</p>
+      <div className="bg-white rounded-3xl border border-neutral-100 shadow-sm p-5">
+        <h3 className="font-black text-neutral-900 text-sm mb-1">Recent Activity</h3>
+        <p className="text-[10px] text-neutral-400 mb-2">Latest store events</p>
         <ActivityFeed items={data.activity} />
       </div>
 

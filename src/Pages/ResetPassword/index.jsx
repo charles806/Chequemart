@@ -19,83 +19,63 @@ const ResetPassword = () => {
   const [isValidToken, setIsValidToken] = useState(null)
 
   useEffect(() => {
-    // Check if token exists
-    if (!token) {
-      setIsValidToken(false)
-    } else {
-      setIsValidToken(true)
-    }
+    setIsValidToken(!!token)
   }, [token])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
-    // Validation
     if (password.length < 8) {
       setError('Password must be at least 8 characters')
       return
     }
-
     if (password !== confirmPassword) {
       setError('Passwords do not match')
       return
     }
-
-    // Check password strength
-    const hasUpperCase = /[A-Z]/.test(password)
-    const hasLowerCase = /[a-z]/.test(password)
-    const hasNumber = /\d/.test(password)
-    
-    if (!hasUpperCase || !hasLowerCase || !hasNumber) {
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password)) {
       setError('Password must contain uppercase, lowercase, and number')
       return
     }
 
     setLoading(true)
-
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/reset-password`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password }),
       })
 
       const data = await response.json()
-
       if (data.success) {
         setSuccess(true)
       } else {
         setError(data.message || 'Something went wrong')
       }
-    } catch (err) {
+    } catch {
       setError('Network error. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  // Invalid token
   if (isValidToken === false) {
     return (
-      <section className='py-10 md:py-16 bg-gray-50 min-h-screen'>
+      <section className="py-12 bg-neutral-50 min-h-[70vh] flex items-center">
         <div className="my-container">
           <div className="max-w-md mx-auto">
-            <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaExclamationCircle className="text-2xl text-red-600" />
+            <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-8 text-center">
+              <div className="w-14 h-14 bg-error-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaExclamationCircle className="text-xl text-error-500" />
               </div>
-              <h1 className='text-2xl font-bold text-gray-800 mb-2'>
-                Invalid Link
-              </h1>
-              <p className="text-gray-500 text-sm mb-6">
+              <h1 className="text-xl font-semibold text-neutral-900 mb-2">Invalid Link</h1>
+              <p className="text-neutral-400 text-sm mb-6">
                 This password reset link is invalid or has expired.
               </p>
               <Button
                 variant="contained"
-                className="bg-gradient-to-r from-[#ff5252] to-[#ff7b7b]! hover:from-[#e04848]! hover:to-[#ff5252]!"
+                className="btn-org!"
                 onClick={() => navigate('/forgot-password')}
               >
                 Request New Link
@@ -108,63 +88,53 @@ const ResetPassword = () => {
   }
 
   return (
-    <section className='py-10 md:py-16 bg-gray-50 min-h-screen'>
+    <section className="py-12 bg-neutral-50 min-h-[70vh] flex items-center">
       <div className="my-container">
         <div className="max-w-md mx-auto">
-          {/* Back to Login */}
-          <div className="mb-6">
-            <Link 
-              to="/login" 
-              className="flex items-center gap-2 text-gray-600 hover:text-[#ff5252] transition-colors text-sm"
-            >
-              <FaRegArrowAltCircleLeft className="rotate-180" />
-              Back to Login
-            </Link>
-          </div>
+          {/* Back link */}
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-2 text-neutral-500 hover:text-primary-500 transition-colors text-sm mb-6"
+          >
+            <FaRegArrowAltCircleLeft className="rotate-180" />
+            Back to Login
+          </Link>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+          <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-8">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-[#fff5f2] rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaLock className="text-2xl text-[#ff5252]" />
+              <div className="w-14 h-14 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaLock className="text-xl text-primary-500" />
               </div>
-              <h1 className='text-2xl font-bold text-gray-800 mb-2'>
-                Reset Password
-              </h1>
-              <p className="text-gray-500 text-sm">
+              <h1 className="text-xl font-semibold text-neutral-900 mb-2">Reset Password</h1>
+              <p className="text-neutral-400 text-sm">
                 Create a new password for your account.
               </p>
             </div>
 
-            {/* Success State */}
             {success ? (
               <div className="text-center py-4">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FaCheckCircle className="text-2xl text-green-600" />
+                <div className="w-14 h-14 bg-success-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaCheckCircle className="text-xl text-success-500" />
                 </div>
-                <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                <h2 className="text-lg font-semibold text-neutral-900 mb-2">
                   Password Reset Complete!
                 </h2>
-                <p className="text-gray-500 text-sm mb-6">
+                <p className="text-neutral-400 text-sm mb-6">
                   Your password has been reset successfully.
                 </p>
                 <Button
                   variant="contained"
                   fullWidth
-                  className="bg-gradient-to-r from-[#ff5252] to-[#ff7b7b]! hover:from-[#e04848]! hover:to-[#ff5252]! py-3! rounded-lg!"
+                  className="btn-org! py-3!"
                   onClick={() => navigate('/login')}
                 >
                   Sign In
                 </Button>
               </div>
             ) : (
-              /* Form */
               <form onSubmit={handleSubmit}>
-                {error && (
-                  <Alert severity="error" className="mb-4">
-                    {error}
-                  </Alert>
-                )}
+                {error && <Alert severity="error" className="mb-4">{error}</Alert>}
 
                 <div className="mb-4">
                   <TextField
@@ -178,30 +148,26 @@ const ResetPassword = () => {
                     placeholder="Enter new password"
                     InputProps={{
                       startAdornment: (
-                        <FaLock className="text-gray-400 mr-2" />
+                        <InputAdornment position="start">
+                          <FaLock className="text-neutral-300" />
+                        </InputAdornment>
                       ),
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowPassword(!showPassword)}
-                            edge="end"
-                            className="text-gray-400"
-                          >
+                          <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" className="text-neutral-400">
                             {showPassword ? <FaEyeSlash /> : <FaEye />}
                           </IconButton>
                         </InputAdornment>
                       ),
                     }}
-                    sx={{ 
+                    sx={{
                       "& .MuiInputBase-root": { height: "50px" },
                       "& .MuiOutlinedInput-root": {
-                        "&.Mui-focused fieldset": {
-                          borderColor: "#ff5252",
-                        },
+                        "&.Mui-focused fieldset": { borderColor: "#ff5252" },
                       },
                     }}
                   />
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-neutral-300 mt-1">
                     At least 8 characters with uppercase, lowercase, and number
                   </p>
                 </div>
@@ -218,26 +184,22 @@ const ResetPassword = () => {
                     placeholder="Confirm new password"
                     InputProps={{
                       startAdornment: (
-                        <FaLock className="text-gray-400 mr-2" />
+                        <InputAdornment position="start">
+                          <FaLock className="text-neutral-300" />
+                        </InputAdornment>
                       ),
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            edge="end"
-                            className="text-gray-400"
-                          >
+                          <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end" className="text-neutral-400">
                             {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                           </IconButton>
                         </InputAdornment>
                       ),
                     }}
-                    sx={{ 
+                    sx={{
                       "& .MuiInputBase-root": { height: "50px" },
                       "& .MuiOutlinedInput-root": {
-                        "&.Mui-focused fieldset": {
-                          borderColor: "#ff5252",
-                        },
+                        "&.Mui-focused fieldset": { borderColor: "#ff5252" },
                       },
                     }}
                   />
@@ -248,7 +210,7 @@ const ResetPassword = () => {
                   variant="contained"
                   fullWidth
                   disabled={loading}
-                  className="bg-gradient-to-r from-[#ff5252] to-[#ff7b7b]! hover:from-[#e04848]! hover:to-[#ff5252]! text-white! py-3! rounded-lg! font-semibold! transition-all!"
+                  className="btn-org! py-3! font-semibold!"
                   startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                 >
                   {loading ? 'Resetting...' : 'Reset Password'}

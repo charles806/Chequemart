@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { PackageOpen } from "lucide-react";
 
 const EmptyState = ({ icon, title = "No data found", description = "", actionLabel, actionLink, onAction }) => {
@@ -5,21 +6,23 @@ const EmptyState = ({ icon, title = "No data found", description = "", actionLab
 
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-      <Icon className="h-16 w-16 text-gray-300 mb-4" />
-      <h3 className="text-lg font-semibold text-gray-700 mb-1">{title}</h3>
-      {description && <p className="text-sm text-gray-400 max-w-sm mb-6">{description}</p>}
+      <div className="w-20 h-20 rounded-full bg-neutral-100 flex items-center justify-center mb-4">
+        <Icon className="h-10 w-10 text-neutral-300" />
+      </div>
+      <h3 className="text-lg font-semibold text-neutral-700 mb-1">{title}</h3>
+      {description && <p className="text-sm text-neutral-400 max-w-sm mb-6">{description}</p>}
       {actionLabel && (onAction || actionLink) && (
         actionLink ? (
-          <a
-            href={actionLink}
-            className="inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-md text-sm font-medium hover:bg-red-600 transition"
+          <Link
+            to={actionLink}
+            className="inline-flex items-center px-5 py-2.5 bg-primary-500 text-white rounded-lg text-sm font-semibold hover:bg-primary-600 transition-colors"
           >
             {actionLabel}
-          </a>
+          </Link>
         ) : (
           <button
             onClick={onAction}
-            className="inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-md text-sm font-medium hover:bg-red-600 transition"
+            className="inline-flex items-center px-5 py-2.5 bg-primary-500 text-white rounded-lg text-sm font-semibold hover:bg-primary-600 transition-colors"
           >
             {actionLabel}
           </button>

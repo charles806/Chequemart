@@ -65,6 +65,7 @@ export const SellerProvider = ({ children }) => {
           firstName: fName,
           lastName: rest.join(" "),
           storeName: user.sellerInfo?.storeName || "My Store",
+          sellerInfo: user.sellerInfo || {},
           email: user.email,
           phone: user.phone || "",
           avatar: user.avatar,

@@ -27,24 +27,24 @@ const HelpCenter = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-8">Help Center</h1>
+      <h1 className="text-3xl font-bold mb-8 text-neutral-900">Help Center</h1>
       
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-6">Frequently Asked Questions</h2>
-        <div className="space-y-4">
+        <h2 className="text-2xl font-semibold mb-6 text-neutral-900">Frequently Asked Questions</h2>
+        <div className="space-y-3">
           {faqs.map((faq, i) => (
-            <details key={i} className="border rounded-lg p-4">
-              <summary className="font-medium cursor-pointer">{faq.q}</summary>
-              <p className="mt-2 text-gray-600">{faq.a}</p>
+            <details key={i} className="border border-neutral-200 rounded-xl p-4 bg-white hover:shadow-sm transition-shadow">
+              <summary className="font-medium cursor-pointer text-neutral-800">{faq.q}</summary>
+              <p className="mt-2 text-neutral-600 text-sm leading-relaxed">{faq.a}</p>
             </details>
           ))}
         </div>
       </section>
 
       <section>
-        <h2 className="text-2xl font-semibold mb-6">Contact Us</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-neutral-900">Contact Us</h2>
         {submitted ? (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-green-800">
+          <div className="bg-success-50 border border-success-200 rounded-xl p-6 text-success-700">
             Thank you! We'll get back to you within 24 hours.
           </div>
         ) : (
@@ -52,7 +52,7 @@ const HelpCenter = () => {
             <input
               type="text"
               placeholder="Your Name"
-              className="w-full border rounded-lg px-4 py-2"
+              className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15 outline-none transition"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
@@ -60,7 +60,7 @@ const HelpCenter = () => {
             <input
               type="email"
               placeholder="Your Email"
-              className="w-full border rounded-lg px-4 py-2"
+              className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15 outline-none transition"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               required
@@ -68,21 +68,21 @@ const HelpCenter = () => {
             <input
               type="text"
               placeholder="Subject"
-              className="w-full border rounded-lg px-4 py-2"
+              className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15 outline-none transition"
               value={form.subject}
               onChange={(e) => setForm({ ...form, subject: e.target.value })}
               required
             />
             <textarea
               placeholder="How can we help?"
-              className="w-full border rounded-lg px-4 py-2 h-32"
+              className="w-full border border-neutral-200 rounded-lg px-4 py-2.5 h-32 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15 outline-none transition resize-none"
               value={form.message}
               onChange={(e) => setForm({ ...form, message: e.target.value })}
               required
             />
             <button
               type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+              className="bg-primary-500 text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-primary-600 transition-colors"
             >
               Send Message
             </button>

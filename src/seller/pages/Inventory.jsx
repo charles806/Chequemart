@@ -23,7 +23,6 @@
  */
 
 import { useState, useEffect } from "react";
-import Cookies from "js-cookie";
 import Icon from "../components/ui/Icon";
 import StatusBadge from "../components/ui/StatusBadge";
 import Toast, { useToast } from "../components/ui/Toast";
@@ -69,28 +68,28 @@ const RestockModal = ({ product, onSave, onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#ff5252]/10 flex items-center justify-center">
-              <Icon d={ICONS.inventory} size={15} className="text-[#ff5252]" />
+            <div className="w-8 h-8 rounded-xl bg-primary-50 flex items-center justify-center">
+              <Icon d={ICONS.inventory} size={15} className="text-primary-500" />
             </div>
             <div>
-              <h3 className="font-black text-gray-900 text-sm leading-none">Update Stock</h3>
-              <p className="text-[10px] text-gray-400 mt-0.5 truncate max-w-40">{product.name}</p>
+              <h3 className="font-black text-neutral-900 text-sm leading-none">Update Stock</h3>
+              <p className="text-[10px] text-neutral-400 mt-0.5 truncate max-w-40">{product.name}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition cursor-pointer"
+            className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center hover:bg-neutral-200 transition cursor-pointer"
           >
-            <Icon d={ICONS.close} size={14} className="text-gray-500" />
+            <Icon d={ICONS.close} size={14} className="text-neutral-500" />
           </button>
         </div>
 
         {/* Current stock */}
-        <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex justify-between items-center">
+        <div className="bg-neutral-50 border border-neutral-100 rounded-2xl p-4 flex justify-between items-center">
           <div>
-            <p className="text-xs text-gray-400 font-medium">Current Stock</p>
-            <p className="text-2xl font-black text-gray-900">
-              {product.stock} <span className="text-sm text-gray-400 font-normal">units</span>
+            <p className="text-xs text-neutral-400 font-medium">Current Stock</p>
+            <p className="text-2xl font-black text-neutral-900">
+              {product.stock} <span className="text-sm text-neutral-400 font-normal">units</span>
             </p>
           </div>
           <StatusBadge status={product.status} />
@@ -98,32 +97,32 @@ const RestockModal = ({ product, onSave, onClose }) => {
 
         {/* Qty adjuster */}
         <div>
-          <label className="text-xs font-bold text-gray-500 uppercase tracking-wide block mb-1.5">
+          <label className="text-xs font-bold text-neutral-500 uppercase tracking-wide block mb-1.5">
             New Quantity
           </label>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setQty((q) => Math.max(0, Number(q) - 1))}
-              className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition cursor-pointer"
+              className="w-10 h-10 rounded-xl bg-neutral-100 flex items-center justify-center hover:bg-neutral-200 transition cursor-pointer"
             >
-              <Icon d={ICONS.minus} size={16} className="text-gray-600" />
+              <Icon d={ICONS.minus} size={16} className="text-neutral-600" />
             </button>
             <input
               type="number"
               min={0}
               value={qty}
               onChange={(e) => setQty(e.target.value)}
-              className="flex-1 text-center py-2.5 rounded-xl bg-gray-50 border border-gray-200
-                text-xl font-black text-gray-900 focus:outline-none focus:ring-2
-                focus:ring-[#ff5252]/25 focus:border-[#ff5252]/40 transition"
+              className="flex-1 text-center py-2.5 rounded-xl bg-neutral-50 border border-neutral-200
+                text-xl font-black text-neutral-900 focus:outline-none focus:ring-2
+                focus:ring-primary-500/25 focus:border-primary-500/40 transition"
             />
             <button
               type="button"
               onClick={() => setQty((q) => Number(q) + 1)}
-              className="w-10 h-10 rounded-xl bg-[#ff5252]/10 flex items-center justify-center hover:bg-[#ff5252]/20 transition cursor-pointer"
+              className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center hover:bg-primary-100 transition cursor-pointer"
             >
-              <Icon d={ICONS.plus} size={16} className="text-[#ff5252]" />
+              <Icon d={ICONS.plus} size={16} className="text-primary-500" />
             </button>
           </div>
         </div>
@@ -139,7 +138,7 @@ const RestockModal = ({ product, onSave, onClose }) => {
           onClick={handleSave}
           className={`w-full py-2.5 rounded-xl text-white text-sm font-bold transition-all cursor-pointer
             flex items-center justify-center gap-2 shadow-md
-            ${saved ? "bg-green-500 shadow-green-200" : "bg-[#ff5252] hover:bg-[#ff5252]-hover shadow-red-200"}`}
+            ${saved ? "bg-green-500 shadow-green-200" : "bg-[#ff5252] hover:bg-primary-600 shadow-primary-200"}`}
         >
           {saved
             ? <><Icon d={ICONS.check} size={15} className="stroke-3" /> Saved!</>
@@ -164,9 +163,8 @@ export default function InventoryPage() {
   const fetchInventory = async () => {
     setLoading(true);
     try {
-      const token = Cookies.get("accessToken");
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/my-products`, {
-        headers: { Authorization: `Bearer ${token}` }
+        credentials: "include"
       });
       const data = await res.json();
       if (data.success) {
@@ -186,13 +184,10 @@ export default function InventoryPage() {
   // PUT /api/products/:id
   const handleRestock = async (id, newStock) => {
     try {
-      const token = Cookies.get("accessToken");
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ stock: newStock })
       });
 
@@ -238,8 +233,8 @@ export default function InventoryPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-xl font-black text-gray-900">Inventory</h1>
-        <p className="text-xs text-gray-400">{products.length} products tracked</p>
+        <h1 className="text-xl font-black text-neutral-900">Inventory</h1>
+        <p className="text-xs text-neutral-400">{products.length} products tracked</p>
       </div>
 
       {/* Summary cards */}
@@ -247,11 +242,11 @@ export default function InventoryPage() {
         {[
           ["In Stock",    goodCount, "text-green-600",  "bg-green-50",  "border-green-100" ],
           ["Low Stock",   lowCount,  "text-orange-600", "bg-orange-50", "border-orange-100"],
-          ["Out of Stock",outCount,  "text-[#ff5252]",    "bg-red-50",    "border-red-100"   ],
+          ["Out of Stock",outCount,  "text-primary-500",    "bg-red-50",    "border-red-100"   ],
         ].map(([l, v, tc, bg, bc]) => (
           <div key={l} className={`${bg} border ${bc} rounded-2xl p-3.5 text-center`}>
             <p className={`text-2xl font-black ${tc}`}>{v}</p>
-            <p className="text-[10px] text-gray-500 font-semibold leading-tight mt-0.5">{l}</p>
+            <p className="text-[10px] text-neutral-500 font-semibold leading-tight mt-0.5">{l}</p>
           </div>
         ))}
       </div>
@@ -260,7 +255,7 @@ export default function InventoryPage() {
       {(lowCount + outCount) > 0 && (
         <div className="flex gap-2.5 bg-orange-50 border border-orange-200 rounded-2xl p-3.5">
           <Icon d={ICONS.warning} size={16} className="text-orange-500 shrink-0 mt-0.5" />
-          <p className="text-xs text-gray-600 leading-relaxed">
+          <p className="text-xs text-neutral-600 leading-relaxed">
             <strong>{lowCount + outCount} product{(lowCount + outCount) > 1 ? "s" : ""}</strong> need restocking.
             Update stock to keep listings active and visible to buyers.
           </p>
@@ -269,13 +264,13 @@ export default function InventoryPage() {
 
       {/* Search */}
       <div className="relative">
-        <Icon d={ICONS.search} size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        <Icon d={ICONS.search} size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name, SKU or category…"
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm
-            focus:outline-none focus:ring-2 focus:ring-[#ff5252]/20 focus:border-[#ff5252]/40 transition"
+          className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white border border-neutral-200 text-sm
+            focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500/40 transition"
         />
       </div>
 
@@ -288,8 +283,8 @@ export default function InventoryPage() {
             className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0
               transition cursor-pointer
               ${filter === f
-                ? "bg-[#ff5252] text-white shadow-md shadow-red-200"
-                : "bg-white text-gray-500 border border-gray-200 hover:border-gray-300"}`}
+                ? "bg-[#ff5252] text-white shadow-md shadow-primary-200"
+                : "bg-white text-neutral-500 border border-neutral-200 hover:border-neutral-300"}`}
           >
             {f}
           </button>
@@ -297,39 +292,39 @@ export default function InventoryPage() {
       </div>
 
       {/* Inventory list */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden min-h-[300px]">
+      <div className="bg-white rounded-3xl border border-neutral-100 shadow-sm overflow-hidden min-h-[300px]">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <CircularProgress size={30} className="text-[#ff5252]" />
+            <CircularProgress size={30} className="text-primary-500" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-14 text-gray-400">
+          <div className="text-center py-14 text-neutral-400">
             <Icon d={ICONS.inventory} size={36} className="mx-auto mb-2 opacity-20" />
             <p className="text-sm font-semibold">No products found</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-neutral-50">
             {filtered.map((p) => {
               const barPct   = Math.min((p.stock / 20) * 100, 100);
               const barColor = p.stock === 0 ? "#ff5252" : p.stock <= p.lowStockThreshold ? "#f97316" : "#22c55e";
 
               return (
-                <div key={p._id} className="px-5 py-4 flex items-center gap-3 hover:bg-gray-50/50 transition">
+                <div key={p._id} className="px-5 py-4 flex items-center gap-3 hover:bg-neutral-50/50 transition">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <p className="text-sm font-bold text-gray-900 truncate">{p.name}</p>
+                      <p className="text-sm font-bold text-neutral-900 truncate">{p.name}</p>
                       <StatusBadge status={p.status} />
                     </div>
-                    <p className="text-[10px] text-gray-400 mb-2">{p.category} · {p.sku}</p>
+                    <p className="text-[10px] text-neutral-400 mb-2">{p.category} · {p.sku}</p>
                     {/* Stock bar */}
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="flex-1 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{ width: `${barPct}%`, backgroundColor: barColor }}
                         />
                       </div>
-                      <span className="text-xs font-bold text-gray-600 w-16 text-right shrink-0">
+                      <span className="text-xs font-bold text-neutral-600 w-16 text-right shrink-0">
                         {p.stock} units
                       </span>
                     </div>
@@ -338,7 +333,7 @@ export default function InventoryPage() {
                   <button
                     onClick={() => setRestocking(p)}
                     className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl
-                      bg-[#ff5252]/10 text-[#ff5252] text-xs font-bold hover:bg-[#ff5252]/20 transition cursor-pointer"
+                      bg-primary-50 text-primary-500 text-xs font-bold hover:bg-primary-100 transition cursor-pointer"
                   >
                     <Icon d={ICONS.refresh} size={12} />
                     Restock
