@@ -18,6 +18,7 @@ import phone from "../../assets/image/sub-banner-3.jpg";
 import { FaShippingFast, FaLongArrowAltRight } from "react-icons/fa";
 import { blogs } from "../../data/blogs";
 import ErrorMessage from "../../components/ErrorMessage";
+import { getProducts } from "../../api";
 
 const Home = () => {
   const swiperRef1 = useRef(null);
@@ -30,21 +31,19 @@ const Home = () => {
 
   const fetchPopularProducts = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products?sort=popular&limit=8`);
-      const data = await res.json();
+      const data = await getProducts({ sort: 'popular', limit: 8 });
       if (data.success) setPopularProducts(data.data || []);
     } catch (err) {
-      console.error("Failed to load popular products:", err);
+      throw err;
     }
   };
 
   const fetchLatestProducts = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products?sort=newest&limit=8`);
-      const data = await res.json();
+      const data = await getProducts({ sort: 'newest', limit: 8 });
       if (data.success) setLatestProducts(data.data || []);
     } catch (err) {
-      console.error("Failed to load latest products:", err);
+      throw err;
     }
   };
 
@@ -54,7 +53,13 @@ const Home = () => {
     try {
       await Promise.all([fetchPopularProducts(), fetchLatestProducts()]);
     } catch (err) {
-      setError(err.message);
+      const isNetworkError = !err?.response && err?.message === 'Failed to fetch';
+      const message = isNetworkError
+        ? 'Unable to reach the server. Please check your connection and try again.'
+        : err?.response?.data?.message || err?.message || "Failed to load products. Please try again.";
+      if (err?.response?.status !== 401 && err?.response?.status !== 403) {
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }
